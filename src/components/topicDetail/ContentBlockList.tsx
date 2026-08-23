@@ -29,15 +29,15 @@ export const ContentBlockList: React.FC<ContentBlockListProps> = ({ topic }) => 
     let initialData = {};
 
     if (type === 'text') {
-      initialData = { text: 'Add your study summary, notes or formulas here...' };
+      initialData = { text: '' };
     } else if (type === 'link') {
-      initialData = { title: 'Reference Link', url: 'https://' };
+      initialData = { title: '', url: '' };
     } else if (type === 'image') {
       initialData = { imageUrl: '', caption: '' };
     } else if (type === 'note') {
-      initialData = { title: 'Important Concept', text: '', noteColor: 'purple' };
+      initialData = { title: '', text: '', noteColor: 'purple' };
     } else if (type === 'resource') {
-      initialData = { title: 'Recommended Resource', text: '' };
+      initialData = { title: '', text: '' };
     }
 
     addContentBlock(topic.id, {
@@ -131,7 +131,7 @@ export const ContentBlockList: React.FC<ContentBlockListProps> = ({ topic }) => 
       {/* Render Blocks */}
       {blocks.length === 0 ? (
         <div className="p-8 text-center rounded-2xl border border-dashed border-slate-800 bg-slate-950/40 text-slate-400 text-xs">
-          <p className="mb-3">No content blocks yet for this topic.</p>
+          <p className="mb-3">No content blocks added yet.</p>
           <button
             onClick={() => handleAddBlock('text')}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition-colors"

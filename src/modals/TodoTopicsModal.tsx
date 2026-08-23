@@ -131,8 +131,7 @@ export const TodoTopicsModal: React.FC<TodoTopicsModalProps> = ({
             type="text"
             value={topicName}
             onChange={(e) => setTopicName(e.target.value)}
-            placeholder="e.g. Deadlock Detection & Recovery, OSPF Routing, B+ Tree Insertion"
-            className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-brand-500"
             required
           />
         </div>
@@ -146,8 +145,7 @@ export const TodoTopicsModal: React.FC<TodoTopicsModalProps> = ({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            placeholder="Key syllabus objectives, reference book chapters..."
-            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-brand-500"
           />
         </div>
 

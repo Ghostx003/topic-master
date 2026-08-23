@@ -182,7 +182,6 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
                 value={draftData.text || ''}
                 onChange={(e) => setDraftData({ ...draftData, text: e.target.value })}
                 rows={4}
-                placeholder="Write notes, formulas, summary or paste URLs (auto-detected)..."
                 className="w-full p-3 text-sm rounded-xl bg-slate-900 border border-brand-500/50 text-white focus:outline-none focus:border-brand-500"
               />
             </div>
@@ -195,14 +194,12 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
                 type="text"
                 value={draftData.title || ''}
                 onChange={(e) => setDraftData({ ...draftData, title: e.target.value })}
-                placeholder="Link Title (e.g. Stanford Lecture Slides, GitHub repo)..."
                 className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white"
               />
               <input
                 type="url"
                 value={draftData.url || ''}
                 onChange={(e) => setDraftData({ ...draftData, url: e.target.value })}
-                placeholder="https://..."
                 className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white"
               />
             </div>
@@ -216,7 +213,6 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
                   type="text"
                   value={draftData.imageUrl || ''}
                   onChange={(e) => setDraftData({ ...draftData, imageUrl: e.target.value })}
-                  placeholder="Image URL (https://...)..."
                   className="flex-1 p-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white"
                 />
                 <label className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer transition-colors shrink-0">
@@ -234,7 +230,6 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
                 type="text"
                 value={draftData.caption || ''}
                 onChange={(e) => setDraftData({ ...draftData, caption: e.target.value })}
-                placeholder="Image caption / description..."
                 className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white"
               />
             </div>
@@ -248,7 +243,6 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
                   type="text"
                   value={draftData.title || ''}
                   onChange={(e) => setDraftData({ ...draftData, title: e.target.value })}
-                  placeholder="Note Title..."
                   className="flex-1 p-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white"
                 />
                 <select
@@ -273,7 +267,6 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
                 value={draftData.text || ''}
                 onChange={(e) => setDraftData({ ...draftData, text: e.target.value })}
                 rows={3}
-                placeholder="Important takeaway or key concept..."
                 className="w-full p-2.5 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white"
               />
             </div>
@@ -286,14 +279,12 @@ export const ContentBlockEditor: React.FC<ContentBlockEditorProps> = ({
                 type="text"
                 value={draftData.title || ''}
                 onChange={(e) => setDraftData({ ...draftData, title: e.target.value })}
-                placeholder="Resource Name (e.g. Chapter 4 in Tanenbaum Book)..."
                 className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white"
               />
               <textarea
                 value={draftData.text || ''}
                 onChange={(e) => setDraftData({ ...draftData, text: e.target.value })}
                 rows={2}
-                placeholder="Key pages, chapter references, or problems to solve..."
                 className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white"
               />
             </div>

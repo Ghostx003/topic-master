@@ -97,12 +97,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
             type="text"
             value={topicName}
             onChange={(e) => setTopicName(e.target.value)}
-            placeholder={
-              parentTopic
-                ? 'e.g. FCFS, Round Robin, Banker’s Algorithm'
-                : 'e.g. CPU Scheduling, Process Management, Memory Hierarchy'
-            }
-            className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-brand-500"
             required
             autoFocus
           />
@@ -116,8 +111,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            placeholder="Key points, formula notes, exam importance..."
-            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-brand-500"
           />
         </div>
 

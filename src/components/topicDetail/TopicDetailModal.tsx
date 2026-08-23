@@ -141,7 +141,7 @@ export const TopicDetailModal: React.FC = () => {
                 </h2>
                 <button
                   onClick={() => setIsEditingTitle(true)}
-                  className="p-1 rounded-lg text-slate-500 hover:text-brand-300 opacity-0 group-hover/title:opacity-100 transition-opacity"
+                  className="p-1 rounded-lg text-slate-500 hover:text-brand-300 opacity-0 group/title:opacity-100 transition-opacity"
                   title="Rename Topic"
                 >
                   <Edit2 className="w-4 h-4" />
@@ -176,7 +176,6 @@ export const TopicDetailModal: React.FC = () => {
                 value={editedDesc}
                 onChange={(e) => setEditedDesc(e.target.value)}
                 rows={2}
-                placeholder="Topic summary, overview or key notes..."
                 className="w-full p-2.5 text-xs rounded-xl bg-slate-950 border border-brand-500 text-white focus:outline-none"
               />
               <div className="flex justify-end gap-2">
@@ -201,12 +200,11 @@ export const TopicDetailModal: React.FC = () => {
               className="text-xs text-slate-400 hover:text-slate-300 p-2.5 rounded-xl bg-slate-900/40 border border-dashed border-slate-800 cursor-pointer transition-colors"
               title="Click to edit overview description"
             >
-              {selectedTopicForModal.Topic_Description ||
-                'Click to add topic description, syllabus context, or target exam weightage...'}
+              {selectedTopicForModal.Topic_Description || 'Add description...'}
             </div>
           )}
 
-          {/* Subtopics Section (Required by Section 11 & 27) */}
+          {/* Subtopics Section */}
           <SubtopicsList
             topic={selectedTopicForModal}
             onSelectSubtopic={(childId) => openTopicDetailModal(childId)}
@@ -219,7 +217,7 @@ export const TopicDetailModal: React.FC = () => {
           {/* Live Study Timer & Stopwatch */}
           <StudyTimer topic={selectedTopicForModal} />
 
-          {/* Content Block Workspace (Unlimited Text, Link, Image, Note, Resource) */}
+          {/* Content Block Workspace */}
           <ContentBlockList topic={selectedTopicForModal} />
         </div>
       </Modal>

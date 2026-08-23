@@ -87,7 +87,7 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
           </div>
 
           <p className="text-xs sm:text-sm text-slate-400 mt-1.5 max-w-2xl leading-relaxed">
-            {subject.Subject_Description || 'Hierarchical topic curriculum, subtopic nesting, and real-time study tracking.'}
+            {subject.Subject_Description || ''}
           </p>
         </div>
 
@@ -113,7 +113,6 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
             type="text"
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
-            placeholder={`Search topics in ${subject.Subject_Name}...`}
             className="w-full pl-10 pr-9 py-2.5 text-xs rounded-2xl bg-slate-900/80 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500/60 transition-all shadow-inner"
           />
           {searchFilter && (
@@ -158,7 +157,7 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
           />
         ) : filteredTreeNodes.length === 0 ? (
           <div className="text-center py-16 text-slate-400 text-sm rounded-2xl border border-dashed border-slate-800">
-            No topics matching &ldquo;{searchFilter}&rdquo;
+            No matching topics found.
           </div>
         ) : (
           filteredTreeNodes.map((node) => (

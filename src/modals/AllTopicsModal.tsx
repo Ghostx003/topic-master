@@ -92,8 +92,7 @@ export const AllTopicsModal: React.FC<AllTopicsModalProps> = ({ isOpen, onClose 
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search topic inventory..."
-              className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500/60"
+              className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-brand-500/60"
             />
           </div>
 

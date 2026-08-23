@@ -47,8 +47,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search subjects, topics, subtopics, notes... (ESC to close)"
-          className="w-full bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none"
+          className="w-full bg-transparent text-sm text-white focus:outline-none"
           autoFocus
         />
         <kbd className="px-2 py-0.5 text-[10px] font-mono bg-slate-800 text-slate-400 rounded border border-slate-700">

@@ -122,7 +122,6 @@ export const StudyTimer: React.FC<StudyTimerProps> = ({ topic }) => {
               max="600"
               value={manualMinutes}
               onChange={(e) => setManualMinutes(e.target.value)}
-              placeholder="Minutes (e.g. 45)"
               className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-brand-500"
               required
             />
@@ -130,7 +129,6 @@ export const StudyTimer: React.FC<StudyTimerProps> = ({ topic }) => {
               type="text"
               value={sessionNotes}
               onChange={(e) => setSessionNotes(e.target.value)}
-              placeholder="Session notes (optional)..."
               className="flex-[2] px-3 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-brand-500"
             />
             <button
@@ -197,13 +195,12 @@ export const StudyTimer: React.FC<StudyTimerProps> = ({ topic }) => {
             type="text"
             value={sessionNotes}
             onChange={(e) => setSessionNotes(e.target.value)}
-            placeholder="Log what you studied in this session (e.g. Solved 10 practice problems, read pages 40-55)..."
-            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950/80 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950/80 border border-slate-800 text-white focus:outline-none focus:border-brand-500"
           />
         </div>
       )}
 
-      {/* Stats Summary Grid (Required by Section 13: Today's Study Time, Total Study Time, Number of Sessions, Last Studied) */}
+      {/* Stats Summary Grid (Today's Study Time, Total Study Time, Number of Sessions, Last Studied) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-800/80 text-xs">
         {/* 1. Today's Study Time */}
         <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">

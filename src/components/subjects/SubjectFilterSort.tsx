@@ -2,15 +2,15 @@ import React from 'react';
 import { SubjectImportance, IMPORTANCE_ORDER } from '../../types/subject';
 import { Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 
-export type SubjectSortOption = 'importance' | 'progress' | 'hours' | 'name' | 'recent';
+export type SubjectSortOption = 'importance' | 'name' | 'progress' | 'hours' | 'recent';
 
 export interface SubjectFilterSortProps {
   searchQuery: string;
-  onSearchChange: (q: string) => void;
+  onSearchChange: (query: string) => void;
   selectedImportance: SubjectImportance | 'all';
-  onImportanceChange: (imp: SubjectImportance | 'all') => void;
+  onImportanceChange: (importance: SubjectImportance | 'all') => void;
   sortBy: SubjectSortOption;
-  onSortChange: (s: SubjectSortOption) => void;
+  onSortChange: (sort: SubjectSortOption) => void;
 }
 
 export const SubjectFilterSort: React.FC<SubjectFilterSortProps> = ({
@@ -22,29 +22,29 @@ export const SubjectFilterSort: React.FC<SubjectFilterSortProps> = ({
   onSortChange,
 }) => {
   return (
-    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-6 p-4 rounded-2xl bg-slate-900/40 border border-slate-800/80 backdrop-blur-xl">
-      {/* Search Input */}
-      <div className="relative flex-1 min-w-[240px]">
+    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl mb-6">
+      {/* Search bar */}
+      <div className="relative flex-1">
         <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Filter subjects by name or description..."
-          className="w-full pl-10 pr-4 py-2 text-sm rounded-xl bg-slate-950/60 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500/60 transition-colors"
+          className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl bg-slate-950/80 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500/60 transition-colors"
         />
       </div>
 
+      {/* Filter and Sort options */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Importance Filter */}
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-slate-400 shrink-0" />
+        <div className="flex items-center gap-2 text-xs">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" />
           <select
             value={selectedImportance}
-            onChange={(e) => onImportanceChange(e.target.value as SubjectImportance | 'all')}
-            className="px-3 py-2 text-xs rounded-xl bg-slate-950/60 border border-slate-800 text-slate-200 focus:outline-none focus:border-brand-500/60 transition-colors cursor-pointer"
+            onChange={(e) => onImportanceChange(e.target.value as any)}
+            className="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500/50 cursor-pointer"
           >
-            <option value="all">All Importances</option>
+            <option value="all">All Importance Levels</option>
             {IMPORTANCE_ORDER.map((imp) => (
               <option key={imp} value={imp}>
                 {imp}
@@ -53,18 +53,18 @@ export const SubjectFilterSort: React.FC<SubjectFilterSortProps> = ({
           </select>
         </div>
 
-        {/* Sort Select */}
-        <div className="flex items-center gap-2">
-          <ArrowUpDown className="w-4 h-4 text-slate-400 shrink-0" />
+        {/* Sort By Dropdown */}
+        <div className="flex items-center gap-2 text-xs">
+          <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as SubjectSortOption)}
-            className="px-3 py-2 text-xs rounded-xl bg-slate-950/60 border border-slate-800 text-slate-200 focus:outline-none focus:border-brand-500/60 transition-colors cursor-pointer"
+            className="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500/50 cursor-pointer"
           >
-            <option value="importance">Sort: Importance</option>
-            <option value="progress">Sort: Highest Progress</option>
-            <option value="hours">Sort: Most Study Hours</option>
-            <option value="name">Sort: Name (A-Z)</option>
+            <option value="importance">Sort: Priority / Importance</option>
+            <option value="progress">Sort: Completion Rate</option>
+            <option value="hours">Sort: Total Study Hours</option>
+            <option value="name">Sort: Subject Name (A-Z)</option>
             <option value="recent">Sort: Recently Added</option>
           </select>
         </div>

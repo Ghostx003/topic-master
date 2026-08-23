@@ -113,8 +113,7 @@ export const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Operating Systems, Computer Networks..."
-            className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-brand-500"
             required
             autoFocus
           />
@@ -146,8 +145,7 @@ export const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            placeholder="Brief overview of the subject curriculum, target weightage, or topics..."
-            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-brand-500"
           />
         </div>
 
