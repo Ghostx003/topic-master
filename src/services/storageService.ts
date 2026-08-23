@@ -73,7 +73,11 @@ export const StorageService = {
             t.id === 'cn-3-2' ||
             t.id === 'cn-3-3' ||
             t.id === 'cn-10-1' ||
-            t.id === 'cn-10-2'
+            t.id === 'cn-10-2' ||
+            t.id === 'coa-1-1' ||
+            t.id === 'coa-1-2' ||
+            t.id === 'coa-2-1' ||
+            t.id === 'coa-2-2'
           ) return false;
           return true;
         })

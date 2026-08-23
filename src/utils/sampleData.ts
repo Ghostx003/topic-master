@@ -177,26 +177,52 @@ const makeTopic = (
 export const INITIAL_TOPICS: Topic[] = [
   // =========================================================================
   // 1. COMPUTER ORGANIZATION & ARCHITECTURE (subj-coa) - 251 Total PYQs
+  //    Organized into 5 official GATE syllabus chapters with subtopics
   // =========================================================================
-  makeTopic('coa-1', 'subj-coa', null, 'Cache Memory', 'Direct, Set-Associative, Fully Associative mapping, tag/set/offset bits, Write policies, and AMAT (69 PYQs).', 1, true, 69),
-  makeTopic('coa-1-1', 'subj-coa', 'coa-1', 'Cache Mapping & Address Bits Splitting', 'Tag, Set index, and Word Offset partition formulas.', 1, true, 42),
-  makeTopic('coa-1-2', 'subj-coa', 'coa-1', 'Average Memory Access Time (AMAT)', 'Hierarchical vs simultaneous memory access time calculations.', 2, true, 27),
 
-  makeTopic('coa-2', 'subj-coa', null, 'Pipelining & Hazards', 'Instruction pipelining stages, speedup formulas, RAW/WAR/WAW data hazards, branch delays (39 PYQs).', 2, true, 39),
-  makeTopic('coa-2-1', 'subj-coa', 'coa-2', 'Pipeline Speedup & Throughput Analysis', 'Speedup S = (n*k)/(k+n-1+stalls), clock period constraints.', 1, true, 24),
-  makeTopic('coa-2-2', 'subj-coa', 'coa-2', 'Data Hazards & Operand Forwarding', 'Read-After-Write (RAW) dependency resolution with forwarding paths.', 2, true, 15),
+  // --- Chapter 1: Machine Instructions, Addressing Modes & Instruction Formats (61 PYQs) ---
+  makeTopic('coa-ch-inst', 'subj-coa', null, 'Machine Instructions, Addressing Modes & Instruction Formats', 'Machine instructions, opcode formats, expanding opcodes, addressing modes, instruction execution cycle, and RISC/CISC paradigms.', 1, true),
+  makeTopic('coa-3', 'subj-coa', 'coa-ch-inst', 'Machine Instruction', 'Instruction execution cycles, opcode decoding, and register transfer operations (21 PYQs).', 1, true, 21),
+  makeTopic('coa-4', 'subj-coa', 'coa-ch-inst', 'Addressing Modes', 'Immediate, Direct, Indirect, Indexed, Base Register, and PC-Relative effective address calculations (19 PYQs).', 2, true, 19),
+  makeTopic('coa-6', 'subj-coa', 'coa-ch-inst', 'Instruction Format', '0, 1, 2, 3 address instruction formats, expanding opcodes, register and address bit constraints (11 PYQs).', 3, true, 11),
+  makeTopic('coa-sub-exec', 'subj-coa', 'coa-ch-inst', 'Instruction Execution', 'Instruction fetch, decode, operand fetch, execute, and write-back phases, PC updates (7 PYQs).', 4, true, 7),
+  makeTopic('coa-sub-risc', 'subj-coa', 'coa-ch-inst', 'CISC RISC Architecture', 'Complex vs Reduced Instruction Set Computer architectures, load-store vs register-memory ISA (2 PYQs).', 5, true, 2),
+  makeTopic('coa-sub-isa', 'subj-coa', 'coa-ch-inst', 'Instruction Set Architecture', 'ISA specifications, programmer visible registers, condition codes, instruction semantics (1 PYQ).', 6, true, 1),
 
-  makeTopic('coa-3', 'subj-coa', null, 'Machine Instruction', 'Instruction execution cycles, opcode decoding, and register transfer operations (21 PYQs).', 3, true, 21),
-  makeTopic('coa-4', 'subj-coa', null, 'Addressing Modes', 'Immediate, Direct, Indirect, Indexed, Base Register, and PC-Relative effective address calculations (19 PYQs).', 4, true, 19),
-  makeTopic('coa-5', 'subj-coa', null, 'Microprogramming & Control Unit', 'Horizontal vs vertical microinstructions, control store addressing, micro-program sequencing (12 PYQs).', 5, true, 12),
-  makeTopic('coa-6', 'subj-coa', null, 'Instruction Format', '0, 1, 2, 3 address instruction formats, expanding opcodes, register and address bit constraints (11 PYQs).', 6, true, 11),
-  makeTopic('coa-7', 'subj-coa', null, 'Interrupts', 'Vectored vs non-vectored interrupts, interrupt latency, priority interrupt controllers (10 PYQs).', 7, true, 10),
-  makeTopic('coa-8', 'subj-coa', null, 'Direct Memory Access (DMA)', 'DMA controller architecture, cycle stealing mode vs burst mode data transfer bandwidth (8 PYQs).', 8, true, 8),
-  makeTopic('coa-9', 'subj-coa', null, 'IO Handling', 'Programmed I/O, interrupt-driven I/O, memory-mapped I/O vs I/O-mapped I/O (8 PYQs).', 9, true, 8),
-  makeTopic('coa-10', 'subj-coa', null, 'Data Path Design', 'Single-cycle and multi-cycle datapath, ALU control signals, bus architectures (7 PYQs).', 10, true, 7),
+  // --- Chapter 2: CPU Control Unit, Data Path & Microprogramming (23 PYQs) ---
+  makeTopic('coa-ch-cpu', 'subj-coa', null, 'CPU Control Unit, Data Path & Microprogramming', 'Hardwired vs microprogrammed control unit, horizontal and vertical microprogramming, ALU and datapath design.', 2, true),
+  makeTopic('coa-5', 'subj-coa', 'coa-ch-cpu', 'Microprogramming', 'Horizontal vs vertical microinstructions, control store addressing, micro-program sequencing (12 PYQs).', 1, true, 12),
+  makeTopic('coa-10', 'subj-coa', 'coa-ch-cpu', 'Data Path', 'Single-cycle and multi-cycle datapath, ALU control signals, internal bus architectures (7 PYQs).', 2, true, 7),
+  makeTopic('coa-sub-runtime', 'subj-coa', 'coa-ch-cpu', 'Runtime Environment', 'Hardware runtime stack, frame pointer, stack pointer, return address register management (2 PYQs).', 3, true, 2),
+  makeTopic('coa-sub-ctrl', 'subj-coa', 'coa-ch-cpu', 'Control Unit', 'Hardwired control unit state machine, timing signals generation, ring counters and decoders (1 PYQ).', 4, true, 1),
+  makeTopic('coa-sub-bitvec', 'subj-coa', 'coa-ch-cpu', 'Bit Vector', 'Bit vector masking, flag register conditions (zero, carry, overflow, sign) (1 PYQ).', 5, true, 1),
 
-  // =========================================================================
-  // 2. COMPUTER NETWORKS (subj-cn) - 226 Total PYQs
+  // --- Chapter 3: Instruction Pipelining & Hazards (52 PYQs) ---
+  makeTopic('coa-ch-pipe', 'subj-coa', null, 'Instruction Pipelining & Hazards', 'Pipelined execution, speedup, structural, data (RAW/WAR/WAW) and control hazards, forwarding, and branch stalls.', 3, true),
+  makeTopic('coa-2', 'subj-coa', 'coa-ch-pipe', 'Pipelining', 'Instruction pipelining stages, throughput, pipeline register latency, ideal CPI (39 PYQs).', 1, true, 39),
+  makeTopic('coa-sub-speedup', 'subj-coa', 'coa-ch-pipe', 'Speedup', 'Pipeline speedup S = (n*k)/(k+n-1+stalls), efficiency, throughput formulas (6 PYQs).', 2, true, 6),
+  makeTopic('coa-sub-datadep', 'subj-coa', 'coa-ch-pipe', 'Data Dependency', 'Read-After-Write (RAW), Write-After-Read (WAR), Write-After-Write (WAW) dependencies (4 PYQs).', 3, true, 4),
+  makeTopic('coa-sub-datahaz', 'subj-coa', 'coa-ch-pipe', 'Data Hazards', 'Resolving data hazards via operand forwarding/bypassing paths without stalls (1 PYQ).', 4, true, 1),
+  makeTopic('coa-sub-hazards', 'subj-coa', 'coa-ch-pipe', 'Hazards', 'Classifying structural resource conflicts, data dependencies, and branch control hazards (1 PYQ).', 5, true, 1),
+  makeTopic('coa-sub-stall', 'subj-coa', 'coa-ch-pipe', 'Stall', 'Pipeline bubbles, calculating penalty clock cycles due to memory delays and branch penalties (1 PYQ).', 6, true, 1),
+
+  // --- Chapter 4: Memory Hierarchy (Cache Mapping, AMAT & Main Memory) (88 PYQs) ---
+  makeTopic('coa-ch-mem', 'subj-coa', null, 'Memory Hierarchy (Cache Mapping, AMAT & Main Memory)', 'Cache direct/set-associative/fully-associative mapping, replacement policies, write policies, AMAT, and DRAM.', 4, true),
+  makeTopic('coa-1', 'subj-coa', 'coa-ch-mem', 'Cache Memory', 'Direct, Set-Associative, Fully Associative mapping, tag/set/offset bits, Write-Through vs Write-Back (69 PYQs).', 1, true, 69),
+  makeTopic('coa-sub-mem-int', 'subj-coa', 'coa-ch-mem', 'Memory Interfacing', 'Address decoding logic, chip select generation, memory capacity expansion (word/length) (6 PYQs).', 2, true, 6),
+  makeTopic('coa-sub-dir-map', 'subj-coa', 'coa-ch-mem', 'Direct Mapping', 'Direct mapped cache tag and line index partitioning, memory block modulo mapping (5 PYQs).', 3, true, 5),
+  makeTopic('coa-sub-amat', 'subj-coa', 'coa-ch-mem', 'Average Memory Access Time', 'AMAT = H1*T1 + (1-H1)*(H2*T2 + (1-H2)*Tm) hierarchical access calculations (3 PYQs).', 4, true, 3),
+  makeTopic('coa-sub-vmem', 'subj-coa', 'coa-ch-mem', 'Virtual Memory', 'Virtual to physical address translation, Page tables, TLB hits and misses in memory access (3 PYQs).', 5, true, 3),
+  makeTopic('coa-sub-conf-miss', 'subj-coa', 'coa-ch-mem', 'Conflict Misses', 'Compulsory (cold), Capacity, and Conflict cache misses analysis (1 PYQ).', 6, true, 1),
+  makeTopic('coa-sub-dram', 'subj-coa', 'coa-ch-mem', 'DRAM', 'Dynamic RAM refresh overhead, RAS/CAS row-column multiplexed addressing (1 PYQ).', 7, true, 1),
+
+  // --- Chapter 5: I/O Organization (Interrupts, DMA & I/O Handling) (27 PYQs) ---
+  makeTopic('coa-ch-io', 'subj-coa', null, 'I/O Organization (Interrupts, DMA & I/O Handling)', 'Programmed I/O, interrupt-driven I/O, vectored interrupts, DMA controller, and cycle stealing modes.', 5, true),
+  makeTopic('coa-7', 'subj-coa', 'coa-ch-io', 'Interrupts', 'Vectored vs non-vectored interrupts, interrupt latency, priority interrupt controllers (10 PYQs).', 1, true, 10),
+  makeTopic('coa-8', 'subj-coa', 'coa-ch-io', 'DMA', 'DMA controller architecture, cycle stealing mode vs burst mode data transfer bandwidth (8 PYQs).', 2, true, 8),
+  makeTopic('coa-9', 'subj-coa', 'coa-ch-io', 'IO Handling', 'Programmed I/O, interrupt-driven I/O, memory-mapped I/O vs I/O-mapped I/O (8 PYQs).', 3, true, 8),
+  makeTopic('coa-sub-disk', 'subj-coa', 'coa-ch-io', 'Disk', 'Magnetic disk structure, track/sector layout, seek time and rotational latency in I/O transfers (1 PYQ).', 4, true, 1),
+
   // =========================================================================
   // 2. COMPUTER NETWORKS (subj-cn) - 226 Total PYQs
   //    Organized into 5 official GATE syllabus chapters with subtopics
