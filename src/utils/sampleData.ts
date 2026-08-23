@@ -595,14 +595,17 @@ export const INITIAL_TOPICS: Topic[] = [
   // --- Chapter 1: Asymptotic Analysis & Recurrences ---
   makeTopic('alg-ch-asymp', 'subj-algo', null, 'Asymptotic Analysis & Recurrences', 'Asymptotic notations, time and space complexity analysis of loops, master theorem, recursion tree analysis, and algorithmic tracing.', 1, true),
   makeTopic('alg-1', 'subj-algo', 'alg-ch-asymp', 'Identify Function', 'Tracing pseudocode, determining returned values and mathematical functions implemented.', 1, true),
-  makeTopic('alg-2', 'subj-algo', 'alg-ch-asymp', 'Recurrence Relation', 'Master Theorem cases T(n) = aT(n/b) + f(n), Akra-Bazzi method, recursion tree analysis.', 2, true, 36),
+  makeTopic('alg-2', 'subj-algo', 'alg-ch-asymp', 'Recurrence Relation', 'Master Theorem cases T(n) = aT(n/b) + f(n), Akra-Bazzi method, recursion tree analysis.', 2, true),
   makeTopic('alg-4', 'subj-algo', 'alg-ch-asymp', 'Time Complexity', 'Analyzing nested loops, logarithmic steps, best/worst/average case time complexities.', 3, true),
   makeTopic('alg-6', 'subj-algo', 'alg-ch-asymp', 'Asymptotic Notations', 'Big-O, Omega, Theta, Little-o, Little-omega formal definitions and limit comparisons.', 4, true),
-  makeTopic('alg-sub-des-tech', 'subj-algo', 'alg-ch-asymp', 'Algorithm Design Techniques', 'Greedy vs dynamic vs divide and conquer paradigms, optimal choice heuristics.', 5, true),
-  makeTopic('alg-sub-alg-des', 'subj-algo', 'alg-ch-asymp', 'Algorithm Design', 'Correctness proofs, loop invariants, state representations, problem reductions.', 6, true),
-  makeTopic('alg-sub-recur', 'subj-algo', 'alg-ch-asymp', 'Recursion', 'Recursion call stack depth, base termination conditions, recursion tree traces.', 7, true),
-  makeTopic('alg-sub-space', 'subj-algo', 'alg-ch-asymp', 'Space Complexity', 'Auxiliary space, recursion stack depth analysis, in-place vs extra memory bounds.', 8, true),
-  makeTopic('alg-sub-cs', 'subj-algo', 'alg-ch-asymp', 'Computer Science', 'Core computer science fundamentals, state models, computational limits.', 9, true),
+  makeTopic('alg-sub-recur', 'subj-algo', 'alg-ch-asymp', 'Recursion', 'Recursion call stack depth, base termination conditions, recursion tree traces.', 5, true),
+  makeTopic('alg-sub-des-tech', 'subj-algo', 'alg-ch-asymp', 'Algorithm Design Techniques', 'Greedy vs dynamic vs divide and conquer paradigms, optimal choice heuristics.', 6, true),
+  makeTopic('alg-sub-alg-des', 'subj-algo', 'alg-ch-asymp', 'Algorithm Design', 'Correctness proofs, state representations, problem reductions.', 7, true),
+  makeTopic('alg-sub-loop-inv', 'subj-algo', 'alg-ch-asymp', 'Loop Invariants', 'Loop termination conditions, invariant assertions, loop bounds verification and algorithmic correctness.', 8, true),
+  makeTopic('alg-sub-output', 'subj-algo', 'alg-ch-asymp', 'Output', 'Evaluating iterative loops, pseudocode execution tracing, side effects in algorithmic control flow.', 9, true),
+  makeTopic('alg-sub-aliasing', 'subj-algo', 'alg-ch-asymp', 'Aliasing', 'Memory referencing, pointer aliasing, variable side effects during function calls and loop iterations.', 10, true),
+  makeTopic('alg-sub-space', 'subj-algo', 'alg-ch-asymp', 'Space Complexity', 'Auxiliary space, recursion stack depth analysis, in-place vs extra memory bounds.', 11, true),
+  makeTopic('alg-sub-cs', 'subj-algo', 'alg-ch-asymp', 'Computer Science', 'Core computer science fundamentals, state models, computational limits.', 12, true),
 
   // --- Chapter 2: Divide and Conquer, Searching & Sorting ---
   makeTopic('alg-ch-sort', 'subj-algo', null, 'Divide and Conquer, Searching & Sorting', 'Comparison sorting lower bounds, divide-and-conquer sorts, binary search, inversions, and stability.', 2, true),

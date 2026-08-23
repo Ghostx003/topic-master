@@ -157,7 +157,11 @@ export function getQuestionsForTopic(
   if (cached) return cached;
 
   const normSubj = normalize(subjectName);
-  const subjectQuestions = QUESTIONS_BY_SUBJECT_MAP.get(normSubj) || [];
+  let subjectQuestions = QUESTIONS_BY_SUBJECT_MAP.get(normSubj) || [];
+  if (normSubj === 'algorithms') {
+    const cpQuestions = QUESTIONS_BY_SUBJECT_MAP.get('cprogramming') || [];
+    subjectQuestions = [...subjectQuestions, ...cpQuestions];
+  }
 
   const targets = [topicName, ...subtopicNames];
   const targetAliases = targets.map((t) => CHAPTER_ALIASES[t.toLowerCase()] || t);
