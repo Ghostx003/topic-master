@@ -50,8 +50,11 @@ export const StorageService = {
 
       const hydratedSubjects: Subject[] = parsed.subjects.map((s: Subject) => {
         const init = initialSubjMap.get(s.id);
+        const { Subject_PYQ_Count, ...cleanS } = s as any;
         return {
-          ...s,
+          ...cleanS,
+          Subject_Name: init ? init.Subject_Name : s.Subject_Name,
+          Subject_Description: init ? init.Subject_Description : (s.Subject_Description ? s.Subject_Description.replace(/\s*\(\d+\s+Historical\s+PYQs\)/gi, '') : ''),
           Subject_Importance: init?.Subject_Importance || s.Subject_Importance,
         };
       });
@@ -82,9 +85,11 @@ export const StorageService = {
         })
         .map((t: Topic) => {
           const init = initialTopicMap.get(t.id);
+          const { Topic_PYQ_Count, ...cleanT } = t as any;
           return {
-            ...t,
+            ...cleanT,
             Topic_Name: init ? init.Topic_Name : t.Topic_Name,
+            Topic_Description: init ? init.Topic_Description : (t.Topic_Description ? t.Topic_Description.replace(/\s*\(\d+\s+(?:Total\s+|Historical\s+)?PYQs?\)/gi, '') : ''),
             Parent_Id: init !== undefined ? init.Parent_Id : t.Parent_Id,
             Topic_Tags: {
               ...t.Topic_Tags,
