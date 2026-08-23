@@ -199,29 +199,13 @@ export function getAuthoritativeTopicPYQ(
   topicOrNode: Topic | TopicTreeNodeType,
   allTopics: Topic[] = []
 ): number {
-  // 1. Direct explicit count
+  // 1. Direct explicit count (user-entered, highest authority)
   if (typeof topicOrNode.Topic_PYQ_Count === 'number' && topicOrNode.Topic_PYQ_Count > 0) {
     return topicOrNode.Topic_PYQ_Count;
   }
 
-  // 2. Initial Sample Dataset match by ID
-  const fromInitial = initialTopicMap.get(topicOrNode.id)?.Topic_PYQ_Count;
-  if (fromInitial && fromInitial > 0) {
-    return fromInitial;
-  }
-
-  // 3. Keyword / Concept matching
-  const nameLower = (topicOrNode.Topic_Name || '').toLowerCase();
-  const descLower = (topicOrNode.Topic_Description || '').toLowerCase();
-  const text = `${nameLower} ${descLower}`;
-
-  for (const rule of KEYWORD_PYQ_RULES) {
-    if (rule.keywords.some((kw) => text.includes(kw.toLowerCase()))) {
-      return rule.pyq;
-    }
-  }
-
-  // 4. If this is a parent node with children, sum their PYQs
+  // 2. If this is a tree node with children already resolved, sum children FIRST.
+  //    Parent topics always display the TOTAL of all subtopics under them.
   if ('children' in topicOrNode && Array.isArray((topicOrNode as any).children) && (topicOrNode as any).children.length > 0) {
     const childrenSum = (topicOrNode as any).children.reduce(
       (acc: number, c: any) => acc + getAuthoritativeTopicPYQ(c, allTopics),
@@ -230,7 +214,7 @@ export function getAuthoritativeTopicPYQ(
     if (childrenSum > 0) return childrenSum;
   }
 
-  // 5. If it's a flat Topic (not a tree node with children resolved), check children from allTopics
+  // 3. If it's a flat Topic (not a tree node), check if it has children in allTopics and sum them.
   if (allTopics.length > 0) {
     const children = allTopics.filter((t) => t.Parent_Id === topicOrNode.id);
     if (children.length > 0) {
@@ -242,7 +226,24 @@ export function getAuthoritativeTopicPYQ(
     }
   }
 
-  // 6. Unknown / custom-created topic → return 0, never fabricate counts
+  // 4. Initial Sample Dataset match by ID (for leaf topics with no children)
+  const fromInitial = initialTopicMap.get(topicOrNode.id)?.Topic_PYQ_Count;
+  if (fromInitial && fromInitial > 0) {
+    return fromInitial;
+  }
+
+  // 5. Keyword / Concept matching (for leaf topics with no children and no catalog entry)
+  const nameLower = (topicOrNode.Topic_Name || '').toLowerCase();
+  const descLower = (topicOrNode.Topic_Description || '').toLowerCase();
+  const text = `${nameLower} ${descLower}`;
+
+  for (const rule of KEYWORD_PYQ_RULES) {
+    if (rule.keywords.some((kw) => text.includes(kw.toLowerCase()))) {
+      return rule.pyq;
+    }
+  }
+
+  // 6. Unknown / custom-created topic with no children → return 0, never fabricate counts
   return 0;
 }
 
