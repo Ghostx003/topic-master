@@ -1,7 +1,9 @@
 import { TopicMasterState } from '../types/store';
 import { INITIAL_SUBJECTS, INITIAL_TOPICS, INITIAL_SCHEDULES } from '../utils/sampleData';
+import { Subject } from '../types/subject';
+import { Topic } from '../types/topic';
 
-const STORAGE_KEY = 'topic_master_state_gate_cse_v7';
+const STORAGE_KEY = 'topic_master_state_gate_cse_v8_pyq';
 
 export const DEFAULT_INITIAL_STATE: TopicMasterState = {
   subjects: INITIAL_SUBJECTS,
@@ -41,14 +43,45 @@ export const StorageService = {
         this.saveState(DEFAULT_INITIAL_STATE);
         return DEFAULT_INITIAL_STATE;
       }
-      return {
+
+      // Authoritative dictionary lookups for full PYQ counts and Star flags
+      const initialSubjMap = new Map<string, Subject>(INITIAL_SUBJECTS.map((s) => [s.id, s]));
+      const initialTopicMap = new Map<string, Topic>(INITIAL_TOPICS.map((t) => [t.id, t]));
+
+      const hydratedSubjects: Subject[] = parsed.subjects.map((s: Subject) => {
+        const init = initialSubjMap.get(s.id);
+        return {
+          ...s,
+          Subject_PYQ_Count: s.Subject_PYQ_Count || init?.Subject_PYQ_Count || 0,
+          Subject_Importance: init?.Subject_Importance || s.Subject_Importance,
+        };
+      });
+
+      const hydratedTopics: Topic[] = parsed.topics.map((t: Topic) => {
+        const init = initialTopicMap.get(t.id);
+        return {
+          ...t,
+          Topic_PYQ_Count: t.Topic_PYQ_Count || init?.Topic_PYQ_Count,
+          Topic_Tags: {
+            ...t.Topic_Tags,
+            Star: init ? init.Topic_Tags.Star : Boolean(t.Topic_Tags?.Star),
+          },
+        };
+      });
+
+      const finalState: TopicMasterState = {
         ...DEFAULT_INITIAL_STATE,
         ...parsed,
-        // Active timer should not be automatically running on reload unless recovered
+        subjects: hydratedSubjects,
+        topics: hydratedTopics,
         activeTimer: parsed.activeTimer
           ? { ...parsed.activeTimer, isRunning: false }
           : DEFAULT_INITIAL_STATE.activeTimer,
       };
+
+      // Persist the hydrated state immediately
+      this.saveState(finalState);
+      return finalState;
     } catch (err) {
       console.error('Error loading state from localStorage:', err);
       return DEFAULT_INITIAL_STATE;

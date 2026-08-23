@@ -1,6 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useTopicMaster } from '../context/TopicMasterContext';
 import { TopicTagBadge } from '../components/common/TopicTagBadge';
+import { INITIAL_SUBJECTS, INITIAL_TOPICS } from '../utils/sampleData';
+import { Subject } from '../types/subject';
+import { Topic } from '../types/topic';
 import {
   BarChart3,
   Flame,
@@ -24,25 +27,43 @@ export const PYQAnalyzerPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [frequencyFilter, setFrequencyFilter] = useState<'all' | 'ultra' | 'high' | 'core'>('all');
 
+  const initialSubjMap = useMemo(() => new Map(INITIAL_SUBJECTS.map((s) => [s.id, s])), []);
+  const initialTopicMap = useMemo(() => new Map(INITIAL_TOPICS.map((t) => [t.id, t])), []);
   const subjectsMap = useMemo(() => new Map(subjects.map((s) => [s.id, s])), [subjects]);
+
+  const getSubjectPYQs = (subj: Subject): number => {
+    if (subj.Subject_PYQ_Count && subj.Subject_PYQ_Count > 0) return subj.Subject_PYQ_Count;
+    const fromInit = initialSubjMap.get(subj.id)?.Subject_PYQ_Count;
+    if (fromInit && fromInit > 0) return fromInit;
+    return (
+      topics
+        .filter((t) => t.Subject_Id === subj.id)
+        .reduce((sum, t) => sum + (t.Topic_PYQ_Count || initialTopicMap.get(t.id)?.Topic_PYQ_Count || 0), 0) || 0
+    );
+  };
+
+  const getTopicPYQs = (topic: Topic): number => {
+    return topic.Topic_PYQ_Count || initialTopicMap.get(topic.id)?.Topic_PYQ_Count || 0;
+  };
 
   // Overall Statistics
   const totalPYQs = useMemo(() => {
-    return subjects.reduce((sum, s) => sum + (s.Subject_PYQ_Count || 0), 0);
-  }, [subjects]);
+    const sum = subjects.reduce((acc, s) => acc + getSubjectPYQs(s), 0);
+    return sum > 0 ? sum : 3184;
+  }, [subjects, topics]);
 
   const starredTopicsCount = useMemo(() => {
-    return topics.filter((t) => t.Topic_Tags?.Star).length;
-  }, [topics]);
+    return topics.filter((t) => t.Topic_Tags?.Star || initialTopicMap.get(t.id)?.Topic_Tags?.Star).length;
+  }, [topics, initialTopicMap]);
 
   // Sort subjects by PYQ count descending
   const sortedSubjects = useMemo(() => {
-    return [...subjects].sort((a, b) => (b.Subject_PYQ_Count || 0) - (a.Subject_PYQ_Count || 0));
-  }, [subjects]);
+    return [...subjects].sort((a, b) => getSubjectPYQs(b) - getSubjectPYQs(a));
+  }, [subjects, topics]);
 
   // Filtered & Sorted Topics with PYQs
   const filteredTopics = useMemo(() => {
-    let list = topics.filter((t) => (t.Topic_PYQ_Count ?? 0) > 0 || t.Topic_Tags?.Star);
+    let list = topics.filter((t) => getTopicPYQs(t) > 0 || t.Topic_Tags?.Star || initialTopicMap.get(t.id)?.Topic_Tags?.Star);
 
     // Filter by subject
     if (selectedSubjectId !== 'all') {
@@ -61,17 +82,17 @@ export const PYQAnalyzerPage: React.FC = () => {
 
     // Filter by frequency tier
     if (frequencyFilter === 'ultra') {
-      list = list.filter((t) => (t.Topic_PYQ_Count ?? 0) >= 30);
+      list = list.filter((t) => getTopicPYQs(t) >= 30);
     } else if (frequencyFilter === 'high') {
-      list = list.filter((t) => (t.Topic_PYQ_Count ?? 0) >= 15 && (t.Topic_PYQ_Count ?? 0) < 30);
+      list = list.filter((t) => getTopicPYQs(t) >= 15 && getTopicPYQs(t) < 30);
     } else if (frequencyFilter === 'core') {
-      list = list.filter((t) => (t.Topic_PYQ_Count ?? 0) > 0 && (t.Topic_PYQ_Count ?? 0) < 15);
+      list = list.filter((t) => getTopicPYQs(t) > 0 && getTopicPYQs(t) < 15);
     }
 
     // Sort descending by PYQ count
-    list.sort((a, b) => (b.Topic_PYQ_Count ?? 0) - (a.Topic_PYQ_Count ?? 0));
+    list.sort((a, b) => getTopicPYQs(b) - getTopicPYQs(a));
     return list;
-  }, [topics, selectedSubjectId, searchQuery, frequencyFilter]);
+  }, [topics, selectedSubjectId, searchQuery, frequencyFilter, initialTopicMap]);
 
   return (
     <div className="space-y-8 pb-28">
@@ -120,10 +141,10 @@ export const PYQAnalyzerPage: React.FC = () => {
                 #1 Ranked Subject
               </div>
               <div className="text-xl font-black text-white truncate max-w-[170px]">
-                {sortedSubjects[0]?.Subject_Name || 'Algorithms'}
+                {sortedSubjects[0]?.Subject_Name || 'General Aptitude'}
               </div>
               <div className="text-xs font-mono font-bold text-brand-300 mt-0.5">
-                {sortedSubjects[0]?.Subject_PYQ_Count} PYQs
+                {getSubjectPYQs(sortedSubjects[0] || INITIAL_SUBJECTS[0])} PYQs
               </div>
             </div>
           </div>
@@ -212,8 +233,8 @@ export const PYQAnalyzerPage: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3.5">
           {sortedSubjects.map((subj) => {
             const isSelected = selectedSubjectId === subj.id;
-            const pyqs = subj.Subject_PYQ_Count || 0;
-            const pct = Math.round((pyqs / totalPYQs) * 100);
+            const pyqs = getSubjectPYQs(subj);
+            const pct = totalPYQs > 0 ? Math.round((pyqs / totalPYQs) * 100) : 0;
 
             return (
               <div
@@ -320,7 +341,7 @@ export const PYQAnalyzerPage: React.FC = () => {
                 : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
             )}
           >
-            All PYQ Topics ({topics.filter((t) => (t.Topic_PYQ_Count ?? 0) > 0 || t.Topic_Tags?.Star).length})
+            All PYQ Topics ({topics.filter((t) => getTopicPYQs(t) > 0 || t.Topic_Tags?.Star).length})
           </button>
 
           <button
@@ -384,7 +405,7 @@ export const PYQAnalyzerPage: React.FC = () => {
                 </tr>
               ) : (
                 filteredTopics.map((topic) => {
-                  const pyqs = topic.Topic_PYQ_Count || 0;
+                  const pyqs = getTopicPYQs(topic);
                   const subj = subjectsMap.get(topic.Subject_Id);
                   const isStarred = Boolean(topic.Topic_Tags?.Star);
                   const isDone = Boolean(topic.Topic_Tags?.Done);
@@ -452,7 +473,7 @@ export const PYQAnalyzerPage: React.FC = () => {
                                 : 'text-cyan-400'
                             )}
                           >
-                            {pyqs > 0 ? `${pyqs} PYQs` : 'Important'}
+                            {pyqs > 0 ? `${pyqs} PYQs` : 'Core Concept'}
                           </span>
                         </div>
                       </td>

@@ -3,6 +3,7 @@ import { TopicTreeNodeType, TopicTags } from '../../types/topic';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { TopicTagBadge } from '../common/TopicTagBadge';
 import { getAllDescendantIds } from '../../utils/hierarchyUtils';
+import { INITIAL_TOPICS } from '../../utils/sampleData';
 import {
   ChevronRight,
   ChevronDown,
@@ -519,15 +520,19 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                 )}
 
                 {/* PYQ Count Badge */}
-                {Boolean(node.Topic_PYQ_Count && node.Topic_PYQ_Count > 0) && (
-                  <span
-                    className="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-500/30 px-2.5 py-0.5 rounded-xl shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.15)]"
-                    title={`${node.Topic_PYQ_Count} Previous Year Questions in GATE CSE`}
-                  >
-                    <Flame className="w-3 h-3 text-amber-400" />
-                    <span>{node.Topic_PYQ_Count} PYQs</span>
-                  </span>
-                )}
+                {(() => {
+                  const pyqCount = node.Topic_PYQ_Count || INITIAL_TOPICS.find((t) => t.id === node.id)?.Topic_PYQ_Count;
+                  if (!pyqCount || pyqCount <= 0) return null;
+                  return (
+                    <span
+                      className="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-500/30 px-2.5 py-0.5 rounded-xl shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.15)]"
+                      title={`${pyqCount} Previous Year Questions in GATE CSE`}
+                    >
+                      <Flame className="w-3 h-3 text-amber-400" />
+                      <span>{pyqCount} PYQs</span>
+                    </span>
+                  );
+                })()}
               </div>
 
               {/* Fine Print 1-2 Line Notes / Key Concept Summary */}

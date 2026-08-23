@@ -1,5 +1,6 @@
 import React from 'react';
 import { Subject } from '../../types/subject';
+import { INITIAL_SUBJECTS } from '../../utils/sampleData';
 import { SubjectImportancePill } from '../common/SubjectImportancePill';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { calculateTopicProgress } from '../../utils/hierarchyUtils';
@@ -117,15 +118,19 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onEdit, onDel
             onClick={handleImportanceClick}
             size="md"
           />
-          {subject.Subject_PYQ_Count && (
-            <span
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-black text-amber-300 bg-amber-950/50 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.2)]"
-              title={`${subject.Subject_PYQ_Count} Previous Year Questions analyzed in GATE CSE`}
-            >
-              <Flame className="w-3.5 h-3.5 text-amber-400" />
-              <span>{subject.Subject_PYQ_Count} PYQs</span>
-            </span>
-          )}
+          {(() => {
+            const pyqCount = subject.Subject_PYQ_Count || INITIAL_SUBJECTS.find((s) => s.id === subject.id)?.Subject_PYQ_Count;
+            if (!pyqCount) return null;
+            return (
+              <span
+                className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-black text-amber-300 bg-amber-950/50 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+                title={`${pyqCount} Previous Year Questions analyzed in GATE CSE`}
+              >
+                <Flame className="w-3.5 h-3.5 text-amber-400" />
+                <span>{pyqCount} PYQs</span>
+              </span>
+            );
+          })()}
         </div>
       </div>
 
