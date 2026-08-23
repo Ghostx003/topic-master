@@ -351,47 +351,58 @@ export const INITIAL_TOPICS: Topic[] = [
 
   // =========================================================================
   // 8. GENERAL APTITUDE (subj-ga) - 429 Total PYQs
+  //    Organized into 4 parent categories with subtopics
   // =========================================================================
-  // --- Quantitative Aptitude (197 PYQs) ---
-  makeTopic('ga-1', 'subj-ga', null, 'Probability in Aptitude', 'Permutations, combinations, coin/dice/card probability word problems (17 PYQs).', 1, true, 17),
-  makeTopic('ga-2', 'subj-ga', null, 'Numerical Computation', 'Arithmetic fractions, decimals, powers, roots, simplification (9 PYQs).', 2, true, 9),
-  makeTopic('ga-3', 'subj-ga', null, 'Ratio Proportion', 'Direct/inverse proportion, mixture problems, partnerships, ages (9 PYQs).', 3, true, 9),
-  makeTopic('ga-4', 'subj-ga', null, 'Percentage', 'Percentage increase/decrease, profit & loss, discount, simple & compound interest (8 PYQs).', 4, true, 8),
-  makeTopic('ga-5', 'subj-ga', null, 'Functions in Aptitude', 'Domain, range, composition of functions, polynomial function evaluations (7 PYQs).', 5, true, 7),
-  makeTopic('ga-6', 'subj-ga', null, 'Tabular Data & Data Interpretation', 'Interpreting tables, bar charts, pie charts, data sufficiency (7 PYQs).', 6, true, 7),
-  makeTopic('ga-7', 'subj-ga', null, 'Venn Diagram Aptitude', '2-set and 3-set Venn diagram word problems, set overlapping counts (7 PYQs).', 7, true, 7),
-  makeTopic('ga-8', 'subj-ga', null, 'Logarithms', 'Logarithm identities: log(ab) = log a + log b, base change rules (6 PYQs).', 8, true, 6),
-  makeTopic('ga-9', 'subj-ga', null, 'Quadratic Equations', 'Roots of quadratic equation, discriminant b^2 - 4ac, nature of roots (6 PYQs).', 9, true, 6),
-  makeTopic('ga-10', 'subj-ga', null, 'Absolute Value & Inequalities', 'Modulus equations |x - a| <= b, solving linear inequalities (5 PYQs).', 10, true, 5),
 
-  // --- Verbal Aptitude (165 PYQs) ---
-  makeTopic('ga-11', 'subj-ga', null, 'Most Appropriate Word', 'Contextual vocabulary fill-in-the-blanks, collocations, cloze tests (47 PYQs).', 11, true, 47),
-  makeTopic('ga-12', 'subj-ga', null, 'Passage Reading & Comprehension', 'Reading comprehension passages, author tone, main idea inference (23 PYQs).', 12, true, 23),
-  makeTopic('ga-13', 'subj-ga', null, 'Verbal Reasoning', 'Critical reasoning, strengthening and weakening arguments, logical assumptions (15 PYQs).', 13, true, 15),
-  makeTopic('ga-14', 'subj-ga', null, 'Word Pairs & Analogies', 'Semantic word pair relationships (cause-effect, tool-user, part-whole) (14 PYQs).', 14, true, 14),
-  makeTopic('ga-15', 'subj-ga', null, 'Synonyms in Context', 'Identifying word meanings and synonyms in technical context (13 PYQs).', 15, true, 13),
-  makeTopic('ga-16', 'subj-ga', null, 'Tenses in English', 'Past, present, future tenses, perfect continuous usage (9 PYQs).', 16, true, 9),
-  makeTopic('ga-17', 'subj-ga', null, 'Antonyms', 'Opposite words, antonyms in context (7 PYQs).', 17, true, 7),
-  makeTopic('ga-18', 'subj-ga', null, 'Grammatical Error Identification', 'Spotting errors in sentence clauses, prepositions, articles (6 PYQs).', 18, true, 6),
-  makeTopic('ga-19', 'subj-ga', null, 'English Grammar Rules', 'Subject-verb agreement, modifiers, parallelism, conditional sentences (5 PYQs).', 19, true, 5),
-  makeTopic('ga-20', 'subj-ga', null, 'Incorrect Sentence Part', 'Sentence correction, identifying faulty grammatical fragments (5 PYQs).', 20, true, 5),
+  // --- Parent: Quantitative Aptitude (197 PYQs) ---
+  makeTopic('ga-quant', 'subj-ga', null, 'Quantitative Aptitude', 'Arithmetic, algebra, data interpretation, probability, and quantitative reasoning (197 PYQs).', 1, true, 197),
+  makeTopic('ga-1', 'subj-ga', 'ga-quant', 'Probability', 'Permutations, combinations, coin/dice/card probability word problems (17 PYQs).', 1, true, 17),
+  makeTopic('ga-2', 'subj-ga', 'ga-quant', 'Numerical Computation', 'Arithmetic fractions, decimals, powers, roots, simplification (9 PYQs).', 2, true, 9),
+  makeTopic('ga-3', 'subj-ga', 'ga-quant', 'Ratio Proportion', 'Direct/inverse proportion, mixture problems, partnerships, ages (9 PYQs).', 3, true, 9),
+  makeTopic('ga-4', 'subj-ga', 'ga-quant', 'Percentage', 'Percentage increase/decrease, profit & loss, discount, simple & compound interest (8 PYQs).', 4, true, 8),
+  makeTopic('ga-5', 'subj-ga', 'ga-quant', 'Functions', 'Domain, range, composition of functions, polynomial function evaluations (7 PYQs).', 5, true, 7),
+  makeTopic('ga-6', 'subj-ga', 'ga-quant', 'Tabular Data', 'Interpreting tables, bar charts, pie charts, data sufficiency (7 PYQs).', 6, true, 7),
+  makeTopic('ga-7', 'subj-ga', 'ga-quant', 'Venn Diagram', '2-set and 3-set Venn diagram word problems, set overlapping counts (7 PYQs).', 7, true, 7),
+  makeTopic('ga-8', 'subj-ga', 'ga-quant', 'Logarithms', 'Logarithm identities: log(ab) = log a + log b, base change rules (6 PYQs).', 8, true, 6),
+  makeTopic('ga-9', 'subj-ga', 'ga-quant', 'Quadratic Equations', 'Roots of quadratic equation, discriminant b^2 - 4ac, nature of roots (6 PYQs).', 9, true, 6),
+  makeTopic('ga-10', 'subj-ga', 'ga-quant', 'Absolute Value', 'Modulus equations |x - a| <= b, solving linear inequalities (5 PYQs).', 10, true, 5),
 
-  // --- Analytical Aptitude (48 PYQs) ---
-  makeTopic('ga-21', 'subj-ga', null, 'Logical Reasoning', 'Deductive reasoning, arrangements, blood relations, puzzles (18 PYQs).', 21, true, 18),
-  makeTopic('ga-22', 'subj-ga', null, 'Statements Follow & Syllogisms', 'Logical conclusions from statements, Venn diagram validations (7 PYQs).', 22, true, 7),
-  makeTopic('ga-23', 'subj-ga', null, 'Direction Sense', 'Compass navigation problems, displacement distance calculations (5 PYQs).', 23, true, 5),
-  makeTopic('ga-24', 'subj-ga', null, 'Sequence Series', 'Number and letter sequence completion, pattern deductions (3 PYQs).', 24, true, 3),
-  makeTopic('ga-25', 'subj-ga', null, 'Age Relation Problems', 'Algebraic age relationship word equations (2 PYQs).', 25, true, 2),
-  makeTopic('ga-26', 'subj-ga', null, 'Code Words & Coding Decoding', 'Letter substitution ciphers, code transformations (2 PYQs).', 26, true, 2),
-  makeTopic('ga-27', 'subj-ga', null, 'Odd One Out', 'Classification of numbers, words, and shapes to find the outlier (2 PYQs).', 27, true, 2),
+  // --- Parent: Verbal Aptitude (165 PYQs) ---
+  makeTopic('ga-verbal', 'subj-ga', null, 'Verbal Aptitude', 'English vocabulary, reading comprehension, grammar, and verbal reasoning (165 PYQs).', 2, true, 165),
+  makeTopic('ga-11', 'subj-ga', 'ga-verbal', 'Most Appropriate Word', 'Contextual vocabulary fill-in-the-blanks, collocations, cloze tests (47 PYQs).', 1, true, 47),
+  makeTopic('ga-12', 'subj-ga', 'ga-verbal', 'Passage Reading', 'Reading comprehension passages, author tone, main idea inference (23 PYQs).', 2, true, 23),
+  makeTopic('ga-13', 'subj-ga', 'ga-verbal', 'Verbal Reasoning', 'Critical reasoning, strengthening and weakening arguments, logical assumptions (15 PYQs).', 3, true, 15),
+  makeTopic('ga-14', 'subj-ga', 'ga-verbal', 'Word Pairs', 'Semantic word pair relationships (cause-effect, tool-user, part-whole) (14 PYQs).', 4, true, 14),
+  makeTopic('ga-15', 'subj-ga', 'ga-verbal', 'Synonyms', 'Identifying word meanings and synonyms in technical context (13 PYQs).', 5, true, 13),
+  makeTopic('ga-16', 'subj-ga', 'ga-verbal', 'Tenses', 'Past, present, future tenses, perfect continuous usage (9 PYQs).', 6, true, 9),
+  makeTopic('ga-17', 'subj-ga', 'ga-verbal', 'Antonyms', 'Opposite words, antonyms in context (7 PYQs).', 7, true, 7),
+  makeTopic('ga-18', 'subj-ga', 'ga-verbal', 'Grammatical Error', 'Spotting errors in sentence clauses, prepositions, articles (6 PYQs).', 8, true, 6),
+  makeTopic('ga-19', 'subj-ga', 'ga-verbal', 'English Grammar', 'Subject-verb agreement, modifiers, parallelism, conditional sentences (5 PYQs).', 9, true, 5),
+  makeTopic('ga-20', 'subj-ga', 'ga-verbal', 'Incorrect Sentence Part', 'Sentence correction, identifying faulty grammatical fragments (5 PYQs).', 10, true, 5),
 
-  // --- Spatial Aptitude (19 PYQs) ---
-  makeTopic('ga-28', 'subj-ga', null, 'Paper Folding & Punching', 'Visualizing crease patterns and holes upon unfolding paper (5 PYQs).', 28, true, 5),
-  makeTopic('ga-29', 'subj-ga', null, 'Patterns In Two Dimensions', '2D geometric transformations, pattern completion, tessellations (4 PYQs).', 29, true, 4),
-  makeTopic('ga-30', 'subj-ga', null, 'Image Rotation', 'Clockwise and counter-clockwise 2D/3D angular rotations (3 PYQs).', 30, true, 3),
-  makeTopic('ga-31', 'subj-ga', null, 'Patterns In Three Dimensions', 'Cube surface unrolling, dice net representations (3 PYQs).', 31, true, 3),
-  makeTopic('ga-32', 'subj-ga', null, '3D Structure & Assembling Pieces', 'Combining 3D polyhedra, orthographic views (2 PYQs).', 32, true, 2),
-  makeTopic('ga-33', 'subj-ga', null, 'Mirror Image', 'Lateral inversion reflections along horizontal and vertical axes (1 PYQ).', 33, true, 1),
+  // --- Parent: Analytical Aptitude (48 PYQs) ---
+  makeTopic('ga-analytical', 'subj-ga', null, 'Analytical Aptitude', 'Logical deduction, coding-decoding, direction sense, and analytical puzzles (48 PYQs).', 3, true, 48),
+  makeTopic('ga-21', 'subj-ga', 'ga-analytical', 'Logical Reasoning', 'Deductive reasoning, arrangements, blood relations, puzzles (18 PYQs).', 1, true, 18),
+  makeTopic('ga-22', 'subj-ga', 'ga-analytical', 'Statements Follow', 'Logical conclusions from statements, Venn diagram validations (7 PYQs).', 2, true, 7),
+  makeTopic('ga-23', 'subj-ga', 'ga-analytical', 'Direction Sense', 'Compass navigation problems, displacement distance calculations (5 PYQs).', 3, true, 5),
+  makeTopic('ga-24', 'subj-ga', 'ga-analytical', 'Sequence Series', 'Number and letter sequence completion, pattern deductions (3 PYQs).', 4, true, 3),
+  makeTopic('ga-25', 'subj-ga', 'ga-analytical', 'Age Relation', 'Algebraic age relationship word equations (2 PYQs).', 5, true, 2),
+  makeTopic('ga-26', 'subj-ga', 'ga-analytical', 'Code Words', 'Letter substitution ciphers, code transformations (2 PYQs).', 6, true, 2),
+  makeTopic('ga-27', 'subj-ga', 'ga-analytical', 'Odd One', 'Classification of numbers, words, and shapes to find the outlier (2 PYQs).', 7, true, 2),
+  makeTopic('ga-28a', 'subj-ga', 'ga-analytical', 'Passage Reading', 'Analytical passage reading and inference questions (2 PYQs).', 8, true, 2),
+  makeTopic('ga-28b', 'subj-ga', 'ga-analytical', 'Analogy', 'Identifying analogical relationships and completing analogy pairs (1 PYQ).', 9, true, 1),
+  makeTopic('ga-28c', 'subj-ga', 'ga-analytical', 'Coding Decoding', 'Decoding encrypted messages using letter-position patterns (1 PYQ).', 10, true, 1),
+
+  // --- Parent: Spatial Aptitude (19 PYQs) ---
+  makeTopic('ga-spatial', 'subj-ga', null, 'Spatial Aptitude', 'Visual and spatial reasoning: folding, rotation, 3D structures, mirror images (19 PYQs).', 4, true, 19),
+  makeTopic('ga-29', 'subj-ga', 'ga-spatial', 'Paper Folding', 'Visualizing crease patterns and holes upon unfolding paper (5 PYQs).', 1, true, 5),
+  makeTopic('ga-30', 'subj-ga', 'ga-spatial', 'Patterns In Two Dimensions', '2D geometric transformations, pattern completion, tessellations (4 PYQs).', 2, true, 4),
+  makeTopic('ga-31', 'subj-ga', 'ga-spatial', 'Image Rotation', 'Clockwise and counter-clockwise 2D/3D angular rotations (3 PYQs).', 3, true, 3),
+  makeTopic('ga-32', 'subj-ga', 'ga-spatial', 'Patterns In Three Dimensions', 'Cube surface unrolling, dice net representations (3 PYQs).', 4, true, 3),
+  makeTopic('ga-33', 'subj-ga', 'ga-spatial', '3D Structure', 'Combining 3D polyhedra, orthographic front/side/top views (1 PYQ).', 5, true, 1),
+  makeTopic('ga-34', 'subj-ga', 'ga-spatial', 'Assembling', 'Mental assembly of disjointed 2D/3D parts (1 PYQ).', 6, true, 1),
+  makeTopic('ga-35', 'subj-ga', 'ga-spatial', 'Assembling Pieces', 'Fitting irregular pieces together to form complete shapes (1 PYQ).', 7, true, 1),
+  makeTopic('ga-36', 'subj-ga', 'ga-spatial', 'Mirror Image', 'Lateral inversion reflections along horizontal and vertical axes (1 PYQ).', 8, true, 1),
 
   // =========================================================================
   // 9. ALGORITHMS (subj-algo) - 358 Total PYQs
