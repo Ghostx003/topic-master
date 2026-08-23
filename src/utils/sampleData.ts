@@ -247,44 +247,57 @@ export const INITIAL_TOPICS: Topic[] = [
   //    Organized into 5 GATE syllabus chapters with subtopics
   // =========================================================================
 
-  // --- Chapter 1: Number Representation & Computer Arithmetic (71 PYQs) ---
-  makeTopic('dl-ch-num', 'subj-dl', null, 'Number Representation & Computer Arithmetic', 'Signed magnitude, 1s/2s complement, overflow, and IEEE 754 floating point standard (71 PYQs).', 1, true),
+  // --- Chapter 1: Number Representation & Computer Arithmetic ---
+  makeTopic('dl-ch-num', 'subj-dl', null, 'Number Representation & Computer Arithmetic', 'Signed magnitude, 1s/2s complement, overflow, Booth algorithm, and IEEE 754 floating point standard.', 1, true),
   makeTopic('dl-1', 'subj-dl', 'dl-ch-num', 'Number Representation', 'Signed magnitude, 1s complement, 2s complement arithmetic, range formulas, and overflow detection (57 PYQs).', 1, true, 57),
   makeTopic('dl-7', 'subj-dl', 'dl-ch-num', 'IEEE 754 Floating Point Representation', 'IEEE 754 Floating Point Standard (32-bit single precision, 64-bit double precision, exponent bias, normalized values) (14 PYQs).', 2, true, 14),
-  makeTopic('dl-sub-base', 'subj-dl', 'dl-ch-num', 'Base Conversions & Number Systems', 'Binary, octal, hexadecimal, r-base conversions, fractional conversions, and radix complements.', 3, false),
-  makeTopic('dl-sub-codes', 'subj-dl', 'dl-ch-num', 'Binary Codes & Parity', 'BCD (8421), Gray Code (reflected binary), Excess-3, self-complementing codes, and error-detecting parity.', 4, false),
-  makeTopic('dl-sub-fp-arith', 'subj-dl', 'dl-ch-num', 'Floating Point Arithmetic & Range', 'Floating point addition, subtraction, multiplication, rounding modes, underflow and overflow conditions.', 5, false),
+  makeTopic('dl-sub-fp-rep', 'subj-dl', 'dl-ch-num', 'Floating Point Representation', 'Floating point conversion, normalized mantissa, bias excess-127 representation (8 PYQs).', 3, true, 8),
+  makeTopic('dl-sub-booth', 'subj-dl', 'dl-ch-num', 'Booths Algorithm', 'Booth multiplication algorithm for signed 2s complement numbers, recoding tables, cycle counts (7 PYQs).', 4, true, 7),
+  makeTopic('dl-sub-fixed', 'subj-dl', 'dl-ch-num', 'Fixed Point Representation', 'Fixed-point integer and fractional representation, resolution, dynamic range and quantization error (2 PYQs).', 5, true, 2),
+  makeTopic('dl-sub-array-mult', 'subj-dl', 'dl-ch-num', 'Array Multiplier', 'Combinational array multiplier architecture, full adder cell matrix, worst-case propagation delay (2 PYQs).', 6, true, 2),
+  makeTopic('dl-sub-bin-codes', 'subj-dl', 'dl-ch-num', 'Binary Codes', 'BCD (8421), Gray Code (reflected binary), Excess-3, self-complementing codes, and parity bit codes (1 PYQ).', 7, true, 1),
+  makeTopic('dl-sub-num-sys', 'subj-dl', 'dl-ch-num', 'Number System', 'Base-r conversion (binary, octal, hex, arbitrary radix), fractional base conversions (1 PYQ).', 8, true, 1),
+  makeTopic('dl-sub-endian', 'subj-dl', 'dl-ch-num', 'Little Endian Big Endian', 'Byte ordering in memory: Big-Endian (MSB at lowest address) vs Little-Endian (LSB at lowest address) (1 PYQ).', 9, true, 1),
 
-  // --- Chapter 2: Boolean Algebra & Logic Gates (74 PYQs) ---
-  makeTopic('dl-ch-bool', 'subj-dl', null, 'Boolean Algebra & Logic Gates', 'Logic gates, Boolean algebra theorems, consensus theorem, circuit delays, and glitch hazards (74 PYQs).', 2, true),
+  // --- Chapter 2: Boolean Algebra & Logic Gates ---
+  makeTopic('dl-ch-bool', 'subj-dl', null, 'Boolean Algebra & Logic Gates', 'Logic gates, Boolean algebra theorems, consensus theorem, circuit delays, and glitch hazards.', 2, true),
   makeTopic('dl-2', 'subj-dl', 'dl-ch-bool', 'Circuit Output Analysis', 'Tracing outputs of combinational and sequential gate circuits, propagation delays, glitch hazards (40 PYQs).', 1, true, 40),
   makeTopic('dl-3', 'subj-dl', 'dl-ch-bool', 'Boolean Algebra', 'Boolean theorems, De Morgan laws, Consensus theorem, Duality, and Boolean function simplifications (34 PYQs).', 2, true, 34),
-  makeTopic('dl-sub-univ', 'subj-dl', 'dl-ch-bool', 'Universal Gates & Logic Minimization', 'NAND and NOR universal gate implementation of standard functions, functional completeness proofs.', 3, false),
-  makeTopic('dl-sub-xor', 'subj-dl', 'dl-ch-bool', 'XOR / XNOR Gates & Properties', 'Odd/Even function properties of XOR/XNOR, controlled inverter operations, multi-input XOR gates.', 4, false),
-  makeTopic('dl-sub-hazards', 'subj-dl', 'dl-ch-bool', 'Hazards & Glitches in Circuits', 'Static-0, Static-1, and Dynamic hazards detection in logic circuits, hazard-free cover generation.', 5, false),
+  makeTopic('dl-sub-dig-circ', 'subj-dl', 'dl-ch-bool', 'Digital Circuits', 'Multi-level gate networks, propagation delay analysis, fan-in/fan-out, power dissipation (7 PYQs).', 3, true, 7),
+  makeTopic('dl-sub-func-comp', 'subj-dl', 'dl-ch-bool', 'Functional Completeness', 'Universal gate sets (NAND, NOR, {AND, NOT}, {OR, NOT}, {MUX, constants}), completeness proofs (7 PYQs).', 4, true, 7),
+  makeTopic('dl-sub-min-gates', 'subj-dl', 'dl-ch-bool', 'Min No Gates', 'Finding minimum number of 2-input NAND / NOR gates to implement Boolean functions (6 PYQs).', 5, true, 6),
+  makeTopic('dl-sub-dual', 'subj-dl', 'dl-ch-bool', 'Dual Function', 'Duality principle, self-dual Boolean functions, properties and self-dual counting 2^(2^(n-1)) (1 PYQ).', 6, true, 1),
+  makeTopic('dl-sub-hazard', 'subj-dl', 'dl-ch-bool', 'Static Hazard', 'Static-0 and Static-1 hazards detection in 2-level SOP/POS circuits, hazard-free covers with consensus terms (1 PYQ).', 7, true, 1),
 
-  // --- Chapter 3: Combinational Logic Optimization (43 PYQs) ---
-  makeTopic('dl-ch-opt', 'subj-dl', null, 'Combinational Logic Optimization', 'K-map minimization, essential prime implicants, minimal SOP/POS forms, and canonical minterms (43 PYQs).', 3, true),
+  // --- Chapter 3: Combinational Logic Optimization ---
+  makeTopic('dl-ch-opt', 'subj-dl', null, 'Combinational Logic Optimization', 'K-map minimization, essential prime implicants, minimal SOP/POS forms, and canonical minterms.', 3, true),
   makeTopic('dl-5', 'subj-dl', 'dl-ch-opt', 'K-Map Minimization', 'Karnaugh Map grouping, Essential Prime Implicants, Prime Implicants, and Don\'t Care minimization (17 PYQs).', 1, true, 17),
-  makeTopic('dl-6', 'subj-dl', 'dl-ch-opt', 'Min Sum of Products Form (SOP)', 'Minimal Sum-of-Products and Product-of-Sums expressions, standard vs canonical forms (16 PYQs).', 2, true, 16),
+  makeTopic('dl-6', 'subj-dl', 'dl-ch-opt', 'Min Sum of Products Form (SOP)', 'Minimal Sum-of-Products (SOP) expressions, standard vs canonical forms (16 PYQs).', 2, true, 16),
   makeTopic('dl-9', 'subj-dl', 'dl-ch-opt', 'Canonical Normal Form', 'Minterms (m-notation) and Maxterms (M-notation), converting non-canonical expressions to canonical (10 PYQs).', 3, true, 10),
-  makeTopic('dl-sub-quine', 'subj-dl', 'dl-ch-opt', 'Quine-McCluskey (Tabular) Method', 'Tabular minimization technique for higher variable Boolean functions, prime implicant table reduction.', 4, false),
+  makeTopic('dl-sub-pos', 'subj-dl', 'dl-ch-opt', 'Min Products of Sum Form', 'Minimal Product-of-Sums (POS) expressions, maxterm groupings, dual K-map minimization (2 PYQs).', 4, true, 2),
+  makeTopic('dl-sub-pi', 'subj-dl', 'dl-ch-opt', 'Prime Implicants', 'Finding all Prime Implicants (PI), Essential Prime Implicants (EPI), and redundant implicants (2 PYQs).', 5, true, 2),
+  makeTopic('dl-sub-cnf', 'subj-dl', 'dl-ch-opt', 'Conjunctive Normal Form', 'Conjunctive Normal Form (CNF) boolean clause structure, product of maxterms conversion (1 PYQ).', 6, true, 1),
 
-  // --- Chapter 4: Combinational Circuit Design (23 PYQs) ---
-  makeTopic('dl-ch-circ', 'subj-dl', null, 'Combinational Circuit Design', 'Multiplexers, adders, subtractors, decoders, encoders, and programmable logic devices (23 PYQs).', 4, true),
+  // --- Chapter 4: Combinational Circuit Design ---
+  makeTopic('dl-ch-circ', 'subj-dl', null, 'Combinational Circuit Design', 'Multiplexers, adders, subtractors, decoders, encoders, memory interfacing, and ROM/PLA.', 4, true),
   makeTopic('dl-8', 'subj-dl', 'dl-ch-circ', 'Multiplexer', 'Implementing Boolean logic functions using 2:1, 4:1, 8:1 Multiplexers and Multiplexer tree expansion (14 PYQs).', 1, true, 14),
-  makeTopic('dl-10', 'subj-dl', 'dl-ch-circ', 'Adder & Subtractor Circuits', 'Half Adder, Full Adder, Ripple Carry Adder delay, Carry Look-Ahead Adder generation and propagation logic (9 PYQs).', 2, true, 9),
-  makeTopic('dl-sub-dec', 'subj-dl', 'dl-ch-circ', 'Decoders, Encoders & Priority Encoders', 'Binary decoders with enable lines, 2-to-4, 3-to-8 decoder expansion, and priority encoder truth tables.', 3, false),
-  makeTopic('dl-sub-demux', 'subj-dl', 'dl-ch-circ', 'Demultiplexers & ROM/PLA/PAL', '1-to-4, 1-to-8 Demultiplexers, Programmable Logic Arrays (PLA), Programmable Array Logic (PAL), and ROMs.', 4, false),
-  makeTopic('dl-sub-comp', 'subj-dl', 'dl-ch-circ', 'Magnitude Comparators & ALU Design', '1-bit and n-bit binary magnitude comparators (A > B, A = B, A < B), cascading comparator design.', 5, false),
+  makeTopic('dl-10', 'subj-dl', 'dl-ch-circ', 'Adder & Subtractor Circuits', 'Half Adder, Full Adder, Ripple Carry Adder delay, Carry Look-Ahead Adder generation logic (9 PYQs).', 2, true, 9),
+  makeTopic('dl-sub-mem-int', 'subj-dl', 'dl-ch-circ', 'Memory Interfacing', 'Address bus decoding, Chip Select (CS) logic, RAM/ROM memory module capacity expansion (5 PYQs).', 3, true, 5),
+  makeTopic('dl-sub-rom', 'subj-dl', 'dl-ch-circ', 'ROM', 'Read Only Memory (ROM) architecture, Programmable Logic Arrays (PLA), Programmable Array Logic (PAL) (4 PYQs).', 4, true, 4),
+  makeTopic('dl-sub-dec', 'subj-dl', 'dl-ch-circ', 'Decoder', 'Binary decoders with enable lines, 2-to-4, 3-to-8 decoder expansion, implementing logic with decoders (3 PYQs).', 5, true, 3),
+  makeTopic('dl-sub-carry', 'subj-dl', 'dl-ch-circ', 'Carry Generator', 'Carry Generate (G = A*B) and Carry Propagate (P = A XOR B) look-ahead logic equations and delay (2 PYQs).', 6, true, 2),
+  makeTopic('dl-sub-comb-circ', 'subj-dl', 'dl-ch-circ', 'Combinational Circuit', 'Multi-level combinational circuit analysis, propagation delay path, glitch-free design (2 PYQs).', 7, true, 2),
 
-  // --- Chapter 5: Sequential Circuits & Memory (26 PYQs) ---
-  makeTopic('dl-ch-seq', 'subj-dl', null, 'Sequential Circuits & Memory', 'Flip-flops, synchronous & ripple counters, finite state machines, and shift registers (26 PYQs).', 5, true),
+  // --- Chapter 5: Sequential Circuits & Memory ---
+  makeTopic('dl-ch-seq', 'subj-dl', null, 'Sequential Circuits & Memory', 'Flip-flops, synchronous & ripple counters, finite state machines, and shift registers.', 5, true),
   makeTopic('dl-4', 'subj-dl', 'dl-ch-seq', 'Digital Counter', 'Synchronous and Asynchronous (Ripple) counters, Mod-N counters, Up/Down counters, ring & Johnson counters (18 PYQs).', 1, true, 18),
   makeTopic('dl-11', 'subj-dl', 'dl-ch-seq', 'Flip-Flops & Timing', 'SR, JK, D, T Flip-Flops, race-around condition, Setup and Hold time constraints for max clock frequency (8 PYQs).', 2, true, 8),
-  makeTopic('dl-sub-fsm', 'subj-dl', 'dl-ch-seq', 'Finite State Machines (FSM)', 'Mealy vs Moore synchronous sequential machine modeling, state diagrams, state tables, and state equations.', 3, false),
-  makeTopic('dl-sub-shift', 'subj-dl', 'dl-ch-seq', 'Shift Registers', 'SISO, SIPO, PISO, PIPO shift registers, bidirectional shift registers, and universal shift register design.', 4, false),
-  makeTopic('dl-sub-reduction', 'subj-dl', 'dl-ch-seq', 'State Reduction & State Assignment', 'Equivalent state elimination using partitioning and implication tables, binary state assignment rules.', 5, false),
+  makeTopic('dl-sub-ff', 'subj-dl', 'dl-ch-seq', 'Flip Flop', 'Flip-flop excitation tables, characteristic equations, flip-flop conversions (JK to D, T to JK) (7 PYQs).', 3, true, 7),
+  makeTopic('dl-sub-fsm', 'subj-dl', 'dl-ch-seq', 'Finite State Machines', 'Mealy vs Moore synchronous sequential machine modeling, state diagrams, state tables, and state equations (4 PYQs).', 4, true, 4),
+  makeTopic('dl-sub-sync-async', 'subj-dl', 'dl-ch-seq', 'Synchronous Asynchronous Circuits', 'Clock skew, setup/hold violations, asynchronous ripple state transitions, lockup latches (4 PYQs).', 5, true, 4),
+  makeTopic('dl-sub-shift', 'subj-dl', 'dl-ch-seq', 'Shift Registers', 'SISO, SIPO, PISO, PIPO shift registers, bidirectional shift registers, and universal shift register design (2 PYQs).', 6, true, 2),
+  makeTopic('dl-sub-ripple', 'subj-dl', 'dl-ch-seq', 'Ripple Counter Operation', 'Asynchronous ripple counter cumulative propagation delay t_total = n * t_pd, max clock frequency (1 PYQ).', 7, true, 1),
+  makeTopic('dl-sub-reduction', 'subj-dl', 'dl-ch-seq', 'Reduction', 'State reduction using partitioning and implication tables, eliminating redundant sequential states (1 PYQ).', 8, true, 1),
 
   // =========================================================================
   // 5. OPERATING SYSTEM (subj-os) - 343 Total PYQs
