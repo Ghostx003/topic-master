@@ -30,26 +30,14 @@ export const PYQCard: React.FC<PYQCardProps> = ({
   const difficulty = progress?.difficulty || 'none';
   const isDoubt = Boolean(progress?.isDoubt);
 
-  const openInNewWindow = (url: string) => {
-    const width = Math.min(window.screen.availWidth * 0.82, 1300);
-    const height = Math.min(window.screen.availHeight * 0.88, 920);
-    const left = Math.max(0, (window.screen.availWidth - width) / 2);
-    const top = Math.max(0, (window.screen.availHeight - height) / 2);
-    window.open(
-      url,
-      `_blank`,
-      `toolbar=no,location=yes,status=no,menubar=no,scrollbars=yes,resizable=yes,width=${width},height=${height},top=${top},left=${left}`
-    );
-  };
-
   const handleCardClick = (e: React.MouseEvent) => {
-    // If clicked on interactive elements (button, select), let them handle it
+    // If clicked on interactive elements (button, link, select), let them handle it
     const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('select')) {
+    if (target.closest('button') || target.closest('a') || target.closest('select')) {
       return;
     }
-    // Clicking the card itself opens the question in a new window
-    openInNewWindow(question.link);
+    // Open question directly in new tab
+    window.open(question.link, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -63,7 +51,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
         layout === 'list' ? 'gap-3' : 'gap-4 min-h-[140px]'
       )}
     >
-      {/* Top Row: Checkbox + Question Number + GATE Year + Solve Button */}
+      {/* Top Row: Checkbox + Question Number + GATE Year + Solve Link */}
       <div className="flex items-center justify-between gap-3 w-full">
         {/* Left: Checkbox + Question # */}
         <div className="flex items-center gap-3 min-w-0">
@@ -102,7 +90,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
           </div>
         </div>
 
-        {/* Right: GATE Year Badge + Solve Button */}
+        {/* Right: GATE Year Badge + Solve Anchor Link */}
         <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
           {question.year && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-mono font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-500/40 shadow-sm">
@@ -111,15 +99,17 @@ export const PYQCard: React.FC<PYQCardProps> = ({
             </span>
           )}
 
-          <button
-            type="button"
-            onClick={() => openInNewWindow(question.link)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-950 hover:bg-brand-950/60 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95"
-            title="Open question on GateOverflow in a new window"
+          <a
+            href={question.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-950 hover:bg-brand-950/60 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95 cursor-pointer"
+            title="Open question on GateOverflow in a new tab"
           >
             <span>Solve</span>
-            <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-brand-400" />
-          </button>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-400" />
+          </a>
         </div>
       </div>
 
