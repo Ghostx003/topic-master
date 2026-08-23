@@ -660,31 +660,74 @@ export const INITIAL_TOPICS: Topic[] = [
 
   // =========================================================================
   // 11. DATA STRUCTURES (subj-ds) - 238 Total PYQs
+  //     Organized into 4 official GATE syllabus chapters with subtopics
   // =========================================================================
-  makeTopic('ds-1', 'subj-ds', null, 'Binary Tree', 'Inorder, Preorder, Postorder traversals, unique tree reconstructions, height & node count bounds L = I + 1 (53 PYQs).', 1, true, 53),
-  makeTopic('ds-2', 'subj-ds', null, 'Binary Search Tree (BST)', 'BST search, insertion, node deletion cases, Inorder successor/predecessor (36 PYQs).', 2, true, 36),
-  makeTopic('ds-3', 'subj-ds', null, 'Binary Heap', 'Min-Heap and Max-Heap properties, Build-Heap O(n) algorithm, Extract-Min/Max O(log n), Priority Queues (30 PYQs).', 3, true, 30),
-  makeTopic('ds-4', 'subj-ds', null, 'Linked List', 'Singly, Doubly, and Circular Linked Lists, in-place reversal, Floyd cycle detection (24 PYQs).', 4, true, 24),
-  makeTopic('ds-5', 'subj-ds', null, 'Stack Data Structure', 'LIFO stack operations, Infix to Postfix/Prefix conversion, Postfix expression evaluations (19 PYQs).', 5, true, 19),
-  makeTopic('ds-6', 'subj-ds', null, 'Hashing', 'Open addressing (Linear Probing, Quadratic Probing, Double Hashing), Separate Chaining, load factor alpha = n/m (15 PYQs).', 6, true, 15),
-  makeTopic('ds-7', 'subj-ds', null, 'Queue Data Structure', 'FIFO queues, Circular Queue modulo arithmetic, Double-ended queue (Deque) implementations (15 PYQs).', 7, true, 15),
-  makeTopic('ds-8', 'subj-ds', null, 'Array Data Structure', 'Row-Major and Column-Major 2D/3D address calculation formulas (13 PYQs).', 8, true, 13),
-  makeTopic('ds-9', 'subj-ds', null, 'General Tree Structures', 'N-ary trees, thread binary trees, tree representations as first-child next-sibling (13 PYQs).', 9, true, 13),
-  makeTopic('ds-10', 'subj-ds', null, 'AVL Tree', 'AVL height balance factor in {-1, 0, +1}, single & double rotations (LL, RR, LR, RL), minimum nodes for height h (6 PYQs).', 10, true, 6),
+
+  // --- Chapter 1: Linear Data Structures (80 PYQs) ---
+  makeTopic('ds-ch-linear', 'subj-ds', null, 'Linear Data Structures', 'Arrays, singly & doubly linked lists, stacks, queues, double-ended queues (deque), and infix/prefix/postfix conversions.', 1, true),
+  makeTopic('ds-4', 'subj-ds', 'ds-ch-linear', 'Linked List', 'Singly, Doubly, and Circular Linked Lists, in-place reversal, Floyd cycle detection (24 PYQs).', 1, true, 24),
+  makeTopic('ds-5', 'subj-ds', 'ds-ch-linear', 'Stack', 'LIFO stack operations, parenthesis matching, stack-based function evaluation (19 PYQs).', 2, true, 19),
+  makeTopic('ds-7', 'subj-ds', 'ds-ch-linear', 'Queue', 'FIFO queues, Circular Queue modulo arithmetic, Double-ended queue (Deque) implementations (15 PYQs).', 3, true, 15),
+  makeTopic('ds-8', 'subj-ds', 'ds-ch-linear', 'Array', 'Row-Major and Column-Major 2D/3D address calculation formulas (13 PYQs).', 4, true, 13),
+  makeTopic('ds-sub-infix', 'subj-ds', 'ds-ch-linear', 'Infix Prefix', 'Infix to Postfix/Prefix conversion algorithms, operator stack precedence (4 PYQs).', 5, true, 4),
+  makeTopic('ds-sub-ds-prim', 'subj-ds', 'ds-ch-linear', 'Data Structures', 'Primitive vs non-primitive data structure representations, memory layouts (4 PYQs).', 6, true, 4),
+  makeTopic('ds-sub-adt', 'subj-ds', 'ds-ch-linear', 'Abstract Data Type', 'Abstract data type specifications, mathematical models for data types (1 PYQ).', 7, true, 1),
+
+  // --- Chapter 2: Trees & Binary Search Trees (BST) (109 PYQs) ---
+  makeTopic('ds-ch-tree', 'subj-ds', null, 'Trees & Binary Search Trees (BST)', 'Binary trees, traversals, BST insertion/deletion, AVL tree rotations, and general N-ary trees.', 2, true),
+  makeTopic('ds-1', 'subj-ds', 'ds-ch-tree', 'Binary Tree', 'Inorder, Preorder, Postorder traversals, unique tree reconstructions, height & node count bounds L = I + 1 (53 PYQs).', 1, true, 53),
+  makeTopic('ds-2', 'subj-ds', 'ds-ch-tree', 'Binary Search Tree', 'BST search, insertion, node deletion cases, Inorder successor/predecessor (36 PYQs).', 2, true, 36),
+  makeTopic('ds-9', 'subj-ds', 'ds-ch-tree', 'Tree', 'N-ary trees, threaded binary trees, tree representations as first-child next-sibling (13 PYQs).', 3, true, 13),
+  makeTopic('ds-10', 'subj-ds', 'ds-ch-tree', 'AVL Tree', 'AVL height balance factor in {-1, 0, +1}, single & double rotations (LL, RR, LR, RL), minimum nodes for height h (6 PYQs).', 4, true, 6),
+  makeTopic('ds-sub-tree-trav', 'subj-ds', 'ds-ch-tree', 'Tree Traversal', 'Tree traversal algorithms, level order traversal using FIFO queue (1 PYQ).', 5, true, 1),
+
+  // --- Chapter 3: Priority Queues & Binary Heaps (33 PYQs) ---
+  makeTopic('ds-ch-heap', 'subj-ds', null, 'Priority Queues & Binary Heaps', 'Min-Heap and Max-Heap properties, Build-Heap O(n), Extract-Min/Max O(log n), priority queues.', 3, true),
+  makeTopic('ds-3', 'subj-ds', 'ds-ch-heap', 'Binary Heap', 'Min-Heap and Max-Heap properties, Build-Heap O(n) algorithm, Extract-Min/Max O(log n), Heapify (30 PYQs).', 1, true, 30),
+  makeTopic('ds-sub-pq', 'subj-ds', 'ds-ch-heap', 'Priority Queue', 'Priority Queue implementations using arrays, linked lists, and binary heaps (2 PYQs).', 2, true, 2),
+  makeTopic('ds-sub-time-comp', 'subj-ds', 'ds-ch-heap', 'Time Complexity', 'Amortized time complexity analysis of priority queue operations (1 PYQ).', 3, true, 1),
+
+  // --- Chapter 4: Hashing & Hash Tables (16 PYQs) ---
+  makeTopic('ds-ch-hash', 'subj-ds', null, 'Hashing & Hash Tables', 'Open addressing (Linear Probing, Quadratic Probing, Double Hashing), Chaining, load factors, and collision resolution.', 4, true),
+  makeTopic('ds-6', 'subj-ds', 'ds-ch-hash', 'Hashing', 'Open addressing (Linear Probing, Quadratic Probing, Double Hashing), Separate Chaining, load factor alpha = n/m (15 PYQs).', 1, true, 15),
+  makeTopic('ds-sub-unif-hash', 'subj-ds', 'ds-ch-hash', 'Uniform Hashing', 'Simple uniform hashing assumption, expected probe length in open addressing (1 PYQ).', 2, true, 1),
 
   // =========================================================================
-  // 12. C-PROGRAMMING (subj-prog) - 131 Total PYQs
+  // 12. C-PROGRAMMING (subj-prog) - 132 Total PYQs
+  //     Organized into 4 official GATE syllabus chapters with subtopics
   // =========================================================================
-  makeTopic('pr-1', 'subj-prog', null, 'Programming In C Fundamentals', 'Data types, operator precedence, type conversions, bitwise operators, switch statements (29 PYQs).', 1, true, 29),
-  makeTopic('pr-2', 'subj-prog', null, 'Recursion in C', 'Recursive stack execution tracing, base cases, static and global variables inside recursive calls (19 PYQs).', 2, true, 19),
-  makeTopic('pr-3', 'subj-prog', null, 'Pointers in C', 'Pointer arithmetic, pointers to pointers, pointer arrays, array decaying, function pointers (15 PYQs).', 3, true, 15),
-  makeTopic('pr-4', 'subj-prog', null, 'Array in C', 'Multidimensional arrays, pointer equivalence a[i] == *(a+i) == i[a], string null-terminator (13 PYQs).', 4, true, 13),
-  makeTopic('pr-5', 'subj-prog', null, 'Parameter Passing in C', 'Pass by value vs simulated pass by reference via pointer dereferencing (12 PYQs).', 5, true, 12),
-  makeTopic('pr-6', 'subj-prog', null, 'Loop Invariants', 'Loop termination conditions, invariant assertions, loop bounds verification (8 PYQs).', 6, true, 8),
-  makeTopic('pr-7', 'subj-prog', null, 'Output Tracing', 'Evaluating complex print statement outputs, format specifiers, side effects in expressions (8 PYQs).', 7, true, 8),
-  makeTopic('pr-8', 'subj-prog', null, 'Identify Function in C', 'Deducing the closed-form mathematical function or algorithm coded in C snippet (6 PYQs).', 8, true, 6),
-  makeTopic('pr-9', 'subj-prog', null, 'Structure and Union', 'Memory layout, word alignment, structure padding, sizeof calculations, union overlapping fields (5 PYQs).', 9, true, 5),
-  makeTopic('pr-10', 'subj-prog', null, 'Functions & Storage Classes', 'Scope, lifetime, auto, static, extern, register storage specifiers (2 PYQs).', 10, true, 2),
+
+  // --- Chapter 1: C Fundamentals, Control Flow & Loops (60 PYQs) ---
+  makeTopic('pr-ch-fund', 'subj-prog', null, 'C Fundamentals, Control Flow & Loops', 'Data types, operator precedence, type conversions, bitwise operators, control structures, loops, and loop invariants.', 1, true),
+  makeTopic('pr-1', 'subj-prog', 'pr-ch-fund', 'Programming In C', 'Data types, operator precedence, type conversions, bitwise operators, expressions evaluation (29 PYQs).', 1, true, 29),
+  makeTopic('pr-7', 'subj-prog', 'pr-ch-fund', 'Output', 'Evaluating complex print statement outputs, format specifiers, side effects in expressions (9 PYQs).', 2, true, 9),
+  makeTopic('pr-6', 'subj-prog', 'pr-ch-fund', 'Loop Invariants', 'Loop termination conditions, invariant assertions, loop bounds verification (8 PYQs).', 3, true, 8),
+  makeTopic('pr-8', 'subj-prog', 'pr-ch-fund', 'Identify Function', 'Deducing the closed-form mathematical function or algorithm coded in C snippet (6 PYQs).', 4, true, 6),
+  makeTopic('pr-sub-goto', 'subj-prog', 'pr-ch-fund', 'Goto', 'Unconditional jump goto statements, label scopes, structured programming flow (2 PYQs).', 5, true, 2),
+  makeTopic('pr-sub-switch', 'subj-prog', 'pr-ch-fund', 'Switch Case', 'Switch case branching, break statements, fall-through evaluation behavior (2 PYQs).', 6, true, 2),
+  makeTopic('pr-sub-paradigms', 'subj-prog', 'pr-ch-fund', 'Programming Paradigms', 'Procedural, imperative, modular programming paradigms in C (2 PYQs).', 7, true, 2),
+  makeTopic('pr-sub-constructs', 'subj-prog', 'pr-ch-fund', 'Programming Constructs', 'Conditional if-else, for/while/do-while iteration constructs (1 PYQ).', 8, true, 1),
+  makeTopic('pr-sub-type-check', 'subj-prog', 'pr-ch-fund', 'Type Checking', 'Static type checking, implicit type promotions, explicit type casts (1 PYQ).', 9, true, 1),
+
+  // --- Chapter 2: Functions, Parameter Passing & Recursion (35 PYQs) ---
+  makeTopic('pr-ch-recur', 'subj-prog', null, 'Functions, Parameter Passing & Recursion', 'Function prototypes, call stacks, parameter passing, recursion execution, and variable binding.', 2, true),
+  makeTopic('pr-2', 'subj-prog', 'pr-ch-recur', 'Recursion', 'Recursive stack execution tracing, base cases, static and global variables inside recursive calls (19 PYQs).', 1, true, 19),
+  makeTopic('pr-5', 'subj-prog', 'pr-ch-recur', 'Parameter Passing', 'Pass by value vs simulated pass by reference via pointer dereferencing (12 PYQs).', 2, true, 12),
+  makeTopic('pr-10', 'subj-prog', 'pr-ch-recur', 'Functions', 'Scope, lifetime, auto, static, extern, register storage specifiers (2 PYQs).', 3, true, 2),
+  makeTopic('pr-sub-runtime', 'subj-prog', 'pr-ch-recur', 'Runtime Environment', 'Activation records on the call stack, return address and local frame management (1 PYQ).', 4, true, 1),
+  makeTopic('pr-sub-var-bind', 'subj-prog', 'pr-ch-recur', 'Variable Binding', 'Static vs dynamic binding, linkage of external identifiers across translation units (1 PYQ).', 5, true, 1),
+
+  // --- Chapter 3: Pointers, Arrays & Strings (31 PYQs) ---
+  makeTopic('pr-ch-ptr', 'subj-prog', null, 'Pointers, Arrays & Strings', 'Pointer arithmetic, arrays of pointers, multidimensional arrays, string manipulations, and aliasing.', 3, true),
+  makeTopic('pr-3', 'subj-prog', 'pr-ch-ptr', 'Pointers', 'Pointer arithmetic, pointers to pointers, pointer arrays, array decaying, function pointers (15 PYQs).', 1, true, 15),
+  makeTopic('pr-4', 'subj-prog', 'pr-ch-ptr', 'Array', 'Multidimensional arrays, pointer equivalence a[i] == *(a+i) == i[a], base address offsets (13 PYQs).', 2, true, 13),
+  makeTopic('pr-sub-strings', 'subj-prog', 'pr-ch-ptr', 'Strings', 'Null-terminated string arrays, string library functions (strcpy, strlen, strcmp) (2 PYQs).', 3, true, 2),
+  makeTopic('pr-sub-aliasing', 'subj-prog', 'pr-ch-ptr', 'Aliasing', 'Pointer aliasing, compiler optimizations with restrict qualifiers, side effects (1 PYQ).', 4, true, 1),
+
+  // --- Chapter 4: Structures & Unions (6 PYQs) ---
+  makeTopic('pr-ch-struct', 'subj-prog', null, 'Structures & Unions', 'User-defined data types, structure padding, memory alignment, union overlapping fields.', 4, true),
+  makeTopic('pr-9', 'subj-prog', 'pr-ch-struct', 'Structure', 'Memory layout, word alignment, structure padding, sizeof calculations, nested structures (5 PYQs).', 1, true, 5),
+  makeTopic('pr-sub-union', 'subj-prog', 'pr-ch-struct', 'Union', 'Union memory allocation, largest member size, overlapping memory members (1 PYQ).', 2, true, 1),
 
   // =========================================================================
   // 13. THEORY OF COMPUTATION (subj-toc) - 293 Total PYQs
