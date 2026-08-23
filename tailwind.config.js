@@ -9,17 +9,17 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
-          950: '#2e1065',
+          50: 'rgb(var(--brand-50-rgb, 239 246 255) / <alpha-value>)',
+          100: 'rgb(var(--brand-100-rgb, 219 234 254) / <alpha-value>)',
+          200: 'rgb(var(--brand-200-rgb, 191 219 254) / <alpha-value>)',
+          300: 'rgb(var(--brand-300-rgb, 147 197 253) / <alpha-value>)',
+          400: 'rgb(var(--brand-400-rgb, 96 165 250) / <alpha-value>)',
+          500: 'rgb(var(--brand-500-rgb, 59 130 246) / <alpha-value>)',
+          600: 'rgb(var(--brand-600-rgb, 37 99 235) / <alpha-value>)',
+          700: 'rgb(var(--brand-700-rgb, 29 78 216) / <alpha-value>)',
+          800: 'rgb(var(--brand-800-rgb, 30 64 175) / <alpha-value>)',
+          900: 'rgb(var(--brand-900-rgb, 30 58 138) / <alpha-value>)',
+          950: 'rgb(var(--brand-950-rgb, 23 37 84) / <alpha-value>)',
         },
         surface: {
           50: '#0f172a',
@@ -36,9 +36,9 @@ export default {
         mono: ['JetBrains Mono', 'Fira Code', 'monospace']
       },
       boxShadow: {
-        'glow-sm': '0 0 15px -3px rgba(139, 92, 246, 0.25)',
-        'glow': '0 0 25px -5px rgba(139, 92, 246, 0.35)',
-        'glow-lg': '0 0 35px -5px rgba(139, 92, 246, 0.45)',
+        'glow-sm': '0 0 15px -3px var(--brand-glow-sm, rgba(59, 130, 246, 0.25))',
+        'glow': '0 0 25px -5px var(--brand-glow, rgba(59, 130, 246, 0.35))',
+        'glow-lg': '0 0 35px -5px var(--brand-glow-lg, rgba(59, 130, 246, 0.45))',
         'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
       },
       backdropBlur: {

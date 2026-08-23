@@ -3,9 +3,138 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --bg-main: #050811;
-    --brand-glow-color: rgba(59, 130, 246, 0.4);
+  /* Default / Blue Theme */
+  :root,
+  html.theme-blue {
+    --brand-50-rgb: 239 246 255;
+    --brand-100-rgb: 219 234 254;
+    --brand-200-rgb: 191 219 254;
+    --brand-300-rgb: 147 197 253;
+    --brand-400-rgb: 96 165 250;
+    --brand-500-rgb: 59 130 246;
+    --brand-600-rgb: 37 99 235;
+    --brand-700-rgb: 29 78 216;
+    --brand-800-rgb: 30 64 175;
+    --brand-900-rgb: 30 58 138;
+    --brand-950-rgb: 23 37 84;
+
+    --brand-glow-sm: rgba(59, 130, 246, 0.35);
+    --brand-glow: rgba(59, 130, 246, 0.45);
+    --brand-glow-lg: rgba(59, 130, 246, 0.6);
+  }
+
+  /* Emerald Theme */
+  html.theme-emerald {
+    --brand-50-rgb: 236 253 245;
+    --brand-100-rgb: 209 250 229;
+    --brand-200-rgb: 167 243 208;
+    --brand-300-rgb: 110 231 183;
+    --brand-400-rgb: 52 211 153;
+    --brand-500-rgb: 16 185 129;
+    --brand-600-rgb: 5 150 105;
+    --brand-700-rgb: 4 120 87;
+    --brand-800-rgb: 6 95 70;
+    --brand-900-rgb: 6 78 59;
+    --brand-950-rgb: 2 44 34;
+
+    --brand-glow-sm: rgba(16, 185, 129, 0.35);
+    --brand-glow: rgba(16, 185, 129, 0.45);
+    --brand-glow-lg: rgba(16, 185, 129, 0.6);
+  }
+
+  /* Violet Theme */
+  html.theme-violet {
+    --brand-50-rgb: 245 243 255;
+    --brand-100-rgb: 237 233 254;
+    --brand-200-rgb: 221 214 254;
+    --brand-300-rgb: 196 181 253;
+    --brand-400-rgb: 167 139 250;
+    --brand-500-rgb: 139 92 246;
+    --brand-600-rgb: 124 58 237;
+    --brand-700-rgb: 109 40 217;
+    --brand-800-rgb: 91 33 182;
+    --brand-900-rgb: 76 29 149;
+    --brand-950-rgb: 46 16 101;
+
+    --brand-glow-sm: rgba(139, 92, 246, 0.35);
+    --brand-glow: rgba(139, 92, 246, 0.45);
+    --brand-glow-lg: rgba(139, 92, 246, 0.6);
+  }
+
+  /* Ruby Red Theme */
+  html.theme-ruby {
+    --brand-50-rgb: 255 241 242;
+    --brand-100-rgb: 255 228 230;
+    --brand-200-rgb: 254 205 211;
+    --brand-300-rgb: 253 164 175;
+    --brand-400-rgb: 251 113 133;
+    --brand-500-rgb: 239 68 68;
+    --brand-600-rgb: 225 29 72;
+    --brand-700-rgb: 190 18 60;
+    --brand-800-rgb: 159 18 57;
+    --brand-900-rgb: 136 19 55;
+    --brand-950-rgb: 76 5 25;
+
+    --brand-glow-sm: rgba(239, 68, 68, 0.35);
+    --brand-glow: rgba(239, 68, 68, 0.45);
+    --brand-glow-lg: rgba(239, 68, 68, 0.6);
+  }
+
+  /* Amber Theme */
+  html.theme-amber {
+    --brand-50-rgb: 255 251 235;
+    --brand-100-rgb: 254 243 199;
+    --brand-200-rgb: 253 230 138;
+    --brand-300-rgb: 252 211 77;
+    --brand-400-rgb: 251 191 36;
+    --brand-500-rgb: 245 158 11;
+    --brand-600-rgb: 217 119 6;
+    --brand-700-rgb: 180 83 9;
+    --brand-800-rgb: 146 64 14;
+    --brand-900-rgb: 120 53 15;
+    --brand-950-rgb: 69 26 3;
+
+    --brand-glow-sm: rgba(245, 158, 11, 0.35);
+    --brand-glow: rgba(245, 158, 11, 0.45);
+    --brand-glow-lg: rgba(245, 158, 11, 0.6);
+  }
+
+  /* Rose Theme */
+  html.theme-rose {
+    --brand-50-rgb: 253 242 248;
+    --brand-100-rgb: 252 231 243;
+    --brand-200-rgb: 248 180 217;
+    --brand-300-rgb: 244 114 182;
+    --brand-400-rgb: 236 72 153;
+    --brand-500-rgb: 219 39 119;
+    --brand-600-rgb: 190 24 93;
+    --brand-700-rgb: 157 23 77;
+    --brand-800-rgb: 131 24 67;
+    --brand-900-rgb: 112 26 63;
+    --brand-950-rgb: 76 5 36;
+
+    --brand-glow-sm: rgba(236, 72, 153, 0.35);
+    --brand-glow: rgba(236, 72, 153, 0.45);
+    --brand-glow-lg: rgba(236, 72, 153, 0.6);
+  }
+
+  /* Cyan Theme */
+  html.theme-cyan {
+    --brand-50-rgb: 236 254 255;
+    --brand-100-rgb: 207 250 254;
+    --brand-200-rgb: 165 243 252;
+    --brand-300-rgb: 103 232 249;
+    --brand-400-rgb: 34 211 238;
+    --brand-500-rgb: 6 182 212;
+    --brand-600-rgb: 8 145 178;
+    --brand-700-rgb: 14 116 144;
+    --brand-800-rgb: 21 94 117;
+    --brand-900-rgb: 22 78 99;
+    --brand-950-rgb: 8 51 68;
+
+    --brand-glow-sm: rgba(6, 182, 212, 0.35);
+    --brand-glow: rgba(6, 182, 212, 0.45);
+    --brand-glow-lg: rgba(6, 182, 212, 0.6);
   }
 
   body {
@@ -21,81 +150,82 @@
       linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
     background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
     background-attachment: fixed;
+    transition: background-image 0.5s ease-in-out;
   }
 }
 
-/* Dynamic Color Palette Backgrounds */
+/* Dynamic Ambient Meshes per Theme */
 html.theme-emerald body {
   background-image: 
-    radial-gradient(at 15% 10%, rgba(16, 185, 129, 0.16) 0px, transparent 45%),
-    radial-gradient(at 85% 15%, rgba(6, 182, 212, 0.12) 0px, transparent 45%),
-    radial-gradient(at 50% 85%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(52, 211, 153, 0.06) 0px, transparent 45%),
+    radial-gradient(at 15% 10%, rgba(16, 185, 129, 0.18) 0px, transparent 45%),
+    radial-gradient(at 85% 15%, rgba(6, 182, 212, 0.14) 0px, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(16, 185, 129, 0.10) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(52, 211, 153, 0.08) 0px, transparent 45%),
     linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
 }
 
 html.theme-violet body {
   background-image: 
-    radial-gradient(at 15% 10%, rgba(139, 92, 246, 0.16) 0px, transparent 45%),
-    radial-gradient(at 85% 15%, rgba(168, 85, 247, 0.12) 0px, transparent 45%),
-    radial-gradient(at 50% 85%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(236, 72, 153, 0.06) 0px, transparent 45%),
+    radial-gradient(at 15% 10%, rgba(139, 92, 246, 0.18) 0px, transparent 45%),
+    radial-gradient(at 85% 15%, rgba(168, 85, 247, 0.14) 0px, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(99, 102, 241, 0.10) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(236, 72, 153, 0.08) 0px, transparent 45%),
     linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
 }
 
 html.theme-blue body {
   background-image: 
-    radial-gradient(at 15% 10%, rgba(59, 130, 246, 0.16) 0px, transparent 45%),
-    radial-gradient(at 85% 15%, rgba(6, 182, 212, 0.12) 0px, transparent 45%),
-    radial-gradient(at 50% 85%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(14, 165, 233, 0.06) 0px, transparent 45%),
+    radial-gradient(at 15% 10%, rgba(59, 130, 246, 0.18) 0px, transparent 45%),
+    radial-gradient(at 85% 15%, rgba(6, 182, 212, 0.14) 0px, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(99, 102, 241, 0.10) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(14, 165, 233, 0.08) 0px, transparent 45%),
     linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
 }
 
 html.theme-ruby body {
   background-image: 
-    radial-gradient(at 15% 10%, rgba(239, 68, 68, 0.16) 0px, transparent 45%),
-    radial-gradient(at 85% 15%, rgba(244, 63, 94, 0.12) 0px, transparent 45%),
-    radial-gradient(at 50% 85%, rgba(225, 29, 72, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(251, 113, 133, 0.06) 0px, transparent 45%),
+    radial-gradient(at 15% 10%, rgba(239, 68, 68, 0.18) 0px, transparent 45%),
+    radial-gradient(at 85% 15%, rgba(244, 63, 94, 0.14) 0px, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(225, 29, 72, 0.10) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(251, 113, 133, 0.08) 0px, transparent 45%),
     linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
 }
 
 html.theme-amber body {
   background-image: 
-    radial-gradient(at 15% 10%, rgba(245, 158, 11, 0.16) 0px, transparent 45%),
-    radial-gradient(at 85% 15%, rgba(249, 115, 22, 0.12) 0px, transparent 45%),
-    radial-gradient(at 50% 85%, rgba(234, 179, 8, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(251, 146, 60, 0.06) 0px, transparent 45%),
+    radial-gradient(at 15% 10%, rgba(245, 158, 11, 0.18) 0px, transparent 45%),
+    radial-gradient(at 85% 15%, rgba(249, 115, 22, 0.14) 0px, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(234, 179, 8, 0.10) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(251, 146, 60, 0.08) 0px, transparent 45%),
     linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
 }
 
 html.theme-rose body {
   background-image: 
-    radial-gradient(at 15% 10%, rgba(236, 72, 153, 0.16) 0px, transparent 45%),
-    radial-gradient(at 85% 15%, rgba(244, 63, 94, 0.12) 0px, transparent 45%),
-    radial-gradient(at 50% 85%, rgba(217, 70, 239, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(244, 114, 182, 0.06) 0px, transparent 45%),
+    radial-gradient(at 15% 10%, rgba(236, 72, 153, 0.18) 0px, transparent 45%),
+    radial-gradient(at 85% 15%, rgba(244, 63, 94, 0.14) 0px, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(217, 70, 239, 0.10) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(244, 114, 182, 0.08) 0px, transparent 45%),
     linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
 }
 
 html.theme-cyan body {
   background-image: 
-    radial-gradient(at 15% 10%, rgba(6, 182, 212, 0.16) 0px, transparent 45%),
-    radial-gradient(at 85% 15%, rgba(14, 165, 233, 0.12) 0px, transparent 45%),
-    radial-gradient(at 50% 85%, rgba(20, 184, 166, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(56, 189, 248, 0.06) 0px, transparent 45%),
+    radial-gradient(at 15% 10%, rgba(6, 182, 212, 0.18) 0px, transparent 45%),
+    radial-gradient(at 85% 15%, rgba(14, 165, 233, 0.14) 0px, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(20, 184, 166, 0.10) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(56, 189, 248, 0.08) 0px, transparent 45%),
     linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
 }
 
-/* Custom Luxury Scrollbars */
+/* Custom Luxury Scrollbars with Theme Highlights */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -107,13 +237,13 @@ html.theme-cyan body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(71, 85, 105, 0.6), rgba(99, 102, 241, 0.5));
+  background: linear-gradient(180deg, rgba(71, 85, 105, 0.6), rgb(var(--brand-600-rgb) / 0.5));
   border-radius: 9999px;
   border: 2px solid rgba(5, 8, 17, 0.8);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(139, 92, 246, 0.8), rgba(6, 182, 212, 0.8));
+  background: linear-gradient(180deg, rgb(var(--brand-500-rgb) / 0.8), rgba(6, 182, 212, 0.8));
 }
 
 /* Glassmorphic Shadows & Filters */
@@ -128,9 +258,9 @@ html.theme-cyan body {
 .shadow-card-hover {
   box-shadow: 
     0 25px 50px -12px rgba(0, 0, 0, 0.85),
-    0 0 25px -5px rgba(139, 92, 246, 0.25),
+    0 0 25px -5px rgb(var(--brand-500-rgb) / 0.35),
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.2),
-    0 0 1px 1px rgba(139, 92, 246, 0.4);
+    0 0 1px 1px rgb(var(--brand-500-rgb) / 0.5);
 }
 
 .shadow-glow-cyan {

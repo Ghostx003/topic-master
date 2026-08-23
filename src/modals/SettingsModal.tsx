@@ -163,7 +163,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     className={clsx(
                       'flex flex-col items-center justify-center p-3.5 rounded-2xl border transition-all duration-200 gap-2.5 select-none',
                       isSelected
-                        ? 'bg-slate-800/90 border-blue-500 shadow-glow-sm scale-[1.03]'
+                        ? 'bg-slate-800/90 border-brand-500 shadow-glow-sm scale-[1.03]'
                         : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60'
                     )}
                   >
