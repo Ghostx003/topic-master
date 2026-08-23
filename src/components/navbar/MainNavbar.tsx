@@ -51,13 +51,13 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
   ];
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-2xl transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-4">
+    <header className="sticky top-0 z-30 w-full border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-2xl transition-all">
+      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-12">
+        <div className="flex items-center justify-between h-20 gap-6">
           {/* Brand Logo */}
           <div
             onClick={() => navigate('/subjects')}
-            className="flex items-center gap-3.5 cursor-pointer group select-none shrink-0"
+            className="flex items-center gap-4 cursor-pointer group select-none shrink-0"
           >
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-cyan-400 p-0.5 shadow-glow-sm group-hover:shadow-glow transition-all">
               <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
@@ -66,21 +66,21 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-lg sm:text-xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                <span className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
                   TOPIC MASTER
                 </span>
                 <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-brand-500/20 to-indigo-500/20 text-brand-300 rounded-lg border border-brand-500/30">
                   2026
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium tracking-wide">
+              <p className="text-xs text-slate-400 font-medium tracking-wide">
                 Advanced Curriculum System
               </p>
             </div>
           </div>
 
           {/* Center Navigation Links (Desktop) */}
-          <nav className="hidden md:flex items-center gap-1.5 bg-slate-900/70 p-1.5 rounded-2xl border border-slate-800/90 backdrop-blur-xl shadow-inner">
+          <nav className="hidden md:flex items-center gap-2 bg-slate-900/70 p-1.5 rounded-2xl border border-slate-800/90 backdrop-blur-xl shadow-inner">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -89,7 +89,7 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
                   to={item.to}
                   className={({ isActive }) =>
                     clsx(
-                      'flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 select-none relative',
+                      'flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 select-none relative',
                       isActive
                         ? item.isSpecial
                           ? 'bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 text-white shadow-glow-sm scale-[1.02]'
@@ -113,14 +113,14 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
           </nav>
 
           {/* Right Action Icons */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             {/* Quick Search Button */}
             <button
               onClick={onOpenGlobalSearch}
-              className="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-400 hover:text-slate-100 bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 rounded-2xl transition-all shadow-sm group"
+              className="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-400 hover:text-slate-100 bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 rounded-2xl transition-all shadow-sm group"
               title="Search topics and subjects (⌘K)"
             >
-              <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-400 transition-colors" />
+              <Search className="w-4 h-4 text-slate-400 group-hover:text-brand-400 transition-colors" />
               <span className="hidden sm:inline font-medium">Search...</span>
               <kbd className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono font-semibold bg-slate-850 text-slate-400 rounded-lg border border-slate-700">
                 ⌘K
@@ -151,7 +151,7 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-800 bg-slate-950/95 backdrop-blur-2xl px-5 py-5 space-y-2.5 animate-slide-up">
+        <div className="md:hidden border-t border-slate-800 bg-slate-950/95 backdrop-blur-2xl px-6 py-6 space-y-3 animate-slide-up">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -161,7 +161,7 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) =>
                   clsx(
-                    'flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-bold transition-all',
+                    'flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold transition-all',
                     isActive
                       ? 'bg-brand-500/20 text-brand-300 border border-brand-500/30 shadow-sm'
                       : 'text-slate-300 hover:bg-slate-900'

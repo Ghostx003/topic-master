@@ -71,20 +71,20 @@ export const MySubjectsPage: React.FC = () => {
   }, [subjects, topics, searchQuery, selectedImportance, sortBy]);
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="space-y-8 pb-28">
       {/* Top Header & Intro */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
               My Subjects
             </h1>
-            <span className="px-2.5 py-0.5 text-xs font-bold font-mono bg-brand-500/20 text-brand-300 rounded-full border border-brand-500/30">
+            <span className="px-3 py-1 text-xs font-bold font-mono bg-brand-500/20 text-brand-300 rounded-full border border-brand-500/30">
               {subjects.length} Active
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Organize study curriculum, track hierarchical completion rates, and allocate focus time.
+          <p className="text-xs sm:text-sm text-slate-400 mt-2 leading-relaxed">
+            Organize curriculum, track hierarchical completion rates, and allocate focus time.
           </p>
         </div>
 
@@ -94,7 +94,7 @@ export const MySubjectsPage: React.FC = () => {
             setSubjectToEdit(null);
             setAddModalOpen(true);
           }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-500 hover:to-indigo-400 text-white font-bold text-sm shadow-glow-sm hover:shadow-glow transition-all active:scale-95 shrink-0"
+          className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-500 hover:to-indigo-400 text-white font-bold text-sm shadow-glow-sm hover:shadow-glow transition-all active:scale-95 shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>New Subject</span>
@@ -125,11 +125,11 @@ export const MySubjectsPage: React.FC = () => {
           actionIcon={<Plus className="w-4 h-4" />}
         />
       ) : filteredAndSortedSubjects.length === 0 ? (
-        <div className="py-16 text-center text-slate-400 rounded-2xl border border-dashed border-slate-800">
+        <div className="py-20 text-center text-slate-400 rounded-3xl border border-dashed border-slate-800">
           No subjects matched your filter criteria.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredAndSortedSubjects.map((subject) => (
             <SubjectCard
               key={subject.id}
@@ -152,9 +152,9 @@ export const MySubjectsPage: React.FC = () => {
         }}
         aria-label="Add Subject"
         title="Add Subject (+)"
-        className="fixed bottom-8 right-8 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 hover:from-brand-500 hover:to-indigo-400 text-white shadow-glow-lg hover:scale-110 active:scale-95 transition-all duration-300 border border-white/20"
+        className="fixed bottom-10 right-10 z-40 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-brand-600 via-indigo-500 to-cyan-400 hover:from-brand-500 hover:to-indigo-400 text-white shadow-glow-lg hover:scale-110 active:scale-95 transition-all duration-300 border border-white/20"
       >
-        <Plus className="w-7 h-7 stroke-[2.5]" />
+        <Plus className="w-8 h-8 stroke-[2.5]" />
       </button>
 
       {/* Add / Edit Subject Modal */}

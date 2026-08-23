@@ -23,15 +23,15 @@ export const MainLayout: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#080c14] text-slate-100 selection:bg-brand-500/30 selection:text-brand-200">
+    <div className="min-h-screen flex flex-col bg-[#060911] text-slate-100 selection:bg-brand-500/30 selection:text-brand-200">
       {/* Primary 4-Tab Main Navbar */}
       <MainNavbar
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenGlobalSearch={() => setSearchOpen(true)}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Main Content Area - Comfortable Wide Layout */}
+      <main className="flex-1 w-full max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-12 py-8 sm:py-10">
         <Outlet />
       </main>
 
