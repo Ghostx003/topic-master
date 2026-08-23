@@ -301,6 +301,7 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
       Topic_Difficulty?: TopicDifficulty;
       Topic_Status?: TopicStatus;
       Topic_Tags?: Partial<TopicTags>;
+      Topic_PYQ_Count?: number;
     }): Topic => {
       const id = 'top-' + Math.random().toString(36).substring(2, 9);
       const defaultTags: TopicTags = {
@@ -327,6 +328,7 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
         Topic_Difficulty: topicData.Topic_Difficulty || 'Normal',
         Topic_Tags: defaultTags,
         Topic_Study_Hours: 0,
+        Topic_PYQ_Count: topicData.Topic_PYQ_Count ?? undefined,
         Topic_Sessions: [],
         Topic_Blocks: [],
         Topic_Order: Date.now(),

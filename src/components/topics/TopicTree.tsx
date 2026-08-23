@@ -4,7 +4,8 @@ import { TopicTreeNodeType } from '../../types/topic';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { buildTopicTree, calculateTopicProgress } from '../../utils/hierarchyUtils';
 import { formatHours } from '../../utils/timeUtils';
-import { INITIAL_SUBJECTS, INITIAL_TOPICS } from '../../utils/sampleData';
+import { INITIAL_SUBJECTS } from '../../utils/sampleData';
+import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
 import { TopicTreeNode } from './TopicTreeNode';
 import { EmptyState } from '../common/EmptyState';
 import { Button } from '../common/Button';
@@ -16,7 +17,11 @@ import {
   Clock,
   X,
   Flame,
+  Star,
+  Sparkles,
   ArrowUpDown,
+  CircleDot,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -27,6 +32,8 @@ export interface TopicTreeProps {
   onDeleteTopic: (topicId: string, topicName: string) => void;
 }
 
+export type TopicYieldFilter = 'all' | 'ultra' | 'high' | 'core' | 'done' | 'pending';
+
 export const TopicTree: React.FC<TopicTreeProps> = ({
   subject,
   onAddMainTopic,
@@ -35,11 +42,10 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
 }) => {
   const { topics, reparentTopic } = useTopicMaster();
   const [searchFilter, setSearchFilter] = useState('');
+  const [yieldFilter, setYieldFilter] = useState<TopicYieldFilter>('all');
   const [isRootDropOver, setIsRootDropOver] = useState(false);
   const [activeMenuTopicId, setActiveMenuTopicId] = useState<string | null>(null);
   const [isPyqRanked, setIsPyqRanked] = useState(false);
-
-  const initialTopicMap = useMemo(() => new Map(INITIAL_TOPICS.map((t) => [t.id, t])), []);
 
   // Global listener to close context menus whenever clicking or right-clicking anywhere outside
   React.useEffect(() => {
@@ -66,8 +72,37 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
   }, [subject]);
 
   const getNodePYQ = (node: TopicTreeNodeType): number => {
-    return node.Topic_PYQ_Count || initialTopicMap.get(node.id)?.Topic_PYQ_Count || 0;
+    return getAuthoritativeTopicPYQ(node, topics);
   };
+
+  // Subject topics for counts
+  const subjectTopics = useMemo(() => {
+    return topics.filter((t) => t.Subject_Id === subject.id);
+  }, [topics, subject.id]);
+
+  // Live filter counts for this subject
+  const filterCounts = useMemo(() => {
+    const counts = {
+      all: subjectTopics.length,
+      ultra: 0,
+      high: 0,
+      core: 0,
+      done: 0,
+      pending: 0,
+    };
+
+    subjectTopics.forEach((t) => {
+      const pyqs = getAuthoritativeTopicPYQ(t, topics);
+      if (pyqs >= 30) counts.ultra++;
+      else if (pyqs >= 15) counts.high++;
+      else if (pyqs > 0) counts.core++;
+
+      if (t.Topic_Tags?.Done) counts.done++;
+      else counts.pending++;
+    });
+
+    return counts;
+  }, [subjectTopics, topics]);
 
   // Build recursive tree for this subject
   const treeNodes = useMemo(() => {
@@ -89,26 +124,50 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
     return [...rawNodes]
       .map(sortNodeByPYQs)
       .sort((a, b) => getNodePYQ(b) - getNodePYQ(a));
-  }, [topics, subject.id, isPyqRanked, initialTopicMap]);
+  }, [topics, subject.id, isPyqRanked]);
 
   // Compute subject metrics
   const stats = useMemo(() => {
     return calculateTopicProgress(topics, subject.id);
   }, [topics, subject.id]);
 
-  // Filter tree nodes if search query exists
+  // Filter tree nodes based on search query and yield/completion tier
   const filteredTreeNodes = useMemo(() => {
-    if (!searchFilter.trim()) return treeNodes;
-    const query = searchFilter.toLowerCase();
+    const query = searchFilter.trim().toLowerCase();
+
+    function matchNodeFilters(node: TopicTreeNodeType): boolean {
+      // Yield & Completion Filter check
+      if (yieldFilter === 'ultra') {
+        if (getNodePYQ(node) < 30) return false;
+      } else if (yieldFilter === 'high') {
+        const pyq = getNodePYQ(node);
+        if (pyq < 15 || pyq >= 30) return false;
+      } else if (yieldFilter === 'core') {
+        const pyq = getNodePYQ(node);
+        if (pyq <= 0 || pyq >= 15) return false;
+      } else if (yieldFilter === 'done') {
+        if (!node.Topic_Tags?.Done) return false;
+      } else if (yieldFilter === 'pending') {
+        if (node.Topic_Tags?.Done) return false;
+      }
+
+      // Search Query check
+      if (query) {
+        const nameMatches = node.Topic_Name.toLowerCase().includes(query);
+        const descMatches = (node.Topic_Description || '').toLowerCase().includes(query);
+        if (!nameMatches && !descMatches) return false;
+      }
+
+      return true;
+    }
 
     function filterNode(node: TopicTreeNodeType): TopicTreeNodeType | null {
-      const nameMatches = node.Topic_Name.toLowerCase().includes(query);
-      const descMatches = (node.Topic_Description || '').toLowerCase().includes(query);
+      const selfMatches = matchNodeFilters(node);
       const filteredChildren = node.children
         .map((child) => filterNode(child))
         .filter((c): c is TopicTreeNodeType => c !== null);
 
-      if (nameMatches || descMatches || filteredChildren.length > 0) {
+      if (selfMatches || filteredChildren.length > 0) {
         return {
           ...node,
           children: filteredChildren,
@@ -120,7 +179,7 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
     return treeNodes
       .map((node) => filterNode(node))
       .filter((n): n is TopicTreeNodeType => n !== null);
-  }, [treeNodes, searchFilter]);
+  }, [treeNodes, searchFilter, yieldFilter, topics]);
 
   const handleRootDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -141,9 +200,9 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
   };
 
   return (
-    <div className="flex flex-col flex-1 p-6 sm:p-10 lg:p-12 rounded-3xl bg-slate-950/70 border border-slate-800/80 backdrop-blur-2xl shadow-2xl">
+    <div className="flex flex-col flex-1 p-6 sm:p-10 lg:p-12 rounded-3xl bg-slate-950/70 border border-slate-800/80 backdrop-blur-2xl shadow-2xl space-y-6">
       {/* Subject Header & Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-slate-800/80">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-800/80">
         <div>
           <div className="flex items-center gap-4 flex-wrap">
             <span
@@ -185,7 +244,7 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
       </div>
 
       {/* Toolbar: Search input, PYQ Ranking Toggle, and Stats summary badges */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 my-8">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1 max-w-xl">
           {/* Search Input */}
           <div className="relative flex-1">
@@ -243,19 +302,145 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
         </div>
       </div>
 
+      {/* PYQ YIELD & COMPLETION FILTER PILLS BAR (As in user image media_1787496503975.png) */}
+      <div className="flex items-center gap-2.5 flex-wrap text-xs pt-1 pb-1">
+        <span className="text-slate-400 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shrink-0">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-brand-400" />
+          <span>Filter:</span>
+        </span>
+
+        {/* All Topics */}
+        <button
+          onClick={() => setYieldFilter('all')}
+          className={clsx(
+            'px-3.5 py-1.5 rounded-xl font-bold border transition-all select-none',
+            yieldFilter === 'all'
+              ? 'bg-brand-500/20 border-brand-400 text-brand-200 shadow-glow-sm'
+              : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+          )}
+        >
+          All ({filterCounts.all})
+        </button>
+
+        {/* Ultra High Yield */}
+        <button
+          onClick={() => setYieldFilter(yieldFilter === 'ultra' ? 'all' : 'ultra')}
+          className={clsx(
+            'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-2 select-none active:scale-95',
+            yieldFilter === 'ultra'
+              ? 'bg-rose-950/60 border-rose-500/60 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.25)] ring-1 ring-rose-400/40'
+              : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+          )}
+        >
+          <Flame className="w-3.5 h-3.5 text-rose-400" />
+          <span>Ultra High Yield (30+ PYQs)</span>
+          <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono font-bold">
+            {filterCounts.ultra}
+          </span>
+        </button>
+
+        {/* High Yield */}
+        <button
+          onClick={() => setYieldFilter(yieldFilter === 'high' ? 'all' : 'high')}
+          className={clsx(
+            'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-2 select-none active:scale-95',
+            yieldFilter === 'high'
+              ? 'bg-amber-950/60 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/40'
+              : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+          )}
+        >
+          <Star className="w-3.5 h-3.5 text-amber-400 fill-current" />
+          <span>High Yield (15–29 PYQs)</span>
+          <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono font-bold">
+            {filterCounts.high}
+          </span>
+        </button>
+
+        {/* Core Concepts */}
+        <button
+          onClick={() => setYieldFilter(yieldFilter === 'core' ? 'all' : 'core')}
+          className={clsx(
+            'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-2 select-none active:scale-95',
+            yieldFilter === 'core'
+              ? 'bg-indigo-950/60 border-indigo-500/60 text-indigo-300 shadow-glow-indigo ring-1 ring-indigo-400/40'
+              : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+          )}
+        >
+          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Core Concepts (1–14 PYQs)</span>
+          <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono font-bold">
+            {filterCounts.core}
+          </span>
+        </button>
+
+        <div className="h-4 w-px bg-slate-800 mx-1 hidden sm:block" />
+
+        {/* Completed */}
+        <button
+          onClick={() => setYieldFilter(yieldFilter === 'done' ? 'all' : 'done')}
+          className={clsx(
+            'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-2 select-none active:scale-95',
+            yieldFilter === 'done'
+              ? 'bg-emerald-950/60 border-emerald-500/60 text-emerald-300 shadow-glow-emerald'
+              : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+          )}
+        >
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Completed</span>
+          <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono font-bold">
+            {filterCounts.done}
+          </span>
+        </button>
+
+        {/* Pending */}
+        <button
+          onClick={() => setYieldFilter(yieldFilter === 'pending' ? 'all' : 'pending')}
+          className={clsx(
+            'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-2 select-none active:scale-95',
+            yieldFilter === 'pending'
+              ? 'bg-sky-950/60 border-sky-500/60 text-sky-300 shadow-glow-sky'
+              : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+          )}
+        >
+          <CircleDot className="w-3.5 h-3.5 text-sky-400" />
+          <span>Pending</span>
+          <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono font-bold">
+            {filterCounts.pending}
+          </span>
+        </button>
+
+        {/* Clear filter button if active */}
+        {(yieldFilter !== 'all' || searchFilter) && (
+          <button
+            onClick={() => {
+              setYieldFilter('all');
+              setSearchFilter('');
+            }}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 hover:bg-rose-950/60 text-[11px] font-bold transition-colors ml-auto"
+          >
+            <X className="w-3 h-3" />
+            <span>Reset View</span>
+          </button>
+        )}
+      </div>
+
       {/* Topic Tree Nodes List with comfortable row spacing */}
       <div className="flex-1 overflow-y-auto space-y-4 pt-2">
         {filteredTreeNodes.length === 0 ? (
           <EmptyState
             icon={FolderTree}
-            title={searchFilter ? 'No Matching Topics' : 'No Topics in this Subject Yet'}
+            title={
+              searchFilter || yieldFilter !== 'all'
+                ? 'No Matching Topics'
+                : 'No Topics in this Subject Yet'
+            }
             description={
-              searchFilter
-                ? 'Try a different search keyword.'
+              searchFilter || yieldFilter !== 'all'
+                ? 'No topics in this subject matched your current filter criteria.'
                 : 'Add your first main topic to begin structuring and organizing your study roadmap.'
             }
-            actionText={searchFilter ? undefined : 'Add Main Topic'}
-            onAction={searchFilter ? undefined : onAddMainTopic}
+            actionText={searchFilter || yieldFilter !== 'all' ? undefined : 'Add Main Topic'}
+            onAction={searchFilter || yieldFilter !== 'all' ? undefined : onAddMainTopic}
             actionIcon={<Plus className="w-4 h-4" />}
           />
         ) : (

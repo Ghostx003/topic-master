@@ -4,7 +4,7 @@ import { useTopicMaster } from '../context/TopicMasterContext';
 import { useToast } from '../context/ToastContext';
 import { Modal } from '../components/common/Modal';
 import { buildTopicTree, flattenTopicTree } from '../utils/hierarchyUtils';
-import { FolderTree, Plus } from 'lucide-react';
+import { FolderTree, Plus, Flame } from 'lucide-react';
 
 export interface AddTopicModalProps {
   isOpen: boolean;
@@ -29,6 +29,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
   const [requirePractice, setRequirePractice] = useState(false);
   const [lectureNeeded, setLectureNeeded] = useState<number>(0);
   const [deadline, setDeadline] = useState('');
+  const [pyqCount, setPyqCount] = useState<number>(0);
 
   // Get full flattened hierarchy for parent selector
   const subjectTree = buildTopicTree(topics, subject.id, null);
@@ -43,6 +44,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
       setRequirePractice(false);
       setLectureNeeded(0);
       setDeadline('');
+      setPyqCount(0);
     }
   }, [isOpen, parentId]);
 
@@ -57,6 +59,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
       Topic_Description: description.trim(),
       Topic_Status: 'To Do',
       Topic_Difficulty: 'Normal',
+      Topic_PYQ_Count: pyqCount > 0 ? pyqCount : undefined,
       Topic_Tags: {
         Done: false,
         Star: isStarred,
@@ -138,6 +141,33 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
             rows={2}
             className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
           />
+        </div>
+
+        {/* PYQ Count */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
+            <Flame className="w-3.5 h-3.5 text-amber-400" />
+            Number of PYQs (GATE Previous Year Questions)
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="number"
+              min="0"
+              max="999"
+              value={pyqCount}
+              onChange={(e) => setPyqCount(Math.max(0, parseInt(e.target.value, 10) || 0))}
+              className="w-24 px-3.5 py-2.5 text-sm font-mono font-bold text-center rounded-xl bg-slate-950 border border-amber-500/40 text-amber-300 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-500/30"
+            />
+            {pyqCount > 0 && (
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-950/50 border border-amber-500/40 text-amber-300 text-xs font-bold shadow-[0_0_10px_rgba(245,158,11,0.15)]">
+                <Flame className="w-3 h-3 text-amber-400" />
+                {pyqCount} PYQs will be shown
+              </span>
+            )}
+            {pyqCount === 0 && (
+              <span className="text-xs text-slate-500">Leave 0 if no PYQ data — badge will be hidden</span>
+            )}
+          </div>
         </div>
 
         {/* Tag Options */}

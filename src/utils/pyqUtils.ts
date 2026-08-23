@@ -221,7 +221,7 @@ export function getAuthoritativeTopicPYQ(
     }
   }
 
-  // 4. If this is a parent with children, check if children have PYQs to sum
+  // 4. If this is a parent node with children, sum their PYQs
   if ('children' in topicOrNode && Array.isArray((topicOrNode as any).children) && (topicOrNode as any).children.length > 0) {
     const childrenSum = (topicOrNode as any).children.reduce(
       (acc: number, c: any) => acc + getAuthoritativeTopicPYQ(c, allTopics),
@@ -230,20 +230,18 @@ export function getAuthoritativeTopicPYQ(
     if (childrenSum > 0) return childrenSum;
   }
 
-  // 5. If this is a subtopic and parent has PYQs, distribute proportionally among siblings
-  if (topicOrNode.Parent_Id && allTopics.length > 0) {
-    const parent = allTopics.find((t) => t.id === topicOrNode.Parent_Id);
-    if (parent) {
-      const parentPYQs = getAuthoritativeTopicPYQ(parent, allTopics);
-      if (parentPYQs > 0) {
-        const siblings = allTopics.filter((t) => t.Parent_Id === topicOrNode.Parent_Id);
-        if (siblings.length > 0) {
-          return Math.max(1, Math.round(parentPYQs / siblings.length));
-        }
-        return Math.max(1, Math.round(parentPYQs / 2));
-      }
+  // 5. If it's a flat Topic (not a tree node with children resolved), check children from allTopics
+  if (allTopics.length > 0) {
+    const children = allTopics.filter((t) => t.Parent_Id === topicOrNode.id);
+    if (children.length > 0) {
+      const childrenSum = children.reduce(
+        (acc, c) => acc + getAuthoritativeTopicPYQ(c, allTopics),
+        0
+      );
+      if (childrenSum > 0) return childrenSum;
     }
   }
 
+  // 6. Unknown / custom-created topic → return 0, never fabricate counts
   return 0;
 }

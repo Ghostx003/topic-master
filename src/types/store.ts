@@ -43,6 +43,7 @@ export interface TopicMasterActions {
     Topic_Difficulty?: TopicDifficulty;
     Topic_Status?: TopicStatus;
     Topic_Tags?: Partial<TopicTags>;
+    Topic_PYQ_Count?: number;
   }) => Topic;
   updateTopic: (id: string, updates: Partial<Topic>) => void;
   updateTopicTags: (id: string, tags: Partial<TopicTags>) => void;
