@@ -48,16 +48,17 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   activeMenuTopicId = null,
   setActiveMenuTopicId,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(Boolean(searchFilter.trim()));
+  // Default expanded so hierarchy tree ladder is immediately visible
+  const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(node.Topic_Name);
 
-  // Auto-expand when user types a search query
+  // Auto-expand when user searches or when children are added/indented into this node
   React.useEffect(() => {
-    if (searchFilter.trim()) {
+    if (searchFilter.trim() || (node.children && node.children.length > 0)) {
       setIsExpanded(true);
     }
-  }, [searchFilter]);
+  }, [searchFilter, node.children?.length]);
 
   // Swipe / Slide Gesture State (Mouse & Touch)
   const [dragOffset, setDragOffset] = useState(0);
@@ -355,6 +356,17 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
             Insert Above
           </span>
         </div>
+      )}
+
+      {/* Horizontal ladder branch tick for indented children */}
+      {!isRoot && (
+        <div
+          className="absolute top-1/2 -translate-y-1/2 h-0.5 bg-gradient-to-r from-brand-500/50 via-slate-700/60 to-slate-600/80 rounded-full pointer-events-none z-10"
+          style={{
+            left: `${node.depth * 38 - 19}px`,
+            width: '19px',
+          }}
+        />
       )}
 
       {/* Node Row Card - Drops Allowed on Card, Horizontal Swipe Enabled */}
