@@ -199,13 +199,8 @@ export function getAuthoritativeTopicPYQ(
   topicOrNode: Topic | TopicTreeNodeType,
   allTopics: Topic[] = []
 ): number {
-  // 1. Direct explicit count (user-entered, highest authority)
-  if (typeof topicOrNode.Topic_PYQ_Count === 'number' && topicOrNode.Topic_PYQ_Count > 0) {
-    return topicOrNode.Topic_PYQ_Count;
-  }
-
-  // 2. If this is a tree node with children already resolved, sum children FIRST.
-  //    Parent topics always display the TOTAL of all subtopics under them.
+  // 1. If this is a tree node with children, ALWAYS sum children first.
+  //    Parent badges must reflect live additions/removals of subtopics.
   if ('children' in topicOrNode && Array.isArray((topicOrNode as any).children) && (topicOrNode as any).children.length > 0) {
     const childrenSum = (topicOrNode as any).children.reduce(
       (acc: number, c: any) => acc + getAuthoritativeTopicPYQ(c, allTopics),
@@ -214,7 +209,7 @@ export function getAuthoritativeTopicPYQ(
     if (childrenSum > 0) return childrenSum;
   }
 
-  // 3. If it's a flat Topic (not a tree node), check if it has children in allTopics and sum them.
+  // 2. If it's a flat Topic (not yet tree-expanded), check children in allTopics.
   if (allTopics.length > 0) {
     const children = allTopics.filter((t) => t.Parent_Id === topicOrNode.id);
     if (children.length > 0) {
@@ -225,6 +220,12 @@ export function getAuthoritativeTopicPYQ(
       if (childrenSum > 0) return childrenSum;
     }
   }
+
+  // 3. Direct explicit count (leaf topics only — no children above)
+  if (typeof topicOrNode.Topic_PYQ_Count === 'number' && topicOrNode.Topic_PYQ_Count > 0) {
+    return topicOrNode.Topic_PYQ_Count;
+  }
+
 
   // 4. Initial Sample Dataset match by ID (for leaf topics with no children)
   const fromInitial = initialTopicMap.get(topicOrNode.id)?.Topic_PYQ_Count;

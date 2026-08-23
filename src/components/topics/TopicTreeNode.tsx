@@ -175,12 +175,12 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    dragCounter.current -= 1;
-
-    if (dragCounter.current <= 0) {
-      dragCounter.current = 0;
-      setDropPosition(null);
-    }
+    // Only clear highlight when the pointer actually leaves THIS card element,
+    // not when it moves to a child element inside the card (which fires spurious leave events).
+    const related = e.relatedTarget as Node | null;
+    if (e.currentTarget.contains(related)) return;
+    dragCounter.current = 0;
+    setDropPosition(null);
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -232,23 +232,22 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isMouseDown.current || dragStartX.current === null) return;
     const diff = e.clientX - dragStartX.current;
-    if (Math.abs(diff) > 8) {
+    // Activate swipe after 10px horizontal movement
+    if (Math.abs(diff) > 10) {
       setIsDragging(true);
-      if (diff > 0 && !canIndentRight) {
-        setDragOffset(Math.min(diff * 0.2, 25));
-      } else if (diff < 0 && !canOutdentLeft) {
-        setDragOffset(Math.max(diff * 0.2, -25));
-      } else {
-        setDragOffset(Math.max(Math.min(diff, 90), -90));
-      }
+      // Allow full offset in both directions — visual feedback always shown
+      setDragOffset(Math.max(Math.min(diff * 0.6, 90), -90));
     }
   };
 
   const handleMouseUp = () => {
     if (isMouseDown.current && isDragging) {
-      if (dragOffset > 35 && canIndentRight) {
+      // Swipe RIGHT → demote (indent right / make subtopic of previous sibling)
+      if (dragOffset > 50 && canIndentRight) {
         indentTopicRight(node.id);
-      } else if (dragOffset < -35 && canOutdentLeft) {
+      }
+      // Swipe LEFT → promote (outdent left / move up hierarchy)
+      else if (dragOffset < -50 && canOutdentLeft) {
         outdentTopicLeft(node.id);
       }
     }
@@ -260,9 +259,9 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
   const handleMouseLeave = () => {
     if (isMouseDown.current && isDragging) {
-      if (dragOffset > 35 && canIndentRight) {
+      if (dragOffset > 50 && canIndentRight) {
         indentTopicRight(node.id);
-      } else if (dragOffset < -35 && canOutdentLeft) {
+      } else if (dragOffset < -50 && canOutdentLeft) {
         outdentTopicLeft(node.id);
       }
     }
