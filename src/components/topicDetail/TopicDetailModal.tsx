@@ -8,7 +8,7 @@ import { ContentBlockList } from './ContentBlockList';
 import { TopicTagBadge } from '../common/TopicTagBadge';
 import { getTopicPath, getDirectChildren } from '../../utils/hierarchyUtils';
 import { formatHours } from '../../utils/timeUtils';
-import { INITIAL_TOPICS } from '../../utils/sampleData';
+import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
 import {
   BookOpen,
   ChevronRight,
@@ -177,7 +177,7 @@ export const TopicDetailModal: React.FC = () => {
                   onClick={() => handleToggleTag('Star', !isStarred)}
                 />
                 {(() => {
-                  const pyqCount = selectedTopicForModal.Topic_PYQ_Count || INITIAL_TOPICS.find((t) => t.id === selectedTopicForModal.id)?.Topic_PYQ_Count;
+                  const pyqCount = getAuthoritativeTopicPYQ(selectedTopicForModal, topics);
                   if (!pyqCount || pyqCount <= 0) return null;
                   return (
                     <span

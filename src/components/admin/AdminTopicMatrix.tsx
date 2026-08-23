@@ -11,6 +11,7 @@ import { Subject } from '../../types/subject';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { formatDate } from '../../utils/timeUtils';
 import { INITIAL_TOPICS } from '../../utils/sampleData';
+import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
 import {
   Check,
   Star,
@@ -174,7 +175,7 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
   const subjectsMap = new Map(subjects.map((s) => [s.id, s]));
 
   const getTopicPYQ = (topic: Topic): number => {
-    return topic.Topic_PYQ_Count || initialTopicMap.get(topic.id)?.Topic_PYQ_Count || 0;
+    return getAuthoritativeTopicPYQ(topic, topicsList);
   };
 
   // Live count for each filter option based on current subject scope

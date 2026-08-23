@@ -204,6 +204,10 @@ export const INITIAL_TOPICS: Topic[] = [
 
   makeTopic('cn-2', 'subj-cn', null, 'TCP Protocol', '3-way handshake connection setup/teardown, sequence/ACK numbering, TCP flags and header fields (20 PYQs).', 2, true, 20),
   makeTopic('cn-3', 'subj-cn', null, 'Sliding Window Protocols', 'Stop-and-Wait, Go-Back-N, Selective Repeat efficiency formulas eta = 1/(1+2a) and window sizing (16 PYQs).', 3, true, 16),
+  makeTopic('cn-3-1', 'subj-cn', 'cn-3', 'Stop & Wait Protocol & Efficiency', 'Efficiency eta = 1 / (1 + 2a) where a = Tp / Tt; bandwidth-delay product and optimal packet size.', 1, true, 6),
+  makeTopic('cn-3-2', 'subj-cn', 'cn-3', 'Go-Back-N (GBN) Protocol', 'Sender window size Ws = 2^k - 1, receiver window Wr = 1, cumulative ACKs and timer retransmission.', 2, true, 6),
+  makeTopic('cn-3-3', 'subj-cn', 'cn-3', 'Selective Repeat Protocol', 'Sender window Ws = 2^(k-1), receiver window Wr = 2^(k-1), independent retransmission and buffer bounds.', 3, true, 4),
+
   makeTopic('cn-4', 'subj-cn', null, 'Routing Algorithms', 'Link State (Dijkstra / OSPF), Distance Vector, hierarchical routing and autonomous systems (14 PYQs).', 4, true, 14),
   makeTopic('cn-5', 'subj-cn', null, 'Application Layer Protocols', 'DNS iterative/recursive resolution, HTTP/1.1 vs HTTP/2, SMTP, FTP, and DHCP (13 PYQs).', 5, true, 13),
   makeTopic('cn-6', 'subj-cn', null, 'IP Packet & Header', 'IPv4 header fields, TTL expiry, Total Length, and packet fragmentation offset arithmetic (12 PYQs).', 6, true, 12),
@@ -211,6 +215,9 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic('cn-8', 'subj-cn', null, 'Congestion Control', 'TCP Slow Start, Congestion Avoidance AIMD, Fast Retransmit, Fast Recovery, and threshold halving (9 PYQs).', 8, true, 9),
   makeTopic('cn-9', 'subj-cn', null, 'Distance Vector Routing', 'Bellman-Ford vector updates, Count-to-Infinity problem, split horizon and poison reverse (8 PYQs).', 9, true, 8),
   makeTopic('cn-10', 'subj-cn', null, 'Error Detection & CRC', 'Cyclic Redundancy Check modulo-2 polynomial division, parity checks, Hamming distance (8 PYQs).', 10, true, 8),
+  makeTopic('cn-10-1', 'subj-cn', 'cn-10', 'CRC Modulo-2 Polynomial Division', 'Generator polynomial G(x), remainder calculation, detecting burst errors.', 1, true, 5),
+  makeTopic('cn-10-2', 'subj-cn', 'cn-10', 'Checksum & Hamming Distance', '1s complement checksum addition, minimum Hamming distance d_min to detect/correct errors.', 2, true, 3),
+
   makeTopic('cn-11', 'subj-cn', null, 'IP Addressing', 'Classful IPv4 addressing boundaries, special IP ranges, loopback, private IP blocks (8 PYQs).', 11, true, 8),
   makeTopic('cn-12', 'subj-cn', null, 'Medium Access Control (MAC)', 'Pure & Slotted ALOHA throughput formulas, CSMA/CD minimum frame length L >= 2*Tp*B (7 PYQs).', 12, false, 7),
 

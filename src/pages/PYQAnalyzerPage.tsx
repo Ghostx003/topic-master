@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useTopicMaster } from '../context/TopicMasterContext';
 import { TopicTagBadge } from '../components/common/TopicTagBadge';
 import { INITIAL_SUBJECTS, INITIAL_TOPICS } from '../utils/sampleData';
+import { getAuthoritativeTopicPYQ } from '../utils/pyqUtils';
 import { Subject } from '../types/subject';
 import { Topic } from '../types/topic';
 import {
@@ -33,6 +34,10 @@ export const PYQAnalyzerPage: React.FC = () => {
   const initialTopicMap = useMemo(() => new Map(INITIAL_TOPICS.map((t) => [t.id, t])), []);
   const subjectsMap = useMemo(() => new Map(subjects.map((s) => [s.id, s])), [subjects]);
 
+  const getTopicPYQs = (topic: Topic): number => {
+    return getAuthoritativeTopicPYQ(topic, topics);
+  };
+
   const getSubjectPYQs = (subj: Subject): number => {
     if (subj.Subject_PYQ_Count && subj.Subject_PYQ_Count > 0) return subj.Subject_PYQ_Count;
     const fromInit = initialSubjMap.get(subj.id)?.Subject_PYQ_Count;
@@ -40,12 +45,8 @@ export const PYQAnalyzerPage: React.FC = () => {
     return (
       topics
         .filter((t) => t.Subject_Id === subj.id)
-        .reduce((sum, t) => sum + (t.Topic_PYQ_Count || initialTopicMap.get(t.id)?.Topic_PYQ_Count || 0), 0) || 0
+        .reduce((sum, t) => sum + getTopicPYQs(t), 0) || 0
     );
-  };
-
-  const getTopicPYQs = (topic: Topic): number => {
-    return topic.Topic_PYQ_Count || initialTopicMap.get(topic.id)?.Topic_PYQ_Count || 0;
   };
 
   // Overall Statistics

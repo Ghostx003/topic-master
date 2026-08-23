@@ -14,8 +14,10 @@ import {
   Clock,
   Edit2,
   FileText,
+  Flame,
 } from 'lucide-react';
 import { formatHours } from '../../utils/timeUtils';
+import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
 import { clsx } from 'clsx';
 
 export interface SubtopicsListProps {
@@ -211,6 +213,19 @@ export const SubtopicsList: React.FC<SubtopicsListProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
+                    {(() => {
+                      const pyqCount = getAuthoritativeTopicPYQ(child, topics);
+                      if (!pyqCount || pyqCount <= 0) return null;
+                      return (
+                        <span
+                          className="flex items-center gap-1 text-[10px] font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded-lg shadow-sm"
+                          title={`${pyqCount} Historical PYQs in GATE CSE`}
+                        >
+                          <Flame className="w-3 h-3 text-amber-400" />
+                          <span>{pyqCount} PYQs</span>
+                        </span>
+                      );
+                    })()}
                     {child.Topic_Study_Hours > 0 && (
                       <span className="flex items-center gap-1 text-[10px] font-mono font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/20 px-2 py-0.5 rounded-lg">
                         <Clock className="w-3 h-3 text-cyan-400" />

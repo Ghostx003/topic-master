@@ -3,7 +3,7 @@ import { TopicTreeNodeType, TopicTags } from '../../types/topic';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { TopicTagBadge } from '../common/TopicTagBadge';
 import { getAllDescendantIds } from '../../utils/hierarchyUtils';
-import { INITIAL_TOPICS } from '../../utils/sampleData';
+import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
 import {
   ChevronRight,
   ChevronDown,
@@ -521,7 +521,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
                 {/* PYQ Count Badge */}
                 {(() => {
-                  const pyqCount = node.Topic_PYQ_Count || INITIAL_TOPICS.find((t) => t.id === node.id)?.Topic_PYQ_Count;
+                  const pyqCount = getAuthoritativeTopicPYQ(node, topics);
                   if (!pyqCount || pyqCount <= 0) return null;
                   return (
                     <span
