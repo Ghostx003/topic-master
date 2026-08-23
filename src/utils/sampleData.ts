@@ -198,28 +198,62 @@ export const INITIAL_TOPICS: Topic[] = [
   // =========================================================================
   // 2. COMPUTER NETWORKS (subj-cn) - 226 Total PYQs
   // =========================================================================
-  makeTopic('cn-1', 'subj-cn', null, 'Subnetting & CIDR', 'Classless Inter-Domain Routing, prefix matching, subnet mask calculation, and VLSM (21 PYQs).', 1, true, 21),
-  makeTopic('cn-1-1', 'subj-cn', 'cn-1', 'VLSM & Variable Length Subnet Allocation', 'Hierarchical prefix distribution, maximizing usable address space.', 1, true, 12),
-  makeTopic('cn-1-2', 'subj-cn', 'cn-1', 'Longest Prefix Matching & Route Aggregation', 'Routing table lookups, CIDR supernet aggregation.', 2, true, 9),
+  // 2. COMPUTER NETWORKS (subj-cn) - 226 Total PYQs
+  //    Organized into 5 official GATE syllabus chapters with subtopics
+  // =========================================================================
 
-  makeTopic('cn-2', 'subj-cn', null, 'TCP Protocol', '3-way handshake connection setup/teardown, sequence/ACK numbering, TCP flags and header fields (20 PYQs).', 2, true, 20),
-  makeTopic('cn-3', 'subj-cn', null, 'Sliding Window Protocols', 'Stop-and-Wait, Go-Back-N, Selective Repeat efficiency formulas eta = 1/(1+2a) and window sizing (16 PYQs).', 3, true, 16),
-  makeTopic('cn-3-1', 'subj-cn', 'cn-3', 'Stop & Wait Protocol & Efficiency', 'Efficiency eta = 1 / (1 + 2a) where a = Tp / Tt; bandwidth-delay product and optimal packet size.', 1, true, 6),
-  makeTopic('cn-3-2', 'subj-cn', 'cn-3', 'Go-Back-N (GBN) Protocol', 'Sender window size Ws = 2^k - 1, receiver window Wr = 1, cumulative ACKs and timer retransmission.', 2, true, 6),
-  makeTopic('cn-3-3', 'subj-cn', 'cn-3', 'Selective Repeat Protocol', 'Sender window Ws = 2^(k-1), receiver window Wr = 2^(k-1), independent retransmission and buffer bounds.', 3, true, 4),
+  // --- Chapter 1: Data Link Layer & Flow/Error Control (51 PYQs) ---
+  makeTopic('cn-ch-dll', 'subj-cn', null, 'Data Link Layer & Flow/Error Control', 'Layering concepts, OSI & TCP/IP models, framing, bit stuffing, CRC polynomials, Hamming code, error detection, Stop-and-Wait, and sliding window protocols.', 1, true),
+  makeTopic('cn-3', 'subj-cn', 'cn-ch-dll', 'Sliding Window', 'Stop-and-Wait, Go-Back-N, Selective Repeat efficiency formulas eta = 1/(1+2a) and window sizing (16 PYQs).', 1, true, 16),
+  makeTopic('cn-10', 'subj-cn', 'cn-ch-dll', 'Error Detection', 'Cyclic Redundancy Check modulo-2 polynomial division, parity checks, Hamming distance (8 PYQs).', 2, true, 8),
+  makeTopic('cn-sub-sw', 'subj-cn', 'cn-ch-dll', 'Stop and Wait', 'Stop and wait flow control efficiency eta = 1/(1+2a), optimal frame length and timeout calculations (6 PYQs).', 3, true, 6),
+  makeTopic('cn-sub-crc', 'subj-cn', 'cn-ch-dll', 'CRC Polynomial', 'Cyclic Redundancy Check modulo-2 polynomial division, generator polynomials G(x), remainder bits (5 PYQs).', 4, true, 5),
+  makeTopic('cn-sub-comm', 'subj-cn', 'cn-ch-dll', 'Communication', 'Data transmission fundamentals, simplex, half-duplex, full-duplex communication channels (4 PYQs).', 5, true, 4),
+  makeTopic('cn-sub-netflow', 'subj-cn', 'cn-ch-dll', 'Network Flow', 'Network throughput, bottleneck link bandwidth, end-to-end delay and bandwidth-delay product (4 PYQs).', 6, true, 4),
+  makeTopic('cn-sub-bitstuff', 'subj-cn', 'cn-ch-dll', 'Bit Stuffing', 'HDLC/SDLC framing, zero-bit insertion after five consecutive 1s (01111110 flag pattern) (2 PYQs).', 7, true, 2),
+  makeTopic('cn-sub-hamming', 'subj-cn', 'cn-ch-dll', 'Hamming Code', 'Hamming code parity bit positions, minimum Hamming distance d_min to detect/correct bit errors (2 PYQs).', 8, true, 2),
+  makeTopic('cn-sub-chan-util', 'subj-cn', 'cn-ch-dll', 'Channel Utilization', 'Channel utilization efficiency, propagation delay vs transmission time ratios (1 PYQ).', 9, true, 1),
+  makeTopic('cn-sub-datacomm', 'subj-cn', 'cn-ch-dll', 'Data Communication', 'Data communication basics, baud rate vs bit rate, Nyquist and Shannon channel capacity (1 PYQ).', 10, true, 1),
+  makeTopic('cn-sub-osi', 'subj-cn', 'cn-ch-dll', 'OSI Model', '7-layer OSI reference model, layer encapsulation, protocol data unit (PDU) conversions (1 PYQ).', 11, true, 1),
+  makeTopic('cn-sub-prob', 'subj-cn', 'cn-ch-dll', 'Probability', 'Packet error probability, bit error rate (BER), geometric distribution in frame retransmissions (1 PYQ).', 12, true, 1),
 
-  makeTopic('cn-4', 'subj-cn', null, 'Routing Algorithms', 'Link State (Dijkstra / OSPF), Distance Vector, hierarchical routing and autonomous systems (14 PYQs).', 4, true, 14),
-  makeTopic('cn-5', 'subj-cn', null, 'Application Layer Protocols', 'DNS iterative/recursive resolution, HTTP/1.1 vs HTTP/2, SMTP, FTP, and DHCP (13 PYQs).', 5, true, 13),
-  makeTopic('cn-6', 'subj-cn', null, 'IP Packet & Header', 'IPv4 header fields, TTL expiry, Total Length, and packet fragmentation offset arithmetic (12 PYQs).', 6, true, 12),
-  makeTopic('cn-7', 'subj-cn', null, 'Network Protocols', 'ARP address resolution, ICMP error reporting, NAT translation, IPv6 header differences (11 PYQs).', 7, true, 11),
-  makeTopic('cn-8', 'subj-cn', null, 'Congestion Control', 'TCP Slow Start, Congestion Avoidance AIMD, Fast Retransmit, Fast Recovery, and threshold halving (9 PYQs).', 8, true, 9),
-  makeTopic('cn-9', 'subj-cn', null, 'Distance Vector Routing', 'Bellman-Ford vector updates, Count-to-Infinity problem, split horizon and poison reverse (8 PYQs).', 9, true, 8),
-  makeTopic('cn-10', 'subj-cn', null, 'Error Detection & CRC', 'Cyclic Redundancy Check modulo-2 polynomial division, parity checks, Hamming distance (8 PYQs).', 10, true, 8),
-  makeTopic('cn-10-1', 'subj-cn', 'cn-10', 'CRC Modulo-2 Polynomial Division', 'Generator polynomial G(x), remainder calculation, detecting burst errors.', 1, true, 5),
-  makeTopic('cn-10-2', 'subj-cn', 'cn-10', 'Checksum & Hamming Distance', '1s complement checksum addition, minimum Hamming distance d_min to detect/correct errors.', 2, true, 3),
+  // --- Chapter 2: Medium Access Control & LAN Technologies (33 PYQs) ---
+  makeTopic('cn-ch-mac', 'subj-cn', null, 'Medium Access Control & LAN Technologies', 'Multiple access protocols, Pure & Slotted ALOHA, CSMA/CD minimum frame size, Ethernet IEEE 802.3, LAN bridges, and switching.', 2, true),
+  makeTopic('cn-sub-ethernet', 'subj-cn', 'cn-ch-mac', 'Ethernet', 'IEEE 802.3 Ethernet frame structure, preamble, MAC address format, 10Mbps/100Mbps Ethernet rules (7 PYQs).', 1, true, 7),
+  makeTopic('cn-sub-lan', 'subj-cn', 'cn-ch-mac', 'LAN Technologies', 'Local Area Network topologies, Token Ring IEEE 802.5 token passing, FDDI, wireless LAN (7 PYQs).', 2, true, 7),
+  makeTopic('cn-sub-csmacd', 'subj-cn', 'cn-ch-mac', 'CSMA CD', 'CSMA/CD protocol, minimum frame length condition L >= 2*Tp*Bandwidth, exponential backoff (6 PYQs).', 3, true, 6),
+  makeTopic('cn-12', 'subj-cn', 'cn-ch-mac', 'MAC Protocol', 'Medium Access Control protocols, static channelization (FDMA/TDMA/CDMA) vs dynamic MAC protocols (4 PYQs).', 4, true, 4),
+  makeTopic('cn-sub-switch', 'subj-cn', 'cn-ch-mac', 'Network Switching', 'Packet switching (datagram vs virtual circuit), circuit switching, message switching latency (4 PYQs).', 5, true, 4),
+  makeTopic('cn-sub-bridges', 'subj-cn', 'cn-ch-mac', 'Bridges', 'Transparent learning bridges, MAC address learning table, spanning tree protocol (STP) in LANs (3 PYQs).', 6, true, 3),
+  makeTopic('cn-sub-pure-aloha', 'subj-cn', 'cn-ch-mac', 'Pure Aloha', 'Pure ALOHA throughput S = G * e^(-2G), maximum efficiency 18.4% at G = 0.5 (1 PYQ).', 7, true, 1),
+  makeTopic('cn-sub-slot-aloha', 'subj-cn', 'cn-ch-mac', 'Slotted Aloha', 'Slotted ALOHA throughput S = G * e^(-G), maximum efficiency 36.8% at G = 1 (1 PYQ).', 8, true, 1),
 
-  makeTopic('cn-11', 'subj-cn', null, 'IP Addressing', 'Classful IPv4 addressing boundaries, special IP ranges, loopback, private IP blocks (8 PYQs).', 11, true, 8),
-  makeTopic('cn-12', 'subj-cn', null, 'Medium Access Control (MAC)', 'Pure & Slotted ALOHA throughput formulas, CSMA/CD minimum frame length L >= 2*Tp*B (7 PYQs).', 12, false, 7),
+  // --- Chapter 3: Network Layer (IP Addressing, Subnetting & Routing) (88 PYQs) ---
+  makeTopic('cn-ch-net', 'subj-cn', null, 'Network Layer (IP Addressing, Subnetting & Routing)', 'IPv4/IPv6 addressing, CIDR subnetting, VLSM, IP packet header, fragmentation, distance vector, link state, and ARP/ICMP.', 3, true),
+  makeTopic('cn-1', 'subj-cn', 'cn-ch-net', 'Subnetting', 'Classless Inter-Domain Routing (CIDR), prefix matching, subnet mask calculation, and VLSM (21 PYQs).', 1, true, 21),
+  makeTopic('cn-4', 'subj-cn', 'cn-ch-net', 'Routing', 'Routing algorithms, Dijkstra link-state (OSPF), hierarchical routing, autonomous systems (14 PYQs).', 2, true, 14),
+  makeTopic('cn-6', 'subj-cn', 'cn-ch-net', 'IP Packet', 'IPv4 header fields, TTL expiry, Total Length, and packet fragmentation offset arithmetic (12 PYQs).', 3, true, 12),
+  makeTopic('cn-7', 'subj-cn', 'cn-ch-net', 'Network Protocols', 'Core network layer protocols, ARP, ICMP error reporting, NAT translation, IPv6 headers (11 PYQs).', 4, true, 11),
+  makeTopic('cn-9', 'subj-cn', 'cn-ch-net', 'Distance Vector Routing', 'Bellman-Ford vector updates, Count-to-Infinity problem, split horizon and poison reverse (8 PYQs).', 5, true, 8),
+  makeTopic('cn-11', 'subj-cn', 'cn-ch-net', 'IP Addressing', 'Classful IPv4 addressing boundaries, special IP ranges, loopback, private IP blocks (8 PYQs).', 6, true, 8),
+  makeTopic('cn-sub-netlayer', 'subj-cn', 'cn-ch-net', 'Network Layer', 'Network layer packet forwarding, routing table construction, datagram subnet delivery (6 PYQs).', 7, true, 6),
+  makeTopic('cn-sub-frag', 'subj-cn', 'cn-ch-net', 'Fragmentation', 'IPv4 packet fragmentation offset, MTU boundary slicing, More Fragments (MF) and DF flags (5 PYQs).', 8, true, 5),
+  makeTopic('cn-sub-arp', 'subj-cn', 'cn-ch-net', 'ARP', 'Address Resolution Protocol (ARP), broadcast request and unicast reply, ARP cache poisoning (1 PYQ).', 9, true, 1),
+  makeTopic('cn-sub-icmp', 'subj-cn', 'cn-ch-net', 'ICMP', 'Internet Control Message Protocol, Destination Unreachable, Time Exceeded (TTL 0), Echo Ping (1 PYQ).', 10, true, 1),
+  makeTopic('cn-sub-rout-proto', 'subj-cn', 'cn-ch-net', 'Routing Protocols', 'Interior vs exterior routing protocols: RIP (hop count limit 15), OSPF, BGP path vector (1 PYQ).', 11, true, 1),
+
+  // --- Chapter 4: Transport Layer (TCP, UDP & Congestion Control) (41 PYQs) ---
+  makeTopic('cn-ch-trans', 'subj-cn', null, 'Transport Layer (TCP, UDP & Congestion Control)', 'Port multiplexing, sockets, UDP connectionless datagrams, TCP 3-way handshake, flow control, AIMD congestion control, and token bucket.', 4, true),
+  makeTopic('cn-2', 'subj-cn', 'cn-ch-trans', 'TCP', '3-way handshake connection setup/teardown, sequence/ACK numbering, TCP flags and header fields (20 PYQs).', 1, true, 20),
+  makeTopic('cn-8', 'subj-cn', 'cn-ch-trans', 'Congestion Control', 'TCP Slow Start, Congestion Avoidance AIMD, Fast Retransmit, Fast Recovery, and threshold halving (9 PYQs).', 2, true, 9),
+  makeTopic('cn-sub-sockets', 'subj-cn', 'cn-ch-trans', 'Sockets', 'Socket programming API, socket address binding IP:Port, TCP stream vs UDP datagram sockets (4 PYQs).', 3, true, 4),
+  makeTopic('cn-sub-udp', 'subj-cn', 'cn-ch-trans', 'UDP', 'User Datagram Protocol header format, checksum, connectionless and unreliable service model (4 PYQs).', 4, true, 4),
+  makeTopic('cn-sub-token-bkt', 'subj-cn', 'cn-ch-trans', 'Token Bucket', 'Traffic shaping and policing, Token Bucket capacity and token rate, Leaky Bucket queue (2 PYQs).', 5, true, 2),
+  makeTopic('cn-sub-wrap-time', 'subj-cn', 'cn-ch-trans', 'Wrap Around Time', 'TCP 32-bit sequence number space wrap around time calculation at varying bandwidth speeds (2 PYQs).', 6, true, 2),
+
+  // --- Chapter 5: Application Layer Protocols (13 PYQs) ---
+  makeTopic('cn-ch-app', 'subj-cn', null, 'Application Layer Protocols', 'Domain Name System (DNS), HTTP, HTTPS, SMTP, POP3, IMAP, FTP, and DHCP protocols.', 5, true),
+  makeTopic('cn-5', 'subj-cn', 'cn-ch-app', 'Application Layer Protocols', 'DNS iterative/recursive resolution, HTTP/1.1 persistent connections, SMTP, FTP, DHCP (13 PYQs).', 1, true, 13),
 
   // =========================================================================
   // 3. DATABASE MANAGEMENT SYSTEM (subj-dbms) - 302 Total PYQs
