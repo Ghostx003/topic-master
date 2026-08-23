@@ -323,38 +323,43 @@ export const INITIAL_TOPICS: Topic[] = [
 
   // =========================================================================
   // 7. ENGINEERING MATHEMATICS (subj-em) - 306 Total PYQs
+  //    Organized into 3 parent categories with subtopics
   // =========================================================================
-  // --- Linear Algebra (112 PYQs) ---
-  makeTopic('em-1', 'subj-em', null, 'Eigen Value & Eigen Vectors', 'Characteristic equation |A - lambda*I| = 0, properties of eigenvalues (trace, det), Cayley-Hamilton Theorem (33 PYQs).', 1, true, 33),
-  makeTopic('em-2', 'subj-em', null, 'Matrix Operations & Types', 'Matrix multiplication, Transpose, Symmetric, Skew-Symmetric, Orthogonal, Unitary, and Nilpotent matrices (24 PYQs).', 2, true, 24),
-  makeTopic('em-3', 'subj-em', null, 'System of Equations', 'Matrix equation AX = B, augmented matrix [A|B], consistency test (Rank(A) vs Rank(A|B)), unique/infinite/no solution (17 PYQs).', 3, true, 17),
-  makeTopic('em-4', 'subj-em', null, 'Determinant', 'Properties of determinants, row/column expansion, inverse matrix formula A^-1 = adj(A)/det(A) (12 PYQs).', 4, true, 12),
-  makeTopic('em-5', 'subj-em', null, 'Rank of Matrix', 'Echelon form, row operations, linearly independent rows/columns, Rank-Nullity Theorem (7 PYQs).', 5, true, 7),
-  makeTopic('em-6', 'subj-em', null, 'Vector Space & Basis', 'Vector spaces, subspaces, linear independence, basis vectors, and dimension (7 PYQs).', 6, true, 7),
-  makeTopic('em-7', 'subj-em', null, 'LU Decomposition', 'Lower-Upper triangular matrix factorizations A = LU, forward and backward substitution (3 PYQs).', 7, true, 3),
-  makeTopic('em-8', 'subj-em', null, 'Orthonormality & Projections', 'Orthogonal vectors, Gram-Schmidt orthonormalization, vector projections (2 PYQs).', 8, true, 2),
-  makeTopic('em-9', 'subj-em', null, 'Statistics & Regression', 'Mean, variance, standard deviation, covariance, correlation coefficient (2 PYQs).', 9, true, 2),
-  makeTopic('em-10', 'subj-em', null, 'Cartesian Coordinates & Vectors', 'Dot product, cross product, vector magnitude and geometric representations (1 PYQ).', 10, true, 1),
 
-  // --- Probability (125 PYQs) ---
-  makeTopic('em-11', 'subj-em', null, 'Probability Basics', 'Axioms of probability, sample spaces, mutually exclusive events, addition rule (31 PYQs).', 11, true, 31),
-  makeTopic('em-12', 'subj-em', null, 'Expectation & Variance', 'Expected value E[X], Variance Var(X) = E[X^2] - (E[X])^2, linearity of expectation (15 PYQs).', 12, true, 15),
-  makeTopic('em-13', 'subj-em', null, 'Conditional Probability & Bayes', 'P(A|B) = P(A cap B) / P(B), Total Probability Theorem, Bayes Rule for posterior probability (14 PYQs).', 13, true, 14),
-  makeTopic('em-14', 'subj-em', null, 'Uniform Distribution', 'Continuous and discrete uniform probability density functions and moments (11 PYQs).', 14, true, 11),
-  makeTopic('em-15', 'subj-em', null, 'Random Variable', 'Discrete and Continuous random variables, cumulative distribution functions (CDF) (10 PYQs).', 15, true, 10),
-  makeTopic('em-16', 'subj-em', null, 'Binomial Distribution', 'P(X = k) = C(n,k) p^k (1-p)^(n-k), Mean = n*p, Variance = n*p*(1-p) (6 PYQs).', 16, true, 6),
-  makeTopic('em-17', 'subj-em', null, 'Exponential Distribution', 'Probability density f(x) = lambda*e^(-lambda*x), memoryless property P(X > s+t | X > s) = P(X > t) (6 PYQs).', 17, true, 6),
-  makeTopic('em-18', 'subj-em', null, 'Independent Events', 'Condition for statistical independence P(A cap B) = P(A) * P(B) (6 PYQs).', 18, true, 6),
-  makeTopic('em-19', 'subj-em', null, 'Poisson Distribution', 'P(X = k) = e^-lambda * lambda^k / k!, Mean = lambda, Variance = lambda (5 PYQs).', 19, true, 5),
-  makeTopic('em-20', 'subj-em', null, 'Normal Distribution', 'Gaussian bell curve, standard normal distribution Z = (X - mu) / sigma, symmetry properties (4 PYQs).', 20, true, 4),
+  // --- Parent: Linear Algebra (112 PYQs) ---
+  makeTopic('em-la', 'subj-em', null, 'Linear Algebra', 'Eigenvalues, eigenvectors, matrix operations, determinants, rank, vector spaces, and linear systems (112 PYQs).', 1, true, 112),
+  makeTopic('em-1', 'subj-em', 'em-la', 'Eigen Value', 'Characteristic equation |A - lambda*I| = 0, properties of eigenvalues (trace, det), Cayley-Hamilton Theorem (33 PYQs).', 1, true, 33),
+  makeTopic('em-2', 'subj-em', 'em-la', 'Matrix', 'Matrix multiplication, Transpose, Symmetric, Skew-Symmetric, Orthogonal, Unitary, and Nilpotent matrices (24 PYQs).', 2, true, 24),
+  makeTopic('em-3', 'subj-em', 'em-la', 'System of Equations', 'Matrix equation AX = B, augmented matrix [A|B], consistency test (Rank(A) vs Rank(A|B)), unique/infinite/no solution (17 PYQs).', 3, true, 17),
+  makeTopic('em-4', 'subj-em', 'em-la', 'Determinant', 'Properties of determinants, row/column expansion, inverse matrix formula A^-1 = adj(A)/det(A) (12 PYQs).', 4, true, 12),
+  makeTopic('em-5', 'subj-em', 'em-la', 'Rank of Matrix', 'Echelon form, row operations, linearly independent rows/columns, Rank-Nullity Theorem (7 PYQs).', 5, true, 7),
+  makeTopic('em-6', 'subj-em', 'em-la', 'Vector Space', 'Vector spaces, subspaces, linear independence, basis vectors, and dimension (7 PYQs).', 6, true, 7),
+  makeTopic('em-7', 'subj-em', 'em-la', 'LU Decomposition', 'Lower-Upper triangular matrix factorizations A = LU, forward and backward substitution (3 PYQs).', 7, true, 3),
+  makeTopic('em-8', 'subj-em', 'em-la', 'Orthonormality', 'Orthogonal vectors, Gram-Schmidt orthonormalization, vector projections (2 PYQs).', 8, true, 2),
+  makeTopic('em-9', 'subj-em', 'em-la', 'Statistics', 'Mean, variance, standard deviation, covariance, correlation coefficient (2 PYQs).', 9, true, 2),
+  makeTopic('em-10', 'subj-em', 'em-la', 'Cartesian Coordinates', 'Dot product, cross product, vector magnitude and geometric representations (1 PYQ).', 10, true, 1),
 
-  // --- Calculus (69 PYQs) ---
-  makeTopic('em-21', 'subj-em', null, 'Limits', 'Evaluation of limits, L\'Hopital Rule for 0/0 and inf/inf indeterminate forms (15 PYQs).', 21, true, 15),
-  makeTopic('em-22', 'subj-em', null, 'Maxima Minima', 'First derivative test, Second derivative test, multivariable extrema using Hessian matrix (14 PYQs).', 22, true, 14),
-  makeTopic('em-23', 'subj-em', null, 'Continuity', 'Left-hand limit = Right-hand limit = Function value at point, intermediate value theorem (11 PYQs).', 23, true, 11),
-  makeTopic('em-24', 'subj-em', null, 'Differentiation', 'Chain rule, product rule, partial derivatives, directional derivatives, gradient (11 PYQs).', 24, true, 11),
-  makeTopic('em-25', 'subj-em', null, 'Integration', 'Indefinite and standard integration techniques, substitution, integration by parts (11 PYQs).', 25, true, 11),
-  makeTopic('em-26', 'subj-em', null, 'Definite Integral', 'Fundamental Theorem of Calculus, properties of definite integrals (4 PYQs).', 26, true, 4),
+  // --- Parent: Probability (125 PYQs) ---
+  makeTopic('em-prob', 'subj-em', null, 'Probability', 'Axioms of probability, Bayes theorem, discrete & continuous random variables, and distributions (125 PYQs).', 2, true, 125),
+  makeTopic('em-11', 'subj-em', 'em-prob', 'Probability', 'Axioms of probability, sample spaces, mutually exclusive events, addition rule (31 PYQs).', 1, true, 31),
+  makeTopic('em-12', 'subj-em', 'em-prob', 'Expectation', 'Expected value E[X], Variance Var(X) = E[X^2] - (E[X])^2, linearity of expectation (15 PYQs).', 2, true, 15),
+  makeTopic('em-13', 'subj-em', 'em-prob', 'Conditional Probability', 'P(A|B) = P(A cap B) / P(B), Total Probability Theorem, Bayes Rule for posterior probability (14 PYQs).', 3, true, 14),
+  makeTopic('em-14', 'subj-em', 'em-prob', 'Uniform Distribution', 'Continuous and discrete uniform probability density functions and moments (11 PYQs).', 4, true, 11),
+  makeTopic('em-15', 'subj-em', 'em-prob', 'Random Variable', 'Discrete and Continuous random variables, cumulative distribution functions (CDF) (10 PYQs).', 5, true, 10),
+  makeTopic('em-16', 'subj-em', 'em-prob', 'Binomial Distribution', 'P(X = k) = C(n,k) p^k (1-p)^(n-k), Mean = n*p, Variance = n*p*(1-p) (6 PYQs).', 6, true, 6),
+  makeTopic('em-17', 'subj-em', 'em-prob', 'Exponential Distribution', 'Probability density f(x) = lambda*e^(-lambda*x), memoryless property P(X > s+t | X > s) = P(X > t) (6 PYQs).', 7, true, 6),
+  makeTopic('em-18', 'subj-em', 'em-prob', 'Independent Events', 'Condition for statistical independence P(A cap B) = P(A) * P(B) (6 PYQs).', 8, true, 6),
+  makeTopic('em-19', 'subj-em', 'em-prob', 'Poisson Distribution', 'P(X = k) = e^-lambda * lambda^k / k!, Mean = lambda, Variance = lambda (5 PYQs).', 9, true, 5),
+  makeTopic('em-20', 'subj-em', 'em-prob', 'Normal Distribution', 'Gaussian bell curve, standard normal distribution Z = (X - mu) / sigma, symmetry properties (4 PYQs).', 10, true, 4),
+
+  // --- Parent: Calculus (69 PYQs) ---
+  makeTopic('em-calc', 'subj-em', null, 'Calculus', 'Limits, continuity, differentiability, maxima/minima, partial derivatives, and integrals (69 PYQs).', 3, true, 69),
+  makeTopic('em-21', 'subj-em', 'em-calc', 'Limits', 'Evaluation of limits, L\'Hopital Rule for 0/0 and inf/inf indeterminate forms (15 PYQs).', 1, true, 15),
+  makeTopic('em-22', 'subj-em', 'em-calc', 'Maxima Minima', 'First derivative test, Second derivative test, multivariable extrema using Hessian matrix (14 PYQs).', 2, true, 14),
+  makeTopic('em-23', 'subj-em', 'em-calc', 'Continuity', 'Left-hand limit = Right-hand limit = Function value at point, intermediate value theorem (11 PYQs).', 3, true, 11),
+  makeTopic('em-24', 'subj-em', 'em-calc', 'Differentiation', 'Chain rule, product rule, partial derivatives, directional derivatives, gradient (11 PYQs).', 4, true, 11),
+  makeTopic('em-25', 'subj-em', 'em-calc', 'Integration', 'Indefinite and standard integration techniques, substitution, integration by parts (11 PYQs).', 5, true, 11),
+  makeTopic('em-26', 'subj-em', 'em-calc', 'Definite Integral', 'Fundamental Theorem of Calculus, properties of definite integrals (4 PYQs).', 6, true, 4),
 
   // =========================================================================
   // 8. GENERAL APTITUDE (subj-ga) - 429 Total PYQs
