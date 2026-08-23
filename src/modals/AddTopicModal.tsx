@@ -3,6 +3,7 @@ import { Subject } from '../types/subject';
 import { useTopicMaster } from '../context/TopicMasterContext';
 import { useToast } from '../context/ToastContext';
 import { Modal } from '../components/common/Modal';
+import { buildTopicTree, flattenTopicTree } from '../utils/hierarchyUtils';
 import { FolderTree, Plus } from 'lucide-react';
 
 export interface AddTopicModalProps {
@@ -22,24 +23,28 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
   const { toast } = useToast();
 
   const [topicName, setTopicName] = useState('');
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(parentId);
   const [description, setDescription] = useState('');
   const [isStarred, setIsStarred] = useState(false);
   const [requirePractice, setRequirePractice] = useState(false);
   const [lectureNeeded, setLectureNeeded] = useState<number>(0);
   const [deadline, setDeadline] = useState('');
 
-  const parentTopic = parentId ? topics.find((t) => t.id === parentId) : null;
+  // Get full flattened hierarchy for parent selector
+  const subjectTree = buildTopicTree(topics, subject.id, null);
+  const flatSubjectTopics = flattenTopicTree(subjectTree);
 
   useEffect(() => {
     if (isOpen) {
       setTopicName('');
+      setSelectedParentId(parentId);
       setDescription('');
       setIsStarred(false);
       setRequirePractice(false);
       setLectureNeeded(0);
       setDeadline('');
     }
-  }, [isOpen]);
+  }, [isOpen, parentId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +52,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
 
     const created = addTopic({
       Subject_Id: subject.id,
-      Parent_Id: parentId,
+      Parent_Id: selectedParentId || null,
       Topic_Name: topicName.trim(),
       Topic_Description: description.trim(),
       Topic_Status: 'To Do',
@@ -61,7 +66,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
       },
     });
 
-    toast.success('Topic Added', `Added "${created.Topic_Name}" to ${subject.Subject_Name}`);
+    toast.success('Topic Created', `Added "${created.Topic_Name}" to ${subject.Subject_Name}`);
     onClose();
   };
 
@@ -77,18 +82,36 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
           </div>
           <div>
             <h3 className="text-lg font-black tracking-tight">
-              {parentTopic
-                ? `Add Subtopic under "${parentTopic.Topic_Name}"`
-                : `Add Main Topic to ${subject.Subject_Name}`}
+              Add Topic to {subject.Subject_Name}
             </h3>
             <p className="text-xs text-slate-400">
-              Arbitrary depth topic node with real-time tree synchronization
+              Create main topics or nested subtopics at any hierarchy depth
             </p>
           </div>
         </div>
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Parent Selector for infinite nesting */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            Hierarchy Level / Parent Topic
+          </label>
+          <select
+            value={selectedParentId || ''}
+            onChange={(e) => setSelectedParentId(e.target.value ? e.target.value : null)}
+            className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-slate-950 border border-slate-700 text-slate-200 focus:outline-none focus:border-brand-500 cursor-pointer"
+          >
+            <option value="">📁 Main Root Topic (Level 1)</option>
+            {flatSubjectTopics.map((top) => (
+              <option key={top.id} value={top.id}>
+                {'— '.repeat(top.depth + 1)} ↳ {top.Topic_Name} (Level {top.depth + 2})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Topic Name */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
             Topic Name *
@@ -103,6 +126,7 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
           />
         </div>
 
+        {/* Description */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
             Description / Overview (Optional)

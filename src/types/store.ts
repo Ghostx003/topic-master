@@ -49,6 +49,8 @@ export interface TopicMasterActions {
   reorderTopics: (subjectId: string, parentId: string | null, topicIds: string[]) => void;
   promoteTopic: (id: string) => void;
   demoteTopic: (id: string, newParentId: string) => void;
+  indentTopicRight: (id: string) => void;
+  outdentTopicLeft: (id: string) => void;
   moveTopic: (id: string, direction: 'up' | 'down') => void;
 
   // Content Blocks

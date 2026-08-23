@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { TopicTreeNodeType, TopicTags } from '../../types/topic';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { TopicTagBadge } from '../common/TopicTagBadge';
@@ -10,6 +10,8 @@ import {
   Edit2,
   ArrowUp,
   ArrowDown,
+  ArrowLeft,
+  ArrowRight,
   CornerLeftUp,
   CornerRightDown,
   MoreHorizontal,
@@ -18,6 +20,7 @@ import {
   FileText,
   Clock,
   Layers,
+  GripVertical,
 } from 'lucide-react';
 import { formatHours } from '../../utils/timeUtils';
 import { clsx } from 'clsx';
@@ -42,12 +45,19 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   const [editedName, setEditedName] = useState(node.Topic_Name);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Swipe / Slide Gesture State
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartX = useRef<number | null>(null);
+
   const {
     updateTopic,
     updateTopicTags,
     moveTopic,
     promoteTopic,
     demoteTopic,
+    indentTopicRight,
+    outdentTopicLeft,
     openTopicDetailModal,
     topics,
   } = useTopicMaster();
@@ -56,6 +66,14 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   const isDone = Boolean(node.Topic_Tags?.Done);
   const isStarred = Boolean(node.Topic_Tags?.Star);
   const isRoot = node.depth === 0;
+
+  // Sibling analysis for Indent Right (must have a preceding sibling)
+  const siblings = topics
+    .filter((t) => t.Subject_Id === subjectId && t.Parent_Id === node.Parent_Id)
+    .sort((a, b) => (a.Topic_Order ?? 0) - (b.Topic_Order ?? 0));
+  const nodeIndex = siblings.findIndex((t) => t.id === node.id);
+  const canIndentRight = nodeIndex > 0;
+  const canOutdentLeft = Boolean(node.Parent_Id);
 
   // Handle inline renaming
   const handleSaveName = (e: React.FormEvent) => {
@@ -82,6 +100,77 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     }
   };
 
+  // Drag / Swipe Gestures Handling
+  const handleTouchStart = (e: React.TouchEvent) => {
+    dragStartX.current = e.touches[0].clientX;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (dragStartX.current === null) return;
+    const diff = e.touches[0].clientX - dragStartX.current;
+
+    // Constrain drag based on whether indent/outdent is valid
+    if (diff > 0 && !canIndentRight) {
+      setDragOffset(Math.min(diff * 0.2, 20));
+    } else if (diff < 0 && !canOutdentLeft) {
+      setDragOffset(Math.max(diff * 0.2, -20));
+    } else {
+      setDragOffset(Math.max(Math.min(diff, 90), -90));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (dragOffset > 45 && canIndentRight) {
+      indentTopicRight(node.id);
+    } else if (dragOffset < -45 && canOutdentLeft) {
+      outdentTopicLeft(node.id);
+    }
+    setDragOffset(0);
+    setIsDragging(false);
+    dragStartX.current = null;
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Only drag when using handle or main row area (avoid interactive buttons)
+    const target = e.target as HTMLElement;
+    if (target.closest('button, input, form, a, select')) return;
+
+    dragStartX.current = e.clientX;
+    setIsDragging(true);
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (dragStartX.current === null) return;
+      const diff = moveEvent.clientX - dragStartX.current;
+
+      if (diff > 0 && !canIndentRight) {
+        setDragOffset(Math.min(diff * 0.2, 20));
+      } else if (diff < 0 && !canOutdentLeft) {
+        setDragOffset(Math.max(diff * 0.2, -20));
+      } else {
+        setDragOffset(Math.max(Math.min(diff, 90), -90));
+      }
+    };
+
+    const onMouseUp = () => {
+      setDragOffset((curr) => {
+        if (curr > 45 && canIndentRight) {
+          indentTopicRight(node.id);
+        } else if (curr < -45 && canOutdentLeft) {
+          outdentTopicLeft(node.id);
+        }
+        return 0;
+      });
+      setIsDragging(false);
+      dragStartX.current = null;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+
   // Find candidate parents for demote (siblings within same subject)
   const candidateParents = topics.filter(
     (t) => t.Subject_Id === subjectId && t.id !== node.id && t.Parent_Id !== node.id
@@ -89,24 +178,60 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
   return (
     <div className="relative select-none my-3 sm:my-3.5">
+      {/* Visual Swipe Helper Badges */}
+      {dragOffset > 25 && canIndentRight && (
+        <div
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 text-white text-xs font-bold shadow-glow-cyan animate-pulse"
+          style={{ transform: `translateY(-50%)` }}
+        >
+          <ArrowRight className="w-4 h-4" />
+          <span>Indent → Subtopic</span>
+        </div>
+      )}
+
+      {dragOffset < -25 && canOutdentLeft && (
+        <div
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-glow-purple animate-pulse"
+          style={{ transform: `translateY(-50%)` }}
+        >
+          <span>Promote ← Parent</span>
+          <ArrowLeft className="w-4 h-4" />
+        </div>
+      )}
+
       {/* Node Row Card */}
       <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
         className={clsx(
-          'group relative flex items-center justify-between gap-5 rounded-3xl border transition-all duration-300 backdrop-blur-2xl card-highlight',
+          'group relative flex items-center justify-between gap-4 sm:gap-5 rounded-3xl border backdrop-blur-2xl card-highlight transition-shadow duration-300',
+          isDragging ? 'cursor-grabbing' : 'cursor-grab',
           isRoot
             ? isDone
-              ? 'px-6 sm:px-8 py-4 sm:py-5 bg-gradient-to-r from-emerald-950/20 via-slate-900/70 to-slate-950/80 border-emerald-500/30 text-slate-300 shadow-sm'
-              : 'px-6 sm:px-8 py-4 sm:py-5 bg-gradient-to-r from-slate-900/95 via-slate-900/80 to-slate-950/95 border-slate-800/90 hover:border-brand-500/50 text-slate-100 shadow-card-glow hover:shadow-card-hover'
+              ? 'px-5 sm:px-8 py-4 sm:py-5 bg-gradient-to-r from-emerald-950/20 via-slate-900/70 to-slate-950/80 border-emerald-500/30 text-slate-300 shadow-sm'
+              : 'px-5 sm:px-8 py-4 sm:py-5 bg-gradient-to-r from-slate-900/95 via-slate-900/80 to-slate-950/95 border-slate-800/90 hover:border-brand-500/50 text-slate-100 shadow-card-glow hover:shadow-card-hover'
             : isDone
-            ? 'px-5 sm:px-6 py-3.5 sm:py-4 bg-slate-950/60 border-emerald-500/20 text-slate-400'
-            : 'px-5 sm:px-6 py-3.5 sm:py-4 bg-slate-950/80 hover:bg-slate-900/90 border-slate-800/80 hover:border-slate-700 text-slate-200 shadow-sm'
+            ? 'px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-950/60 border-emerald-500/20 text-slate-400'
+            : 'px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-950/80 hover:bg-slate-900/90 border-slate-800/80 hover:border-slate-700 text-slate-200 shadow-sm'
         )}
         style={{
           marginLeft: isRoot ? '0px' : `${node.depth * 34}px`,
+          transform: `translateX(${dragOffset}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1)',
         }}
       >
-        {/* Left Section: Expand Toggle, Star, Title, Subtopics Pill, Time Pill */}
-        <div className="flex items-center gap-4 min-w-0 flex-1">
+        {/* Left Section: Drag Handle, Expand Toggle, Star, Title, Subtopics Pill, Time Pill */}
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+          {/* Drag grip icon hint */}
+          <div
+            className="p-1 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0 cursor-grab active:cursor-grabbing"
+            title="Swipe or slide right to indent (subtopic), slide left to promote"
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
+
           {/* Expand / Collapse Button or Tree Bullet */}
           {hasChildren ? (
             <button
@@ -170,7 +295,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           ) : (
             <div
               onClick={() => openTopicDetailModal(node.id)}
-              className="cursor-pointer flex items-center gap-3.5 flex-1 min-w-0 group/title"
+              className="cursor-pointer flex items-center gap-3 sm:gap-3.5 flex-1 min-w-0 group/title"
               title="Click to open Topic Detail Workspace"
             >
               <span
@@ -188,6 +313,13 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
               >
                 {node.Topic_Name}
               </span>
+
+              {/* Depth tier indicator if nested deeply */}
+              {node.depth > 1 && (
+                <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono font-bold rounded-lg bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 shrink-0">
+                  Level {node.depth + 1}
+                </span>
+              )}
 
               {/* Subtopic count badge if parent */}
               {hasChildren && (
@@ -243,12 +375,36 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         </div>
 
         {/* Action Controls & Dropdown Menu */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Quick Outdent (Promote Left) Button */}
+          {canOutdentLeft && (
+            <button
+              onClick={() => outdentTopicLeft(node.id)}
+              className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-purple-300 hover:bg-purple-500/15 border border-transparent hover:border-purple-500/30 transition-all active:scale-95"
+              title="Promote / Outdent Left (Swipe Left)"
+              aria-label="Promote topic level"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Quick Indent (Demote Right) Button */}
+          {canIndentRight && (
+            <button
+              onClick={() => indentTopicRight(node.id)}
+              className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-cyan-300 hover:bg-cyan-500/15 border border-transparent hover:border-cyan-500/30 transition-all active:scale-95"
+              title="Indent Right to Subtopic under previous topic (Swipe Right)"
+              aria-label="Indent topic into subtopic"
+            >
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
+
           {/* Quick Add Subtopic Button */}
           <button
             onClick={() => onAddSubtopic(node.id)}
-            className="p-2.5 rounded-2xl text-slate-400 hover:text-brand-300 hover:bg-brand-500/15 border border-transparent hover:border-brand-500/30 transition-all active:scale-95"
-            title="Add Subtopic"
+            className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-brand-300 hover:bg-brand-500/15 border border-transparent hover:border-brand-500/30 transition-all active:scale-95"
+            title="Add Nested Subtopic"
             aria-label="Add subtopic"
           >
             <Plus className="w-4 h-4" />
@@ -257,7 +413,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           {/* Quick Open Detail Modal Button */}
           <button
             onClick={() => openTopicDetailModal(node.id)}
-            className="p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
+            className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
             title="Open Topic Workspace"
             aria-label="Open topic detail workspace"
           >
@@ -268,7 +424,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
+              className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
               aria-label="More actions"
             >
               <MoreHorizontal className="w-4 h-4" />
@@ -277,7 +433,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
             {menuOpen && (
               <>
                 <div className="fixed inset-0 z-20" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 top-11 z-30 w-60 rounded-3xl bg-slate-900 border border-slate-700 shadow-2xl p-2 text-xs text-slate-200 animate-slide-up space-y-1">
+                <div className="absolute right-0 top-11 z-30 w-64 rounded-3xl bg-slate-900 border border-slate-700 shadow-2xl p-2 text-xs text-slate-200 animate-slide-up space-y-1">
                   {/* Rename */}
                   <button
                     onClick={() => {
@@ -303,6 +459,34 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                   </button>
 
                   <div className="h-px bg-slate-800 my-1.5" />
+
+                  {/* Indent Right */}
+                  {canIndentRight && (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        indentTopicRight(node.id);
+                      }}
+                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-cyan-950/50 text-cyan-300 transition-colors font-medium"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                      <span>Indent (Swipe Right →)</span>
+                    </button>
+                  )}
+
+                  {/* Outdent Left */}
+                  {canOutdentLeft && (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        outdentTopicLeft(node.id);
+                      }}
+                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-purple-950/50 text-purple-300 transition-colors font-medium"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      <span>Outdent (Swipe Left ←)</span>
+                    </button>
+                  )}
 
                   {/* Move Up */}
                   <button
@@ -338,7 +522,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                       className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-indigo-950/50 text-indigo-300 transition-colors font-medium"
                     >
                       <CornerLeftUp className="w-4 h-4" />
-                      <span>Promote to Main Topic</span>
+                      <span>Promote to Root Topic</span>
                     </button>
                   )}
 
@@ -346,7 +530,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                   {candidateParents.length > 0 && (
                     <div className="pt-1">
                       <div className="px-3.5 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                        Demote under
+                        Demote under specific parent
                       </div>
                       <div className="max-h-36 overflow-y-auto custom-scrollbar">
                         {candidateParents.slice(0, 5).map((cand) => (

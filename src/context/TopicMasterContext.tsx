@@ -328,6 +328,44 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
     });
   }, []);
 
+  const indentTopicRight = useCallback((id: string) => {
+    setState((prev) => {
+      const topic = prev.topics.find((t) => t.id === id);
+      if (!topic) return prev;
+
+      // Find siblings with same parent
+      const siblings = prev.topics
+        .filter((t) => t.Subject_Id === topic.Subject_Id && t.Parent_Id === topic.Parent_Id)
+        .sort((a, b) => (a.Topic_Order ?? 0) - (b.Topic_Order ?? 0));
+
+      const currentIndex = siblings.findIndex((t) => t.id === id);
+      if (currentIndex <= 0) return prev; // No preceding sibling to indent into
+
+      const prevSibling = siblings[currentIndex - 1];
+
+      // Re-parent under previous sibling
+      const existingChildren = prev.topics.filter((t) => t.Parent_Id === prevSibling.id);
+
+      return {
+        ...prev,
+        topics: prev.topics.map((t) =>
+          t.id === id
+            ? {
+                ...t,
+                Parent_Id: prevSibling.id,
+                Topic_Order: existingChildren.length,
+                updated_at: new Date().toISOString(),
+              }
+            : t
+        ),
+      };
+    });
+  }, []);
+
+  const outdentTopicLeft = useCallback((id: string) => {
+    promoteTopic(id);
+  }, [promoteTopic]);
+
   const moveTopic = useCallback((id: string, direction: 'up' | 'down') => {
     setState((prev) => {
       const topic = prev.topics.find((t) => t.id === id);
@@ -736,6 +774,8 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
         reorderTopics,
         promoteTopic,
         demoteTopic,
+        indentTopicRight,
+        outdentTopicLeft,
         moveTopic,
         addContentBlock,
         updateContentBlock,
