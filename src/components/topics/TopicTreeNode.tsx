@@ -318,28 +318,28 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
             <GripVertical className="w-5 h-5" />
           </div>
 
-          {/* Expand / Collapse Button or Tree Bullet */}
-          {hasChildren ? (
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="p-2.5 rounded-2xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors shrink-0"
-              aria-label={isExpanded ? 'Collapse subtopics' : 'Expand subtopics'}
-            >
-              {isExpanded ? (
-                <ChevronDown className="w-5 h-5 text-brand-400" />
-              ) : (
-                <ChevronRight className="w-5 h-5 text-slate-400" />
-              )}
-            </button>
-          ) : isRoot ? (
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-brand-500/20 to-indigo-500/10 border border-brand-500/30 shrink-0 flex items-center justify-center shadow-glow-sm">
-              <Layers className="w-4 h-4 text-brand-400" />
-            </div>
-          ) : (
-            <div className="w-6 shrink-0 flex items-center justify-center">
-              <span className="w-2.5 h-2.5 rounded-full bg-slate-600 group-hover:bg-brand-400 group-hover:shadow-[0_0_8px_rgba(139,92,246,0.6)] transition-all" />
-            </div>
-          )}
+          {/* Expand / Collapse Button or Tree Bullet - LOCKED WIDTH for perfect text alignment */}
+          <div className="w-10 h-10 flex items-center justify-center shrink-0">
+            {hasChildren ? (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="p-2.5 rounded-2xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors flex items-center justify-center"
+                aria-label={isExpanded ? 'Collapse subtopics' : 'Expand subtopics'}
+              >
+                {isExpanded ? (
+                  <ChevronDown className="w-5 h-5 text-brand-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-slate-400" />
+                )}
+              </button>
+            ) : isRoot ? (
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-brand-500/20 to-indigo-500/10 border border-brand-500/30 flex items-center justify-center shadow-glow-sm">
+                <Layers className="w-4 h-4 text-brand-400" />
+              </div>
+            ) : (
+              <span className="w-2 h-2 rounded-full bg-slate-600 group-hover:bg-brand-400 group-hover:shadow-[0_0_8px_rgba(139,92,246,0.6)] transition-all" />
+            )}
+          </div>
 
           {/* Quick Star Button */}
           <TopicTagBadge

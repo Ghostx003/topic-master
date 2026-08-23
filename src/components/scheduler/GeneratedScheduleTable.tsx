@@ -183,11 +183,11 @@ export const GeneratedScheduleTable: React.FC<GeneratedScheduleTableProps> = ({
                 <table className="w-full text-left text-xs text-slate-300">
                   <thead className="bg-slate-900/30 text-slate-400 font-bold uppercase tracking-wider text-[10px] border-b border-slate-800/60">
                     <tr>
-                      <th className="px-6 py-3">Topic</th>
-                      <th className="px-4 py-3 hidden sm:table-cell">Priority Tags</th>
-                      <th className="px-4 py-3 text-center">Allocated</th>
-                      <th className="px-4 py-3 text-center">Quick Timer</th>
-                      <th className="px-6 py-3 text-right">Status</th>
+                      <th className="px-6 py-3 w-[45%]">Topic</th>
+                      <th className="px-4 py-3 hidden sm:table-cell w-[20%] text-center">Priority Tags</th>
+                      <th className="px-4 py-3 text-center w-[12%]">Allocated</th>
+                      <th className="px-4 py-3 text-center w-[10%]">Quick Timer</th>
+                      <th className="px-6 py-3 text-right w-[13%]">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/40">
@@ -217,11 +217,12 @@ export const GeneratedScheduleTable: React.FC<GeneratedScheduleTableProps> = ({
                                 <FileText className="w-4 h-4 text-brand-400 shrink-0" />
                                 <span
                                   className={clsx(
-                                    'font-semibold text-sm',
+                                    'font-semibold text-sm line-clamp-1',
                                     isDone
                                       ? 'line-through text-slate-500'
                                       : 'text-slate-100 hover:text-brand-300'
                                   )}
+                                  title={item.topic_name || topic?.Topic_Name}
                                 >
                                   {item.topic_name || topic?.Topic_Name}
                                 </span>
@@ -230,7 +231,7 @@ export const GeneratedScheduleTable: React.FC<GeneratedScheduleTableProps> = ({
 
                             {/* Tags column */}
                             <td className="px-4 py-3.5 hidden sm:table-cell">
-                              <div className="flex flex-wrap items-center gap-1.5">
+                              <div className="flex flex-wrap items-center justify-center gap-1.5">
                                 {topic?.Topic_Tags?.Star && (
                                   <TopicTagBadge type="Star" value={true} />
                                 )}
