@@ -52,7 +52,6 @@ export const StorageService = {
         const init = initialSubjMap.get(s.id);
         return {
           ...s,
-          Subject_PYQ_Count: s.Subject_PYQ_Count || init?.Subject_PYQ_Count || 0,
           Subject_Importance: init?.Subject_Importance || s.Subject_Importance,
         };
       });
@@ -87,7 +86,6 @@ export const StorageService = {
             ...t,
             Topic_Name: init ? init.Topic_Name : t.Topic_Name,
             Parent_Id: init !== undefined ? init.Parent_Id : t.Parent_Id,
-            Topic_PYQ_Count: init?.Topic_PYQ_Count ?? t.Topic_PYQ_Count,
             Topic_Tags: {
               ...t.Topic_Tags,
               Star: init ? init.Topic_Tags.Star : Boolean(t.Topic_Tags?.Star),

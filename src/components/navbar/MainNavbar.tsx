@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTopicMaster } from '../../context/TopicMasterContext';
+import { ALL_PYQ_QUESTIONS } from '../../services/pyqService';
 
 export interface MainNavbarProps {
   onOpenSettings: () => void;
@@ -25,7 +26,7 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
   const { subjects, topics } = useTopicMaster();
   const navigate = useNavigate();
 
-  const totalPYQs = subjects.reduce((acc, s) => acc + (s.Subject_PYQ_Count || 0), 0);
+  const totalPYQs = ALL_PYQ_QUESTIONS.length;
 
   const navItems = [
     {
