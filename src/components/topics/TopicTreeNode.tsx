@@ -131,13 +131,12 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           )}
 
           {/* Quick Star Button */}
-          <button
+          <TopicTagBadge
+            type="Star"
+            value={isStarred}
+            interactive
             onClick={() => handleToggleTag('Star', isStarred)}
-            className="shrink-0 transition-transform active:scale-90"
-            title={isStarred ? 'Starred Topic (Click to remove)' : 'Star Topic'}
-          >
-            <TopicTagBadge type="Star" value={isStarred} />
-          </button>
+          />
 
           {/* Topic Title or Inline Rename Editor */}
           {isEditingName ? (
