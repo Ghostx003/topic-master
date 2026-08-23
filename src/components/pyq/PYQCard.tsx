@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { PYQQuestion, PYQItemProgress, PYQDifficultyStatus } from '../../types/pyq';
 import {
   CheckCircle2,
@@ -28,14 +28,26 @@ export const PYQCard: React.FC<PYQCardProps> = ({
   const difficulty = progress?.difficulty || 'none';
   const isDoubt = Boolean(progress?.isDoubt);
 
+  const openInNewWindow = (url: string) => {
+    const width = Math.min(window.screen.availWidth * 0.8, 1280);
+    const height = Math.min(window.screen.availHeight * 0.88, 920);
+    const left = Math.max(0, (window.screen.availWidth - width) / 2);
+    const top = Math.max(0, (window.screen.availHeight - height) / 2);
+    window.open(
+      url,
+      `_blank`,
+      `toolbar=no,location=yes,status=no,menubar=no,scrollbars=yes,resizable=yes,width=${width},height=${height},top=${top},left=${left}`
+    );
+  };
+
   const handleCardClick = (e: React.MouseEvent) => {
-    // If clicked on interactive elements (button, link), let them handle it
+    // If clicked on interactive elements (button, select), let them handle it
     const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('a')) {
+    if (target.closest('button') || target.closest('select')) {
       return;
     }
-    // Clicking the card itself opens the question in a new tab
-    window.open(question.link, '_blank', 'noopener,noreferrer');
+    // Clicking the card itself opens the question in a new window
+    openInNewWindow(question.link);
   };
 
   return (
@@ -152,18 +164,19 @@ export const PYQCard: React.FC<PYQCardProps> = ({
           <span>Doubt</span>
         </button>
 
-        {/* GateOverflow Direct Link */}
-        <a
-          href={question.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
+        {/* GateOverflow Direct Open in New Window Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            openInNewWindow(question.link);
+          }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 hover:bg-brand-950/50 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold"
-          title="Open question on GateOverflow in new tab"
+          title="Open question on GateOverflow in a new window"
         >
           <span>Solve</span>
           <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-400" />
-        </a>
+        </button>
       </div>
     </div>
   );
