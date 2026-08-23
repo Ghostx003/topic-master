@@ -52,9 +52,10 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef<number | null>(null);
 
-  // HTML5 Drag & Drop State
+  // HTML5 Drag & Drop State with stable Drag Counter to prevent flicker
   const [isHtml5Dragging, setIsHtml5Dragging] = useState(false);
   const [dropPosition, setDropPosition] = useState<'inside' | 'before' | 'after' | null>(null);
+  const dragCounter = useRef<number>(0);
 
   const {
     updateTopic,
@@ -108,7 +109,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     }
   };
 
-  // ================= HTML5 DRAG & DROP HANDLERS =================
+  // ================= FLICKER-FREE HTML5 DRAG & DROP HANDLERS =================
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('text/plain', node.id);
     e.dataTransfer.setData('application/json', JSON.stringify({ topicId: node.id, name: node.Topic_Name }));
@@ -119,6 +120,13 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   const handleDragEnd = () => {
     setIsHtml5Dragging(false);
     setDropPosition(null);
+    dragCounter.current = 0;
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current += 1;
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -129,17 +137,27 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     const relY = e.clientY - rect.top;
     const height = rect.height;
 
+    let nextPos: 'inside' | 'before' | 'after';
     if (relY < height * 0.25) {
-      setDropPosition('before');
+      nextPos = 'before';
     } else if (relY > height * 0.75) {
-      setDropPosition('after');
+      nextPos = 'after';
     } else {
-      setDropPosition('inside');
+      nextPos = 'inside';
+    }
+
+    if (dropPosition !== nextPos) {
+      setDropPosition(nextPos);
     }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current -= 1;
+
+    if (dragCounter.current <= 0) {
+      dragCounter.current = 0;
       setDropPosition(null);
     }
   };
@@ -147,6 +165,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    dragCounter.current = 0;
 
     const sourceId = e.dataTransfer.getData('text/plain');
     if (!sourceId || sourceId === node.id) {
@@ -207,7 +226,13 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   );
 
   return (
-    <div className={clsx('relative select-none transition-all', menuOpen ? 'z-50' : 'z-0', isRoot ? 'my-5 sm:my-6' : 'my-2.5 sm:my-3')}>
+    <div
+      className={clsx(
+        'relative select-none transition-all',
+        menuOpen ? 'z-50' : 'z-0',
+        isRoot ? 'my-5 sm:my-6' : 'my-2.5 sm:my-3'
+      )}
+    >
       {/* Visual Swipe Helper Badges */}
       {dragOffset > 25 && canIndentRight && (
         <div className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-cyan-600 text-white text-xs font-bold shadow-glow-cyan animate-pulse">
@@ -223,10 +248,10 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         </div>
       )}
 
-      {/* Insertion Line Before Indicator */}
+      {/* Insertion Line Before Indicator (Absolute overlay with pointer-events-none) */}
       {dropPosition === 'before' && (
         <div
-          className="absolute -top-2 left-0 right-0 z-30 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.8)] flex items-center justify-center animate-pulse"
+          className="absolute -top-1.5 left-0 right-0 z-30 h-1 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.9)] pointer-events-none flex items-center justify-center animate-pulse"
           style={{ marginLeft: isRoot ? '0px' : `${node.depth * 38}px` }}
         >
           <span className="px-3 py-0.5 rounded-full bg-cyan-500 text-[10px] font-bold text-white shadow-md">
@@ -240,6 +265,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         draggable
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -247,11 +273,11 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         className={clsx(
-          'group relative flex items-center justify-between gap-5 sm:gap-6 rounded-3xl border backdrop-blur-2xl card-highlight transition-all duration-200',
+          'group relative flex items-center justify-between gap-5 sm:gap-6 rounded-3xl border backdrop-blur-2xl card-highlight transition-all duration-150',
           menuOpen ? 'z-50' : 'z-0',
-          isHtml5Dragging && 'opacity-40 scale-[0.98] border-brand-500/60 shadow-none',
+          isHtml5Dragging && 'opacity-40 border-brand-500/60 shadow-none',
           dropPosition === 'inside'
-            ? 'border-2 border-brand-400 bg-brand-500/20 shadow-glow-lg scale-[1.01]'
+            ? 'ring-2 ring-brand-400 bg-brand-500/20 border-brand-400 shadow-glow-lg'
             : isRoot
             ? isDone
               ? 'px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-emerald-950/25 via-slate-900/80 to-slate-950/90 border-emerald-500/30 text-slate-300 shadow-md'
@@ -266,10 +292,10 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1)',
         }}
       >
-        {/* Drop Inside Indicator Overlay */}
+        {/* Drop Inside Indicator Overlay (Strictly pointer-events-none to eliminate mouse jitter) */}
         {dropPosition === 'inside' && (
-          <div className="absolute inset-0 rounded-3xl bg-brand-600/20 border-2 border-brand-400 pointer-events-none flex items-center justify-center gap-2 text-xs font-bold text-brand-200 shadow-inner z-20">
-            <Download className="w-4 h-4 animate-bounce" />
+          <div className="absolute inset-0 rounded-3xl bg-brand-600/15 border border-brand-400/50 pointer-events-none flex items-center justify-center gap-2 text-xs font-bold text-brand-200 shadow-inner z-20">
+            <Download className="w-4 h-4 text-brand-400" />
             <span>Drop Inside as Subtopic under "{node.Topic_Name}"</span>
           </div>
         )}
@@ -462,7 +488,12 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           </div>
 
           {/* Hierarchy & Move Context Menu */}
-          <div className={clsx('w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0 relative', menuOpen && 'z-[100]')}>
+          <div
+            className={clsx(
+              'w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0 relative',
+              menuOpen && 'z-[100]'
+            )}
+          >
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
@@ -473,7 +504,10 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
             {menuOpen && (
               <>
-                <div className="fixed inset-0 z-[90] bg-transparent" onClick={() => setMenuOpen(false)} />
+                <div
+                  className="fixed inset-0 z-[90] bg-transparent"
+                  onClick={() => setMenuOpen(false)}
+                />
                 <div className="absolute right-0 top-12 z-[100] w-64 rounded-3xl bg-slate-900/98 backdrop-blur-2xl border border-slate-700/90 shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-2.5 text-xs text-slate-200 animate-slide-up space-y-1 ring-1 ring-white/10">
                   {/* Rename */}
                   <button
@@ -611,10 +645,10 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         </div>
       </div>
 
-      {/* Insertion Line After Indicator */}
+      {/* Insertion Line After Indicator (Absolute overlay with pointer-events-none) */}
       {dropPosition === 'after' && (
         <div
-          className="absolute -bottom-2 left-0 right-0 z-30 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.8)] flex items-center justify-center animate-pulse"
+          className="absolute -bottom-1.5 left-0 right-0 z-30 h-1 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.9)] pointer-events-none flex items-center justify-center animate-pulse"
           style={{ marginLeft: isRoot ? '0px' : `${node.depth * 38}px` }}
         >
           <span className="px-3 py-0.5 rounded-full bg-cyan-500 text-[10px] font-bold text-white shadow-md">
