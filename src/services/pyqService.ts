@@ -120,7 +120,7 @@ function isChapterMatch(qChap: string, target: string): boolean {
   // 2. Exact word set match (e.g. "Work Time" vs "Time & Work")
   const tokensQ = getWordTokens(qChap);
   const tokensT = getWordTokens(target);
-  if (tokensQ.size > 0 && tokensT.size > 0) {
+  if (tokensQ.size > 0 && tokensT.size > 0 && tokensQ.size === tokensT.size) {
     let allQInT = true;
     for (const t of tokensQ) {
       if (!tokensT.has(t)) {
@@ -129,15 +129,6 @@ function isChapterMatch(qChap: string, target: string): boolean {
       }
     }
     if (allQInT) return true;
-
-    let allTInQ = true;
-    for (const t of tokensT) {
-      if (!tokensQ.has(t)) {
-        allTInQ = false;
-        break;
-      }
-    }
-    if (allTInQ) return true;
   }
 
   return false;
