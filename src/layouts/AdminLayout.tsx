@@ -4,6 +4,7 @@ import { AdminNavbar } from '../components/admin/AdminNavbar';
 import { AdminSidebar } from '../components/admin/AdminSidebar';
 import { ActiveTimerWidget } from '../components/common/ActiveTimerWidget';
 import { TopicDetailModal } from '../components/topicDetail/TopicDetailModal';
+import { PYQModal } from '../components/pyq/PYQModal';
 import { HardTopicsModal } from '../modals/HardTopicsModal';
 import { DoingTopicsModal } from '../modals/DoingTopicsModal';
 import { TodoTopicsModal } from '../modals/TodoTopicsModal';
@@ -12,7 +13,7 @@ import { AddSubjectModal } from '../modals/AddSubjectModal';
 import { useTopicMaster } from '../context/TopicMasterContext';
 
 export const AdminLayout: React.FC = () => {
-  const { subjects } = useTopicMaster();
+  const { subjects, activePYQTopic, closePYQModal } = useTopicMaster();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
 
@@ -80,6 +81,18 @@ export const AdminLayout: React.FC = () => {
 
       {/* Universal Topic Detail Workspace Modal */}
       <TopicDetailModal />
+
+      {/* Universal PYQ Practice Modal */}
+      {activePYQTopic && (
+        <PYQModal
+          isOpen={Boolean(activePYQTopic)}
+          onClose={closePYQModal}
+          topicId={activePYQTopic.topicId}
+          topicName={activePYQTopic.topicName}
+          subjectName={activePYQTopic.subjectName}
+          subtopicNames={activePYQTopic.subtopicNames}
+        />
+      )}
 
       {/* Active Study Timer Pill */}
       <ActiveTimerWidget />

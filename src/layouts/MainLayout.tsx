@@ -3,10 +3,13 @@ import { Outlet } from 'react-router-dom';
 import { MainNavbar } from '../components/navbar/MainNavbar';
 import { ActiveTimerWidget } from '../components/common/ActiveTimerWidget';
 import { TopicDetailModal } from '../components/topicDetail/TopicDetailModal';
+import { PYQModal } from '../components/pyq/PYQModal';
+import { useTopicMaster } from '../context/TopicMasterContext';
 import { SettingsModal } from '../modals/SettingsModal';
 import { GlobalSearchModal } from '../modals/GlobalSearchModal';
 
 export const MainLayout: React.FC = () => {
+  const { activePYQTopic, closePYQModal } = useTopicMaster();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -45,6 +48,18 @@ export const MainLayout: React.FC = () => {
 
       {/* Universal Topic Detail Workspace Modal */}
       <TopicDetailModal />
+
+      {/* Universal PYQ Practice Modal */}
+      {activePYQTopic && (
+        <PYQModal
+          isOpen={Boolean(activePYQTopic)}
+          onClose={closePYQModal}
+          topicId={activePYQTopic.topicId}
+          topicName={activePYQTopic.topicName}
+          subjectName={activePYQTopic.subjectName}
+          subtopicNames={activePYQTopic.subtopicNames}
+        />
+      )}
 
       {/* Global Modals */}
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />

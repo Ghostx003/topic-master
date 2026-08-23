@@ -24,7 +24,7 @@ import {
 import { clsx } from 'clsx';
 
 export const PYQAnalyzerPage: React.FC = () => {
-  const { subjects, topics, openTopicDetailModal, startTimer, updateTopicTags } = useTopicMaster();
+  const { subjects, topics, openTopicDetailModal, openPYQModal, startTimer, updateTopicTags } = useTopicMaster();
 
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -610,6 +610,19 @@ export const PYQAnalyzerPage: React.FC = () => {
                               updateTopicTags(topic.id, { Star: !isStarred })
                             }
                           />
+                          <button
+                            onClick={() => {
+                              openPYQModal(
+                                topic.id,
+                                topic.Topic_Name,
+                                subj?.Subject_Name || ''
+                              );
+                            }}
+                            className="p-2 rounded-xl bg-slate-900 hover:bg-amber-950/60 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 transition-colors"
+                            title="Practice GateOverflow Questions for this topic"
+                          >
+                            <Flame className="w-3.5 h-3.5 fill-current text-amber-400" />
+                          </button>
                           <button
                             onClick={() => {
                               startTimer(topic.id);

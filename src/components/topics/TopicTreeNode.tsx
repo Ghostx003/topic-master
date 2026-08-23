@@ -82,6 +82,8 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     indentTopicRight,
     outdentTopicLeft,
     openTopicDetailModal,
+    openPYQModal,
+    subjects,
     topics,
   } = useTopicMaster();
 
@@ -530,19 +532,31 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                   </span>
                 )}
 
-                {/* PYQ Count Badge */}
+                {/* PYQ Count Badge - Interactive Modal Trigger */}
                 {(() => {
                   const pyqCount = getAuthoritativeTopicPYQ(node, topics);
                   if (!pyqCount || pyqCount <= 0) return null;
                   const badge = getPyqBadgeStyle(pyqCount);
+                  const subject = subjects.find((s) => s.id === subjectId);
+                  const subtopicNames = node.children?.map((c) => c.Topic_Name) || [];
                   return (
-                    <span
-                      className={`flex items-center gap-1 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-xl shrink-0 border ${badge.wrapper}`}
-                      title={`${pyqCount} Previous Year Questions in GATE CSE`}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openPYQModal(
+                          node.id,
+                          node.Topic_Name,
+                          subject?.Subject_Name || '',
+                          subtopicNames
+                        );
+                      }}
+                      className={`flex items-center gap-1 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-xl shrink-0 border ${badge.wrapper} hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm`}
+                      title={`Click to solve all ${pyqCount} Previous Year Questions for ${node.Topic_Name}`}
                     >
                       <Flame className={`w-3 h-3 ${badge.icon}`} />
                       <span className={badge.label}>{pyqCount} PYQs</span>
-                    </span>
+                    </button>
                   );
                 })()}
               </div>
@@ -689,6 +703,27 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                 data-topic-context-menu="true"
                 className="absolute right-0 top-12 z-[9999] w-64 rounded-3xl bg-[#090e1a] border-2 border-slate-700 shadow-[0_25px_80px_rgba(0,0,0,0.98)] p-2.5 text-xs text-slate-200 animate-slide-up space-y-1 ring-1 ring-white/15 opacity-100"
               >
+                {/* Practice PYQs */}
+                <button
+                  onClick={() => {
+                    setActiveMenuTopicId?.(null);
+                    const subject = subjects.find((s) => s.id === subjectId);
+                    const subtopicNames = node.children?.map((c) => c.Topic_Name) || [];
+                    openPYQModal(
+                      node.id,
+                      node.Topic_Name,
+                      subject?.Subject_Name || '',
+                      subtopicNames
+                    );
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-amber-950/60 text-amber-300 transition-colors font-bold"
+                >
+                  <Flame className="w-4 h-4 text-amber-400 fill-current" />
+                  <span>Practice PYQs ({getAuthoritativeTopicPYQ(node, topics)})</span>
+                </button>
+
+                <div className="h-px bg-slate-800 my-1" />
+
                 {/* Rename */}
                 <button
                   onClick={() => {

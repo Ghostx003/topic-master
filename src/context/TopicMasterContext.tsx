@@ -8,10 +8,20 @@ import { StorageService, DEFAULT_INITIAL_STATE } from '../services/storageServic
 import { BackupService, deduplicateDatabase } from '../services/backupService';
 import { getAllDescendantIds } from '../utils/hierarchyUtils';
 
+export interface ActivePYQTopicInfo {
+  topicId: string;
+  topicName: string;
+  subjectName: string;
+  subtopicNames?: string[];
+}
+
 interface TopicMasterContextType extends TopicMasterState, TopicMasterActions {
   selectedTopicForModal: Topic | null;
   openTopicDetailModal: (topicId: string | null) => void;
   closeTopicDetailModal: () => void;
+  activePYQTopic: ActivePYQTopicInfo | null;
+  openPYQModal: (topicId: string, topicName: string, subjectName: string, subtopicNames?: string[]) => void;
+  closePYQModal: () => void;
 }
 
 const TopicMasterContext = createContext<TopicMasterContextType | undefined>(undefined);
@@ -19,6 +29,7 @@ const TopicMasterContext = createContext<TopicMasterContextType | undefined>(und
 export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, setState] = useState<TopicMasterState>(() => StorageService.loadState());
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+  const [activePYQTopic, setActivePYQTopic] = useState<ActivePYQTopicInfo | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
 
   // Sync to persistence whenever state changes
@@ -1101,6 +1112,24 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
     setSelectedTopicId(null);
   }, []);
 
+  // ================= UNIVERSAL PYQ PRACTICE MODAL =================
+
+  const openPYQModal = useCallback(
+    (topicId: string, topicName: string, subjectName: string, subtopicNames?: string[]) => {
+      setActivePYQTopic({
+        topicId,
+        topicName,
+        subjectName,
+        subtopicNames,
+      });
+    },
+    []
+  );
+
+  const closePYQModal = useCallback(() => {
+    setActivePYQTopic(null);
+  }, []);
+
   const selectedTopicForModal = state.topics.find((t) => t.id === selectedTopicId) || null;
 
   return (
@@ -1150,6 +1179,9 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
         selectedTopicForModal,
         openTopicDetailModal,
         closeTopicDetailModal,
+        activePYQTopic,
+        openPYQModal,
+        closePYQModal,
       }}
     >
       {children}

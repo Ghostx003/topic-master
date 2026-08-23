@@ -8,7 +8,7 @@ import { ContentBlockList } from './ContentBlockList';
 import { TopicTagBadge } from '../common/TopicTagBadge';
 import { getTopicPath, getDirectChildren } from '../../utils/hierarchyUtils';
 import { formatHours } from '../../utils/timeUtils';
-import { getAuthoritativeTopicPYQ, getPyqBadgeStyle } from '../../utils/pyqUtils';
+import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
 import {
   BookOpen,
   ChevronRight,
@@ -38,6 +38,7 @@ export const TopicDetailModal: React.FC = () => {
     updateTopic,
     updateTopicTags,
     deleteTopic,
+    openPYQModal,
   } = useTopicMaster();
 
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('subtopics');
@@ -178,16 +179,23 @@ export const TopicDetailModal: React.FC = () => {
                 />
                 {(() => {
                   const pyqCount = getAuthoritativeTopicPYQ(selectedTopicForModal, topics);
-                  if (!pyqCount || pyqCount <= 0) return null;
-                  const badge = getPyqBadgeStyle(pyqCount);
+                  const subtopicNames = directChildren.map((c) => c.Topic_Name);
                   return (
-                    <span
-                      className={`flex items-center gap-1.5 text-xs font-mono font-bold px-3 py-1 rounded-xl border ${badge.wrapper}`}
-                      title={`${pyqCount} Historical Previous Year Questions in GATE CSE`}
+                    <button
+                      onClick={() =>
+                        openPYQModal(
+                          selectedTopicForModal.id,
+                          selectedTopicForModal.Topic_Name,
+                          subject?.Subject_Name || '',
+                          subtopicNames
+                        )
+                      }
+                      className="flex items-center gap-1.5 text-xs font-mono font-bold px-3.5 py-1.5 rounded-xl border bg-amber-950/60 hover:bg-amber-900/70 border-amber-500/50 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)] transition-all active:scale-95 cursor-pointer"
+                      title="Open Practice PYQs for this topic"
                     >
-                      <Flame className={`w-3.5 h-3.5 ${badge.icon} fill-current`} />
-                      <span className={badge.label}>{pyqCount} PYQs</span>
-                    </span>
+                      <Flame className="w-3.5 h-3.5 text-amber-400 fill-current" />
+                      <span>{pyqCount > 0 ? `${pyqCount} PYQs` : 'Practice PYQs'}</span>
+                    </button>
                   );
                 })()}
                 {selectedTopicForModal.Topic_Study_Hours > 0 && (
