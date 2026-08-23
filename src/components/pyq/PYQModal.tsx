@@ -5,8 +5,6 @@ import {
   loadPYQProgress,
   savePYQProgress,
   calculateTopicPYQStats,
-  loadPYQYearFilter,
-  savePYQYearFilter,
   filterQuestionsByYear,
   extractYearNumber,
 } from '../../services/pyqService';
@@ -49,6 +47,8 @@ const YEAR_FILTER_OPTIONS: { id: PYQYearFilter; label: string; desc: string }[] 
   { id: 'older_than_2000', label: 'Older than 2000', desc: '< 2000' },
 ];
 
+import { useTopicMaster } from '../../context/TopicMasterContext';
+
 export const PYQModal: React.FC<PYQModalProps> = ({
   isOpen,
   onClose,
@@ -56,8 +56,8 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   subjectName,
   subtopicNames = [],
 }) => {
+  const { yearFilter, setYearFilter } = useTopicMaster();
   const [progress, setProgress] = useState<PYQProgressMap>(() => loadPYQProgress());
-  const [yearFilter, setYearFilter] = useState<PYQYearFilter>(() => loadPYQYearFilter());
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [activeTab, setActiveTab] = useState<PYQFilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,7 +79,6 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   // Handle year filter change with site-wide persistence
   const handleYearFilterChange = (filter: PYQYearFilter) => {
     setYearFilter(filter);
-    savePYQYearFilter(filter);
   };
 
   // Load all raw questions for this topic and subtopics (already sorted newest first)

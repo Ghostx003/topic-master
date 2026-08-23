@@ -39,6 +39,7 @@ export const TopicDetailModal: React.FC = () => {
     updateTopicTags,
     deleteTopic,
     openPYQModal,
+    yearFilter,
   } = useTopicMaster();
 
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('subtopics');
@@ -178,7 +179,7 @@ export const TopicDetailModal: React.FC = () => {
                   onClick={() => handleToggleTag('Star', !isStarred)}
                 />
                 {(() => {
-                  const pyqCount = getAuthoritativeTopicPYQ(selectedTopicForModal, topics);
+                  const pyqCount = getAuthoritativeTopicPYQ(selectedTopicForModal, topics, yearFilter, subject?.Subject_Name);
                   const subtopicNames = directChildren.map((c) => c.Topic_Name);
                   return (
                     <button

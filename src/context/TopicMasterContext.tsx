@@ -8,6 +8,9 @@ import { StorageService, DEFAULT_INITIAL_STATE } from '../services/storageServic
 import { BackupService, deduplicateDatabase } from '../services/backupService';
 import { getAllDescendantIds } from '../utils/hierarchyUtils';
 
+import { PYQYearFilter } from '../types/pyq';
+import { loadPYQYearFilter, savePYQYearFilter } from '../services/pyqService';
+
 export interface ActivePYQTopicInfo {
   topicId: string;
   topicName: string;
@@ -22,6 +25,8 @@ interface TopicMasterContextType extends TopicMasterState, TopicMasterActions {
   activePYQTopic: ActivePYQTopicInfo | null;
   openPYQModal: (topicId: string, topicName: string, subjectName: string, subtopicNames?: string[]) => void;
   closePYQModal: () => void;
+  yearFilter: PYQYearFilter;
+  setYearFilter: (filter: PYQYearFilter) => void;
 }
 
 const TopicMasterContext = createContext<TopicMasterContextType | undefined>(undefined);
@@ -30,6 +35,7 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [state, setState] = useState<TopicMasterState>(() => StorageService.loadState());
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [activePYQTopic, setActivePYQTopic] = useState<ActivePYQTopicInfo | null>(null);
+  const [yearFilter, setYearFilterState] = useState<PYQYearFilter>(() => loadPYQYearFilter());
   const timerIntervalRef = useRef<number | null>(null);
 
   // Sync to persistence whenever state changes
@@ -1130,6 +1136,11 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
     setActivePYQTopic(null);
   }, []);
 
+  const setYearFilter = useCallback((filter: PYQYearFilter) => {
+    setYearFilterState(filter);
+    savePYQYearFilter(filter);
+  }, []);
+
   const selectedTopicForModal = state.topics.find((t) => t.id === selectedTopicId) || null;
 
   return (
@@ -1182,6 +1193,8 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
         activePYQTopic,
         openPYQModal,
         closePYQModal,
+        yearFilter,
+        setYearFilter,
       }}
     >
       {children}

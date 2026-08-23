@@ -1,5 +1,7 @@
 import { Topic, TopicTreeNodeType } from '../types/topic';
-import { INITIAL_TOPICS } from './sampleData';
+import { PYQYearFilter } from '../types/pyq';
+import { getQuestionsForTopic, filterQuestionsByYear } from '../services/pyqService';
+import { INITIAL_TOPICS, INITIAL_SUBJECTS } from './sampleData';
 
 const initialTopicMap = new Map(INITIAL_TOPICS.map((t) => [t.id, t]));
 
@@ -407,17 +409,23 @@ const KEYWORD_PYQ_RULES: { keywords: string[]; pyq: number }[] = [
 
 /**
  * Universal authoritative resolver for Topic & Subtopic PYQ counts.
- * Checks explicit attributes, catalog database, keyword rules, and parent/child hierarchies.
+/**
+ * Authoritative, dynamic PYQ Count Resolver for any topic or hierarchy node.
+ * Checks explicit attributes, catalog database, keyword rules, year filters, and parent/child hierarchies.
  */
 export function getAuthoritativeTopicPYQ(
   topicOrNode: Topic | TopicTreeNodeType,
-  allTopics: Topic[] = []
+  allTopics: Topic[] = [],
+  yearFilter: PYQYearFilter = 'all',
+  subjectName?: string
 ): number {
+  if (!topicOrNode) return 0;
+
   // 1. If this is a tree node with children, it is a parent topic.
   //    Parent PYQ count is STRICTLY and ALWAYS equal to the sum of all its subtopics.
   if ('children' in topicOrNode && Array.isArray((topicOrNode as any).children) && (topicOrNode as any).children.length > 0) {
     return (topicOrNode as any).children.reduce(
-      (acc: number, c: any) => acc + getAuthoritativeTopicPYQ(c, allTopics),
+      (acc: number, c: any) => acc + getAuthoritativeTopicPYQ(c, allTopics, yearFilter, subjectName),
       0
     );
   }
@@ -428,25 +436,45 @@ export function getAuthoritativeTopicPYQ(
     const children = allTopics.filter((t) => t.Parent_Id === topicOrNode.id);
     if (children.length > 0) {
       return children.reduce(
-        (acc, c) => acc + getAuthoritativeTopicPYQ(c, allTopics),
+        (acc, c) => acc + getAuthoritativeTopicPYQ(c, allTopics, yearFilter, subjectName),
         0
       );
     }
   }
 
-  // 3. Direct explicit count (leaf topics only — no children above)
+  // 3. Look up in the authoritative 3,683 GATE PYQ questions database
+  const effSubjectName =
+    subjectName ||
+    INITIAL_SUBJECTS.find((s) => s.id === topicOrNode.Subject_Id)?.Subject_Name ||
+    '';
+
+  if (effSubjectName) {
+    const matchedQs = getQuestionsForTopic(effSubjectName, topicOrNode.Topic_Name, []);
+    if (matchedQs.length > 0) {
+      if (yearFilter === 'all') {
+        return matchedQs.length;
+      }
+      return filterQuestionsByYear(matchedQs, yearFilter).length;
+    }
+  }
+
+  // If a year filter is active and this topic has no questions in the DB for that year
+  if (yearFilter !== 'all') {
+    return 0;
+  }
+
+  // 4. Direct explicit count (leaf topics only — no children above)
   if (typeof topicOrNode.Topic_PYQ_Count === 'number' && topicOrNode.Topic_PYQ_Count > 0) {
     return topicOrNode.Topic_PYQ_Count;
   }
 
-
-  // 4. Initial Sample Dataset match by ID (for leaf topics with no children)
+  // 5. Initial Sample Dataset match by ID (for leaf topics with no children)
   const fromInitial = initialTopicMap.get(topicOrNode.id)?.Topic_PYQ_Count;
   if (fromInitial && fromInitial > 0) {
     return fromInitial;
   }
 
-  // 5. Keyword / Concept matching (for leaf topics with no children and no catalog entry)
+  // 6. Keyword / Concept matching (for leaf topics with no children and no catalog entry)
   const nameLower = (topicOrNode.Topic_Name || '').toLowerCase();
   const descLower = (topicOrNode.Topic_Description || '').toLowerCase();
   const text = `${nameLower} ${descLower}`;
@@ -457,7 +485,7 @@ export function getAuthoritativeTopicPYQ(
     }
   }
 
-  // 6. Unknown / custom-created topic with no children → return 0, never fabricate counts
+  // 7. Unknown / custom-created topic with no children → return 0, never fabricate counts
   return 0;
 }
 
