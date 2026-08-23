@@ -336,6 +336,103 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
     });
   }, []);
 
+  const reparentTopic = useCallback((topicId: string, newParentId: string | null): boolean => {
+    let succeeded = false;
+    setState((prev) => {
+      const topic = prev.topics.find((t) => t.id === topicId);
+      if (!topic || topicId === newParentId) return prev;
+
+      // Prevent cyclic hierarchy: newParentId cannot be a descendant of topicId
+      if (newParentId) {
+        const descendants = getAllDescendantIds(prev.topics, topicId);
+        if (descendants.includes(newParentId)) return prev;
+      }
+
+      // Determine target order under new parent
+      const newSiblings = prev.topics.filter(
+        (t) => t.Subject_Id === topic.Subject_Id && t.Parent_Id === newParentId && t.id !== topicId
+      );
+
+      succeeded = true;
+      return {
+        ...prev,
+        topics: prev.topics.map((t) =>
+          t.id === topicId
+            ? {
+                ...t,
+                Parent_Id: newParentId,
+                Topic_Order: newSiblings.length,
+                updated_at: new Date().toISOString(),
+              }
+            : t
+        ),
+      };
+    });
+    return succeeded;
+  }, []);
+
+  const moveTopicBeforeOrAfter = useCallback(
+    (sourceId: string, targetId: string, position: 'before' | 'after') => {
+      setState((prev) => {
+        const sourceTopic = prev.topics.find((t) => t.id === sourceId);
+        const targetTopic = prev.topics.find((t) => t.id === targetId);
+        if (!sourceTopic || !targetTopic || sourceId === targetId) return prev;
+
+        // Prevent making a parent a child of its own descendant
+        if (targetTopic.Parent_Id) {
+          const descendants = getAllDescendantIds(prev.topics, sourceId);
+          if (descendants.includes(targetTopic.Parent_Id)) return prev;
+        }
+
+        const newParentId = targetTopic.Parent_Id;
+        const targetSubjectId = targetTopic.Subject_Id;
+
+        // Siblings of target excluding source
+        const siblings = prev.topics
+          .filter((t) => t.Subject_Id === targetSubjectId && t.Parent_Id === newParentId && t.id !== sourceId)
+          .sort((a, b) => (a.Topic_Order ?? 0) - (b.Topic_Order ?? 0));
+
+        const targetIdx = siblings.findIndex((t) => t.id === targetId);
+        if (targetIdx === -1) return prev;
+
+        const insertionIndex = position === 'before' ? targetIdx : targetIdx + 1;
+
+        const updatedSource = {
+          ...sourceTopic,
+          Parent_Id: newParentId,
+          Subject_Id: targetSubjectId,
+          updated_at: new Date().toISOString(),
+        };
+
+        const reorderedSiblings = [
+          ...siblings.slice(0, insertionIndex),
+          updatedSource,
+          ...siblings.slice(insertionIndex),
+        ];
+
+        const orderMap = new Map<string, number>();
+        reorderedSiblings.forEach((t, idx) => orderMap.set(t.id, idx));
+
+        return {
+          ...prev,
+          topics: prev.topics.map((t) => {
+            if (orderMap.has(t.id)) {
+              return {
+                ...t,
+                Parent_Id: newParentId,
+                Subject_Id: targetSubjectId,
+                Topic_Order: orderMap.get(t.id)!,
+                updated_at: new Date().toISOString(),
+              };
+            }
+            return t;
+          }),
+        };
+      });
+    },
+    []
+  );
+
   const indentTopicRight = useCallback((id: string) => {
     setState((prev) => {
       const topic = prev.topics.find((t) => t.id === id);
@@ -782,6 +879,8 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
         reorderTopics,
         promoteTopic,
         demoteTopic,
+        reparentTopic,
+        moveTopicBeforeOrAfter,
         indentTopicRight,
         outdentTopicLeft,
         moveTopic,

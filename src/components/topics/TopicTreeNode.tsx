@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { TopicTreeNodeType, TopicTags } from '../../types/topic';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { TopicTagBadge } from '../common/TopicTagBadge';
+import { getAllDescendantIds } from '../../utils/hierarchyUtils';
 import {
   ChevronRight,
   ChevronDown,
@@ -21,6 +22,7 @@ import {
   Clock,
   Layers,
   GripVertical,
+  Download,
 } from 'lucide-react';
 import { formatHours } from '../../utils/timeUtils';
 import { clsx } from 'clsx';
@@ -50,12 +52,18 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef<number | null>(null);
 
+  // HTML5 Drag & Drop State
+  const [isHtml5Dragging, setIsHtml5Dragging] = useState(false);
+  const [dropPosition, setDropPosition] = useState<'inside' | 'before' | 'after' | null>(null);
+
   const {
     updateTopic,
     updateTopicTags,
     moveTopic,
     promoteTopic,
     demoteTopic,
+    reparentTopic,
+    moveTopicBeforeOrAfter,
     indentTopicRight,
     outdentTopicLeft,
     openTopicDetailModal,
@@ -67,7 +75,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   const isStarred = Boolean(node.Topic_Tags?.Star);
   const isRoot = node.depth === 0;
 
-  // Sibling analysis for Indent Right (must have a preceding sibling)
+  // Sibling analysis for Indent Right
   const siblings = topics
     .filter((t) => t.Subject_Id === subjectId && t.Parent_Id === node.Parent_Id)
     .sort((a, b) => (a.Topic_Order ?? 0) - (b.Topic_Order ?? 0));
@@ -100,7 +108,70 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     }
   };
 
-  // Drag / Swipe Gestures Handling
+  // ================= HTML5 DRAG & DROP HANDLERS =================
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('text/plain', node.id);
+    e.dataTransfer.setData('application/json', JSON.stringify({ topicId: node.id, name: node.Topic_Name }));
+    e.dataTransfer.effectAllowed = 'move';
+    setIsHtml5Dragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsHtml5Dragging(false);
+    setDropPosition(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relY = e.clientY - rect.top;
+    const height = rect.height;
+
+    if (relY < height * 0.25) {
+      setDropPosition('before');
+    } else if (relY > height * 0.75) {
+      setDropPosition('after');
+    } else {
+      setDropPosition('inside');
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDropPosition(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const sourceId = e.dataTransfer.getData('text/plain');
+    if (!sourceId || sourceId === node.id) {
+      setDropPosition(null);
+      return;
+    }
+
+    // Guard against dropping onto own descendant
+    const descendants = getAllDescendantIds(topics, sourceId);
+    if (descendants.includes(node.id)) {
+      setDropPosition(null);
+      return;
+    }
+
+    if (dropPosition === 'inside') {
+      reparentTopic(sourceId, node.id);
+      setIsExpanded(true); // expand to show dropped child
+    } else if (dropPosition === 'before' || dropPosition === 'after') {
+      moveTopicBeforeOrAfter(sourceId, node.id, dropPosition);
+    }
+
+    setDropPosition(null);
+  };
+
+  // ================= TOUCH SWIPE GESTURE HANDLERS =================
   const handleTouchStart = (e: React.TouchEvent) => {
     dragStartX.current = e.touches[0].clientX;
     setIsDragging(true);
@@ -130,46 +201,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     dragStartX.current = null;
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('button, input, form, a, select')) return;
-
-    dragStartX.current = e.clientX;
-    setIsDragging(true);
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      if (dragStartX.current === null) return;
-      const diff = moveEvent.clientX - dragStartX.current;
-
-      if (diff > 0 && !canIndentRight) {
-        setDragOffset(Math.min(diff * 0.2, 20));
-      } else if (diff < 0 && !canOutdentLeft) {
-        setDragOffset(Math.max(diff * 0.2, -20));
-      } else {
-        setDragOffset(Math.max(Math.min(diff, 90), -90));
-      }
-    };
-
-    const onMouseUp = () => {
-      setDragOffset((curr) => {
-        if (curr > 45 && canIndentRight) {
-          indentTopicRight(node.id);
-        } else if (curr < -45 && canOutdentLeft) {
-          outdentTopicLeft(node.id);
-        }
-        return 0;
-      });
-      setIsDragging(false);
-      dragStartX.current = null;
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  };
-
-  // Find candidate parents for demote
+  // Find candidate parents for demote menu
   const candidateParents = topics.filter(
     (t) => t.Subject_Id === subjectId && t.id !== node.id && t.Parent_Id !== node.id
   );
@@ -178,33 +210,48 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     <div className={clsx('relative select-none', isRoot ? 'my-5 sm:my-6' : 'my-2.5 sm:my-3')}>
       {/* Visual Swipe Helper Badges */}
       {dragOffset > 25 && canIndentRight && (
-        <div
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-cyan-600 text-white text-xs font-bold shadow-glow-cyan animate-pulse"
-        >
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-cyan-600 text-white text-xs font-bold shadow-glow-cyan animate-pulse">
           <ArrowRight className="w-4 h-4" />
           <span>Indent → Subtopic</span>
         </div>
       )}
 
       {dragOffset < -25 && canOutdentLeft && (
-        <div
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-purple-600 text-white text-xs font-bold shadow-glow-purple animate-pulse"
-        >
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-purple-600 text-white text-xs font-bold shadow-glow-purple animate-pulse">
           <span>Promote ← Parent</span>
           <ArrowLeft className="w-4 h-4" />
         </div>
       )}
 
+      {/* Insertion Line Before Indicator */}
+      {dropPosition === 'before' && (
+        <div
+          className="absolute -top-2 left-0 right-0 z-30 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.8)] flex items-center justify-center animate-pulse"
+          style={{ marginLeft: isRoot ? '0px' : `${node.depth * 38}px` }}
+        >
+          <span className="px-3 py-0.5 rounded-full bg-cyan-500 text-[10px] font-bold text-white shadow-md">
+            Insert Above
+          </span>
+        </div>
+      )}
+
       {/* Node Row Card */}
       <div
+        draggable
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
         className={clsx(
-          'group relative flex items-center justify-between gap-5 sm:gap-6 rounded-3xl border backdrop-blur-2xl card-highlight transition-all duration-300',
-          isDragging ? 'cursor-grabbing' : 'cursor-grab',
-          isRoot
+          'group relative flex items-center justify-between gap-5 sm:gap-6 rounded-3xl border backdrop-blur-2xl card-highlight transition-all duration-200',
+          isHtml5Dragging && 'opacity-40 scale-[0.98] border-brand-500/60 shadow-none',
+          dropPosition === 'inside'
+            ? 'border-2 border-brand-400 bg-brand-500/20 shadow-glow-lg scale-[1.01]'
+            : isRoot
             ? isDone
               ? 'px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-emerald-950/25 via-slate-900/80 to-slate-950/90 border-emerald-500/30 text-slate-300 shadow-md'
               : 'px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-slate-900/95 via-slate-900/85 to-slate-950/95 border-slate-800/90 hover:border-brand-500/50 text-slate-100 shadow-card-glow hover:shadow-card-hover'
@@ -214,18 +261,26 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         )}
         style={{
           marginLeft: isRoot ? '0px' : `${node.depth * 38}px`,
-          transform: `translateX(${dragOffset}px)`,
+          transform: isDragging ? `translateX(${dragOffset}px)` : undefined,
           transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1)',
         }}
       >
-        {/* Left Section: Drag Handle, Expand Toggle, Star, Title, Subtopics Pill, Time Pill */}
+        {/* Drop Inside Indicator Overlay */}
+        {dropPosition === 'inside' && (
+          <div className="absolute inset-0 rounded-3xl bg-brand-600/20 border-2 border-brand-400 pointer-events-none flex items-center justify-center gap-2 text-xs font-bold text-brand-200 shadow-inner z-20">
+            <Download className="w-4 h-4 animate-bounce" />
+            <span>Drop Inside as Subtopic under "{node.Topic_Name}"</span>
+          </div>
+        )}
+
+        {/* Left Section: Drag Handle, Expand Toggle, Star, Title, Notes */}
         <div className="flex items-center gap-3.5 sm:gap-5 min-w-0 flex-1">
-          {/* Drag grip icon hint */}
+          {/* Drag grip icon - Draggable Handle */}
           <div
-            className="p-1 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0 cursor-grab active:cursor-grabbing"
-            title="Swipe or slide right to indent (subtopic), slide left to promote"
+            className="p-1 text-slate-500 group-hover:text-brand-400 transition-colors shrink-0 cursor-grab active:cursor-grabbing hover:scale-110"
+            title="Drag and drop onto any topic to nest, or reorder before/after"
           >
-            <GripVertical className="w-4 h-4" />
+            <GripVertical className="w-5 h-5" />
           </div>
 
           {/* Expand / Collapse Button or Tree Bullet */}
@@ -259,7 +314,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
             onClick={() => handleToggleTag('Star', isStarred)}
           />
 
-          {/* Topic Title or Inline Rename Editor */}
+          {/* Topic Title & Notes or Inline Rename Editor */}
           {isEditingName ? (
             <form onSubmit={handleSaveName} className="flex items-center gap-2 flex-1 max-w-xl">
               <input
@@ -455,7 +510,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                       className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-cyan-950/50 text-cyan-300 transition-colors font-medium"
                     >
                       <ArrowRight className="w-4 h-4" />
-                      <span>Indent (Swipe Right →)</span>
+                      <span>Indent under previous topic</span>
                     </button>
                   )}
 
@@ -469,7 +524,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                       className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-purple-950/50 text-purple-300 transition-colors font-medium"
                     >
                       <ArrowLeft className="w-4 h-4" />
-                      <span>Outdent (Swipe Left ←)</span>
+                      <span>Outdent to parent level</span>
                     </button>
                   )}
 
@@ -554,6 +609,18 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Insertion Line After Indicator */}
+      {dropPosition === 'after' && (
+        <div
+          className="absolute -bottom-2 left-0 right-0 z-30 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.8)] flex items-center justify-center animate-pulse"
+          style={{ marginLeft: isRoot ? '0px' : `${node.depth * 38}px` }}
+        >
+          <span className="px-3 py-0.5 rounded-full bg-cyan-500 text-[10px] font-bold text-white shadow-md">
+            Insert Below
+          </span>
+        </div>
+      )}
 
       {/* Render Recursive Child Nodes with Indentation Guide Line */}
       {hasChildren && isExpanded && (

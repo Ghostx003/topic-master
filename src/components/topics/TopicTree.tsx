@@ -15,6 +15,7 @@ import {
   Clock,
   X,
 } from 'lucide-react';
+import { clsx } from 'clsx';
 
 export interface TopicTreeProps {
   subject: Subject;
@@ -29,8 +30,9 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
   onAddSubtopic,
   onDeleteTopic,
 }) => {
-  const { topics } = useTopicMaster();
+  const { topics, reparentTopic } = useTopicMaster();
   const [searchFilter, setSearchFilter] = useState('');
+  const [isRootDropOver, setIsRootDropOver] = useState(false);
 
   // Build recursive tree for this subject
   const treeNodes = useMemo(() => {
@@ -67,6 +69,24 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
       .map((node) => filterNode(node))
       .filter((n): n is TopicTreeNodeType => n !== null);
   }, [treeNodes, searchFilter]);
+
+  const handleRootDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsRootDropOver(true);
+  };
+
+  const handleRootDragLeave = () => {
+    setIsRootDropOver(false);
+  };
+
+  const handleRootDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsRootDropOver(false);
+    const sourceId = e.dataTransfer.getData('text/plain');
+    if (sourceId) {
+      reparentTopic(sourceId, null);
+    }
+  };
 
   return (
     <div className="flex flex-col flex-1 p-6 sm:p-10 lg:p-12 rounded-3xl bg-slate-950/70 border border-slate-800/80 backdrop-blur-2xl shadow-2xl">
@@ -172,6 +192,24 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
               searchFilter={searchFilter}
             />
           ))
+        )}
+
+        {/* Drop Target to promote any subtopic to Root Level */}
+        {treeNodes.length > 0 && (
+          <div
+            onDragOver={handleRootDragOver}
+            onDragLeave={handleRootDragLeave}
+            onDrop={handleRootDrop}
+            className={clsx(
+              'mt-6 p-4 rounded-3xl border-2 border-dashed transition-all text-center text-xs font-semibold select-none flex items-center justify-center gap-2',
+              isRootDropOver
+                ? 'border-brand-400 bg-brand-500/20 text-brand-200 shadow-glow-lg scale-[1.01]'
+                : 'border-slate-800/80 bg-slate-950/40 text-slate-500 hover:border-slate-700 hover:text-slate-400'
+            )}
+          >
+            <FolderTree className="w-4 h-4 text-brand-400" />
+            <span>Drag & drop any subtopic here to convert it into a Root Topic</span>
+          </div>
         )}
       </div>
     </div>

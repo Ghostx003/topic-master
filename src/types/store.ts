@@ -52,6 +52,8 @@ export interface TopicMasterActions {
   reorderTopics: (subjectId: string, parentId: string | null, topicIds: string[]) => void;
   promoteTopic: (id: string) => void;
   demoteTopic: (id: string, newParentId: string) => void;
+  reparentTopic: (topicId: string, newParentId: string | null) => boolean;
+  moveTopicBeforeOrAfter: (sourceId: string, targetId: string, position: 'before' | 'after') => void;
   indentTopicRight: (id: string) => void;
   outdentTopicLeft: (id: string) => void;
   moveTopic: (id: string, direction: 'up' | 'down') => void;
