@@ -379,37 +379,9 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           )}
         </div>
 
-        {/* Action Controls & Dropdown Menu with Fixed Grid Alignment */}
+        {/* Action Controls & Dropdown Menu */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Slot 1: Outdent (Promote Left) */}
-          <div className="w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0">
-            {canOutdentLeft && (
-              <button
-                onClick={() => outdentTopicLeft(node.id)}
-                className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-purple-300 hover:bg-purple-500/15 border border-transparent hover:border-purple-500/30 transition-all active:scale-95"
-                title="Promote / Outdent Left (Swipe Left)"
-                aria-label="Promote topic level"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-
-          {/* Slot 2: Indent (Demote Right) */}
-          <div className="w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0">
-            {canIndentRight && (
-              <button
-                onClick={() => indentTopicRight(node.id)}
-                className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-cyan-300 hover:bg-cyan-500/15 border border-transparent hover:border-cyan-500/30 transition-all active:scale-95"
-                title="Indent Right to Subtopic under previous topic (Swipe Right)"
-                aria-label="Indent topic into subtopic"
-              >
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-
-          {/* Slot 3: Quick Add Subtopic Button */}
+          {/* Quick Add Subtopic Button */}
           <div className="w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0">
             <button
               onClick={() => onAddSubtopic(node.id)}
@@ -421,7 +393,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
             </button>
           </div>
 
-          {/* Slot 4: Quick Open Detail Modal Button */}
+          {/* Quick Open Detail Modal Button */}
           <div className="w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0">
             <button
               onClick={() => openTopicDetailModal(node.id)}
@@ -433,7 +405,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
             </button>
           </div>
 
-          {/* Slot 5: Hierarchy & Move Context Menu */}
+          {/* Hierarchy & Move Context Menu */}
           <div className="w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0 relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
