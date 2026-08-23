@@ -1,7 +1,7 @@
 import { TopicMasterState } from '../types/store';
 import { INITIAL_SUBJECTS, INITIAL_TOPICS, INITIAL_SCHEDULES } from '../utils/sampleData';
 
-const STORAGE_KEY = 'topic_master_state_v1';
+const STORAGE_KEY = 'topic_master_state_gate_cse_v2';
 
 export const DEFAULT_INITIAL_STATE: TopicMasterState = {
   subjects: INITIAL_SUBJECTS,
@@ -31,9 +31,13 @@ export const StorageService = {
         return DEFAULT_INITIAL_STATE;
       }
       const parsed = JSON.parse(raw);
-      // Validate core fields exist
-      if (!Array.isArray(parsed.subjects) || !Array.isArray(parsed.topics)) {
-        console.warn('Malformed storage state detected. Re-initializing default state.');
+      // Validate core fields exist and has all subjects
+      if (
+        !Array.isArray(parsed.subjects) ||
+        !Array.isArray(parsed.topics) ||
+        parsed.subjects.length < 13
+      ) {
+        this.saveState(DEFAULT_INITIAL_STATE);
         return DEFAULT_INITIAL_STATE;
       }
       return {
