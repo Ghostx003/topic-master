@@ -9,7 +9,6 @@ import {
   Flame,
   Star,
   Search,
-  BookOpen,
   TrendingUp,
   Play,
   FileText,
@@ -17,6 +16,9 @@ import {
   X,
   Layers,
   Sparkles,
+  Check,
+  CheckCircle2,
+  CircleDot,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -25,7 +27,7 @@ export const PYQAnalyzerPage: React.FC = () => {
 
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [frequencyFilter, setFrequencyFilter] = useState<'all' | 'ultra' | 'high' | 'core'>('all');
+  const [frequencyFilter, setFrequencyFilter] = useState<'all' | 'ultra' | 'high' | 'core' | 'done' | 'pending'>('all');
 
   const initialSubjMap = useMemo(() => new Map(INITIAL_SUBJECTS.map((s) => [s.id, s])), []);
   const initialTopicMap = useMemo(() => new Map(INITIAL_TOPICS.map((t) => [t.id, t])), []);
@@ -52,6 +54,14 @@ export const PYQAnalyzerPage: React.FC = () => {
     return sum > 0 ? sum : 3184;
   }, [subjects, topics]);
 
+  const completedPYQs = useMemo(() => {
+    return topics
+      .filter((t) => Boolean(t.Topic_Tags?.Done))
+      .reduce((sum, t) => sum + getTopicPYQs(t), 0);
+  }, [topics]);
+
+  const completedPercentage = totalPYQs > 0 ? Math.round((completedPYQs / totalPYQs) * 100) : 0;
+
   const starredTopicsCount = useMemo(() => {
     return topics.filter((t) => t.Topic_Tags?.Star || initialTopicMap.get(t.id)?.Topic_Tags?.Star).length;
   }, [topics, initialTopicMap]);
@@ -60,6 +70,35 @@ export const PYQAnalyzerPage: React.FC = () => {
   const sortedSubjects = useMemo(() => {
     return [...subjects].sort((a, b) => getSubjectPYQs(b) - getSubjectPYQs(a));
   }, [subjects, topics]);
+
+  // Tier counts
+  const tierCounts = useMemo(() => {
+    const counts = {
+      all: 0,
+      ultra: 0,
+      high: 0,
+      core: 0,
+      done: 0,
+      pending: 0,
+    };
+
+    topics.forEach((t) => {
+      if (selectedSubjectId !== 'all' && t.Subject_Id !== selectedSubjectId) return;
+      const pyqs = getTopicPYQs(t);
+      const isStarred = Boolean(t.Topic_Tags?.Star || initialTopicMap.get(t.id)?.Topic_Tags?.Star);
+      if (pyqs <= 0 && !isStarred) return;
+
+      counts.all++;
+      if (pyqs >= 30) counts.ultra++;
+      else if (pyqs >= 15) counts.high++;
+      else counts.core++;
+
+      if (t.Topic_Tags?.Done) counts.done++;
+      else counts.pending++;
+    });
+
+    return counts;
+  }, [topics, selectedSubjectId, initialTopicMap]);
 
   // Filtered & Sorted Topics with PYQs
   const filteredTopics = useMemo(() => {
@@ -87,6 +126,10 @@ export const PYQAnalyzerPage: React.FC = () => {
       list = list.filter((t) => getTopicPYQs(t) >= 15 && getTopicPYQs(t) < 30);
     } else if (frequencyFilter === 'core') {
       list = list.filter((t) => getTopicPYQs(t) > 0 && getTopicPYQs(t) < 15);
+    } else if (frequencyFilter === 'done') {
+      list = list.filter((t) => Boolean(t.Topic_Tags?.Done));
+    } else if (frequencyFilter === 'pending') {
+      list = list.filter((t) => !t.Topic_Tags?.Done);
     }
 
     // Sort descending by PYQ count
@@ -130,23 +173,29 @@ export const PYQAnalyzerPage: React.FC = () => {
 
       {/* Top 4 Insight Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Card 1: Top Core Subject */}
-        <div className="group relative p-6 rounded-3xl bg-gradient-to-br from-[#0e1627]/90 via-[#0a1020]/85 to-[#070b16]/95 border border-slate-800/80 hover:border-brand-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all hover:-translate-y-1">
+        {/* Card 1: PYQ Completion Progress */}
+        <div className="group relative p-6 rounded-3xl bg-gradient-to-br from-[#0e1627]/90 via-[#0a1020]/85 to-[#070b16]/95 border border-slate-800/80 hover:border-emerald-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all hover:-translate-y-1">
           <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-brand-500/15 border border-brand-500/30 text-brand-400">
-              <TrendingUp className="w-5 h-5" />
+            <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+              <CheckCircle2 className="w-5 h-5" />
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                #1 Ranked Subject
+                Completed PYQs
               </div>
-              <div className="text-xl font-black text-white truncate max-w-[170px]">
-                {sortedSubjects[0]?.Subject_Name || 'General Aptitude'}
+              <div className="text-xl font-black text-white font-mono">
+                {completedPYQs} / {totalPYQs}
               </div>
-              <div className="text-xs font-mono font-bold text-brand-300 mt-0.5">
-                {getSubjectPYQs(sortedSubjects[0] || INITIAL_SUBJECTS[0])} PYQs
+              <div className="text-xs font-mono font-bold text-emerald-400 mt-0.5">
+                {completedPercentage}% Mastered
               </div>
             </div>
+          </div>
+          <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden mt-4">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
+              style={{ width: `${Math.max(completedPercentage, 2)}%` }}
+            />
           </div>
         </div>
 
@@ -188,18 +237,22 @@ export const PYQAnalyzerPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Card 4: Total Subjects */}
-        <div className="group relative p-6 rounded-3xl bg-gradient-to-br from-[#0e1627]/90 via-[#0a1020]/85 to-[#070b16]/95 border border-slate-800/80 hover:border-emerald-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all hover:-translate-y-1">
+        {/* Card 4: Top Ranked Subject */}
+        <div className="group relative p-6 rounded-3xl bg-gradient-to-br from-[#0e1627]/90 via-[#0a1020]/85 to-[#070b16]/95 border border-slate-800/80 hover:border-brand-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all hover:-translate-y-1">
           <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
-              <BookOpen className="w-5 h-5" />
+            <div className="p-3.5 rounded-2xl bg-brand-500/15 border border-brand-500/30 text-brand-400">
+              <TrendingUp className="w-5 h-5" />
             </div>
             <div>
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                GATE Curriculum
+                #1 Ranked Subject
               </div>
-              <div className="text-xl font-black text-white font-mono">13 Subjects</div>
-              <div className="text-xs text-emerald-300 font-medium mt-0.5">100% Verified</div>
+              <div className="text-xl font-black text-white truncate max-w-[170px]">
+                {sortedSubjects[0]?.Subject_Name || 'General Aptitude'}
+              </div>
+              <div className="text-xs font-mono font-bold text-brand-300 mt-0.5">
+                {getSubjectPYQs(sortedSubjects[0] || INITIAL_SUBJECTS[0])} PYQs
+              </div>
             </div>
           </div>
         </div>
@@ -235,6 +288,10 @@ export const PYQAnalyzerPage: React.FC = () => {
             const isSelected = selectedSubjectId === subj.id;
             const pyqs = getSubjectPYQs(subj);
             const pct = totalPYQs > 0 ? Math.round((pyqs / totalPYQs) * 100) : 0;
+
+            const subjDonePYQs = topics
+              .filter((t) => t.Subject_Id === subj.id && t.Topic_Tags?.Done)
+              .reduce((sum, t) => sum + getTopicPYQs(t), 0);
 
             return (
               <div
@@ -278,8 +335,9 @@ export const PYQAnalyzerPage: React.FC = () => {
                       style={{ width: `${Math.min(pct * 4, 100)}%` }}
                     />
                   </div>
-                  <div className="text-[9px] text-slate-400 text-right font-mono font-bold mt-1">
-                    ~{pct}% of exam
+                  <div className="flex items-center justify-between text-[9px] text-slate-400 font-mono font-bold mt-1">
+                    <span>{subjDonePYQs}/{pyqs} done</span>
+                    <span>~{pct}%</span>
                   </div>
                 </div>
               </div>
@@ -300,7 +358,7 @@ export const PYQAnalyzerPage: React.FC = () => {
               </span>
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Detailed frequency count and key concept summaries for all historical GATE CSE questions.
+              Click the checkbox to mark PYQ topics as completed and track your historical question coverage.
             </p>
           </div>
 
@@ -325,7 +383,7 @@ export const PYQAnalyzerPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Frequency Tier Filters */}
+        {/* Frequency Tier Filters (Requested in media_1787496116285.png) */}
         <div className="flex items-center gap-2.5 flex-wrap text-xs">
           <span className="text-slate-400 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
             <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -341,7 +399,7 @@ export const PYQAnalyzerPage: React.FC = () => {
                 : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
             )}
           >
-            All PYQ Topics ({topics.filter((t) => getTopicPYQs(t) > 0 || t.Topic_Tags?.Star).length})
+            All Topics ({tierCounts.all})
           </button>
 
           <button
@@ -349,12 +407,13 @@ export const PYQAnalyzerPage: React.FC = () => {
             className={clsx(
               'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-1.5',
               frequencyFilter === 'ultra'
-                ? 'bg-rose-950/60 border-rose-500/60 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.25)]'
+                ? 'bg-rose-950/60 border-rose-500/60 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.25)] ring-1 ring-rose-400/40'
                 : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
             )}
           >
             <Flame className="w-3.5 h-3.5 text-rose-400" />
             <span>Ultra High Yield (30+ PYQs)</span>
+            <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono">{tierCounts.ultra}</span>
           </button>
 
           <button
@@ -362,12 +421,13 @@ export const PYQAnalyzerPage: React.FC = () => {
             className={clsx(
               'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-1.5',
               frequencyFilter === 'high'
-                ? 'bg-amber-950/60 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                ? 'bg-amber-950/60 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/40'
                 : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
             )}
           >
             <Star className="w-3.5 h-3.5 text-amber-400 fill-current" />
             <span>High Yield (15–29 PYQs)</span>
+            <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono">{tierCounts.high}</span>
           </button>
 
           <button
@@ -375,25 +435,55 @@ export const PYQAnalyzerPage: React.FC = () => {
             className={clsx(
               'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-1.5',
               frequencyFilter === 'core'
-                ? 'bg-indigo-950/60 border-indigo-500/60 text-indigo-300 shadow-glow-indigo'
+                ? 'bg-indigo-950/60 border-indigo-500/60 text-indigo-300 shadow-glow-indigo ring-1 ring-indigo-400/40'
                 : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
             )}
           >
             <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
             <span>Core Concepts (1–14 PYQs)</span>
+            <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono">{tierCounts.core}</span>
+          </button>
+
+          <div className="h-4 w-px bg-slate-800 mx-1" />
+
+          {/* Completed Status Quick Filters */}
+          <button
+            onClick={() => setFrequencyFilter('done')}
+            className={clsx(
+              'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-1.5',
+              frequencyFilter === 'done'
+                ? 'bg-emerald-950/60 border-emerald-500/60 text-emerald-300 shadow-glow-emerald'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+            )}
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Completed ({tierCounts.done})</span>
+          </button>
+
+          <button
+            onClick={() => setFrequencyFilter('pending')}
+            className={clsx(
+              'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-1.5',
+              frequencyFilter === 'pending'
+                ? 'bg-sky-950/60 border-sky-500/60 text-sky-300 shadow-glow-sky'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+            )}
+          >
+            <CircleDot className="w-3.5 h-3.5 text-sky-400" />
+            <span>Pending ({tierCounts.pending})</span>
           </button>
         </div>
 
-        {/* Topics Table */}
+        {/* Topics Table with Checkbox to mark topic and its PYQs as Done */}
         <div className="overflow-x-auto custom-scrollbar border border-slate-800/80 rounded-2xl bg-slate-900/40">
           <table className="w-full text-left text-xs text-slate-200 min-w-[900px]">
             <thead className="bg-slate-950/80 text-[10px] uppercase font-bold text-slate-400 tracking-wider sticky top-0 z-10 border-b border-slate-800">
               <tr>
-                <th className="px-5 py-3 w-[45%]">Topic & Key Concept Summary</th>
-                <th className="px-4 py-3 w-[18%]">Subject</th>
+                <th className="px-4 py-3 w-[8%] text-center">Done</th>
+                <th className="px-4 py-3 w-[45%]">Topic & Key Concept Summary</th>
+                <th className="px-4 py-3 w-[17%]">Subject</th>
                 <th className="px-4 py-3 w-[15%] text-center">PYQ Frequency</th>
-                <th className="px-4 py-3 w-[10%] text-center">Star Priority</th>
-                <th className="px-5 py-3 w-[12%] text-right">Quick Actions</th>
+                <th className="px-4 py-3 w-[15%] text-right">Quick Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">
@@ -413,11 +503,38 @@ export const PYQAnalyzerPage: React.FC = () => {
                   return (
                     <tr
                       key={topic.id}
-                      className="hover:bg-slate-800/40 transition-colors group cursor-pointer"
+                      className={clsx(
+                        'hover:bg-slate-800/40 transition-colors group cursor-pointer select-none',
+                        isDone && 'bg-emerald-950/10 opacity-75 hover:opacity-100'
+                      )}
                       onClick={() => openTopicDetailModal(topic.id)}
                     >
+                      {/* Checkbox to Mark Topic & PYQs Done */}
+                      <td
+                        className="px-4 py-3.5 text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => updateTopicTags(topic.id, { Done: !isDone })}
+                          className={clsx(
+                            'p-2 rounded-xl border transition-all active:scale-90',
+                            isDone
+                              ? 'bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-glow-sm'
+                              : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300'
+                          )}
+                          title={isDone ? 'Mark as Incomplete' : 'Mark Topic & PYQs as Done'}
+                        >
+                          <Check
+                            className={clsx(
+                              'w-4 h-4',
+                              isDone ? 'stroke-[2.5] text-emerald-400' : 'text-slate-600'
+                            )}
+                          />
+                        </button>
+                      </td>
+
                       {/* Topic Name & Concept */}
-                      <td className="px-5 py-3.5">
+                      <td className="px-4 py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
@@ -478,27 +595,20 @@ export const PYQAnalyzerPage: React.FC = () => {
                         </div>
                       </td>
 
-                      {/* Star Tag */}
+                      {/* Quick Actions & Star */}
                       <td
-                        className="px-4 py-3.5 text-center"
+                        className="px-4 py-3.5 text-right"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <TopicTagBadge
-                          type="Star"
-                          value={isStarred}
-                          interactive
-                          onClick={() =>
-                            updateTopicTags(topic.id, { Star: !isStarred })
-                          }
-                        />
-                      </td>
-
-                      {/* Actions */}
-                      <td
-                        className="px-5 py-3.5 text-right"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex items-center justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-2">
+                          <TopicTagBadge
+                            type="Star"
+                            value={isStarred}
+                            interactive
+                            onClick={() =>
+                              updateTopicTags(topic.id, { Star: !isStarred })
+                            }
+                          />
                           <button
                             onClick={() => {
                               startTimer(topic.id);

@@ -8,6 +8,7 @@ import { ContentBlockList } from './ContentBlockList';
 import { TopicTagBadge } from '../common/TopicTagBadge';
 import { getTopicPath, getDirectChildren } from '../../utils/hierarchyUtils';
 import { formatHours } from '../../utils/timeUtils';
+import { INITIAL_TOPICS } from '../../utils/sampleData';
 import {
   BookOpen,
   ChevronRight,
@@ -20,6 +21,7 @@ import {
   Clock,
   FileText,
   LayoutGrid,
+  Flame,
 } from 'lucide-react';
 import { ConfirmationModal } from '../common/ConfirmationModal';
 import { clsx } from 'clsx';
@@ -174,6 +176,19 @@ export const TopicDetailModal: React.FC = () => {
                   interactive
                   onClick={() => handleToggleTag('Star', !isStarred)}
                 />
+                {(() => {
+                  const pyqCount = selectedTopicForModal.Topic_PYQ_Count || INITIAL_TOPICS.find((t) => t.id === selectedTopicForModal.id)?.Topic_PYQ_Count;
+                  if (!pyqCount || pyqCount <= 0) return null;
+                  return (
+                    <span
+                      className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-500/40 px-3 py-1 rounded-xl shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+                      title={`${pyqCount} Historical Previous Year Questions in GATE CSE`}
+                    >
+                      <Flame className="w-3.5 h-3.5 text-amber-400 fill-current" />
+                      <span>{pyqCount} PYQs</span>
+                    </span>
+                  );
+                })()}
                 {selectedTopicForModal.Topic_Study_Hours > 0 && (
                   <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-3 py-1 rounded-xl shadow-[0_0_10px_rgba(6,182,212,0.15)]">
                     <Clock className="w-3.5 h-3.5 text-cyan-400" />

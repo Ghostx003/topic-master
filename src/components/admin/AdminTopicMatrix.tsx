@@ -10,6 +10,7 @@ import {
 import { Subject } from '../../types/subject';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { formatDate } from '../../utils/timeUtils';
+import { INITIAL_TOPICS } from '../../utils/sampleData';
 import {
   Check,
   Star,
@@ -33,6 +34,7 @@ import {
 import { clsx } from 'clsx';
 
 export type MatrixFilterOption =
+  | 'pyqs'
   | 'done'
   | 'star'
   | 'practice'
@@ -54,6 +56,14 @@ interface FilterPillConfig {
 }
 
 const FILTER_PILLS: FilterPillConfig[] = [
+  {
+    id: 'pyqs',
+    label: 'PYQS (RANKED)',
+    icon: <Flame className="w-3.5 h-3.5" />,
+    activeColor: 'text-amber-300',
+    activeBorder: 'border-amber-500/60',
+    activeBg: 'bg-amber-950/60 shadow-[0_0_15px_rgba(245,158,11,0.3)]',
+  },
   {
     id: 'done',
     label: 'DONE',
@@ -160,11 +170,17 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
   const [filterMode, setFilterMode] = useState<'AND' | 'OR'>('OR');
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState<string>('all');
 
+  const initialTopicMap = useMemo(() => new Map(INITIAL_TOPICS.map((t) => [t.id, t])), []);
   const subjectsMap = new Map(subjects.map((s) => [s.id, s]));
+
+  const getTopicPYQ = (topic: Topic): number => {
+    return topic.Topic_PYQ_Count || initialTopicMap.get(topic.id)?.Topic_PYQ_Count || 0;
+  };
 
   // Live count for each filter option based on current subject scope
   const filterCounts = useMemo(() => {
     const counts: Record<MatrixFilterOption, number> = {
+      pyqs: 0,
       done: 0,
       star: 0,
       practice: 0,
@@ -180,6 +196,8 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
     topicsList.forEach((topic) => {
       if (selectedSubjectFilter !== 'all' && topic.Subject_Id !== selectedSubjectFilter) return;
       const tags = topic.Topic_Tags || ({} as TopicTags);
+      const pyqs = getTopicPYQ(topic);
+      if (pyqs > 0 || tags.Star) counts.pyqs++;
       if (tags.Done) counts.done++;
       if (tags.Star) counts.star++;
       if (tags.Require_Practice) counts.practice++;
@@ -193,7 +211,7 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
     });
 
     return counts;
-  }, [topicsList, selectedSubjectFilter]);
+  }, [topicsList, selectedSubjectFilter, initialTopicMap]);
 
   // Toggle single filter option
   const toggleFilterOption = (opt: MatrixFilterOption) => {
@@ -208,9 +226,9 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
     });
   };
 
-  // Filter topics based on search, subject, and multiple selected options
+  // Filter & sort topics based on search, subject, and multiple selected options
   const filtered = useMemo(() => {
-    return topicsList.filter((topic) => {
+    let list = topicsList.filter((topic) => {
       // 1. Subject filter
       if (selectedSubjectFilter !== 'all' && topic.Subject_Id !== selectedSubjectFilter) {
         return false;
@@ -228,7 +246,10 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
       if (selectedFilters.size === 0) return true;
 
       const tags = topic.Topic_Tags || ({} as TopicTags);
+      const pyqs = getTopicPYQ(topic);
+
       const conditions: Record<MatrixFilterOption, boolean> = {
+        pyqs: pyqs > 0 || Boolean(tags.Star),
         done: Boolean(tags.Done),
         star: Boolean(tags.Star),
         practice: Boolean(tags.Require_Practice),
@@ -248,7 +269,14 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
         return activeOpts.some((opt) => conditions[opt]);
       }
     });
-  }, [topicsList, selectedSubjectFilter, searchQuery, selectedFilters, filterMode]);
+
+    // If PYQS filter is selected, sort descending from most PYQs to least PYQs!
+    if (selectedFilters.has('pyqs')) {
+      list = [...list].sort((a, b) => getTopicPYQ(b) - getTopicPYQ(a));
+    }
+
+    return list;
+  }, [topicsList, selectedSubjectFilter, searchQuery, selectedFilters, filterMode, initialTopicMap]);
 
   const handleToggle = (topicId: string, key: keyof TopicTags, currentVal: any) => {
     updateTopicTags(topicId, { [key]: !currentVal });
@@ -454,6 +482,7 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
               filtered.map((topic) => {
                 const tags = topic.Topic_Tags || ({} as TopicTags);
                 const subj = subjectsMap.get(topic.Subject_Id);
+                const pyqs = getTopicPYQ(topic);
 
                 return (
                   <tr
@@ -474,7 +503,7 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
                         >
                           {topic.Topic_Name}
                         </div>
-                        <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
+                        <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 flex-wrap">
                           <span
                             className="w-1.5 h-1.5 rounded-full"
                             style={{ backgroundColor: subj?.Subject_Color || '#8b5cf6' }}
@@ -485,10 +514,10 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
                               Subtopic
                             </span>
                           )}
-                          {Boolean(topic.Topic_PYQ_Count && topic.Topic_PYQ_Count > 0) && (
+                          {pyqs > 0 && (
                             <span className="flex items-center gap-0.5 text-[9px] font-mono font-bold text-amber-300 bg-amber-950/40 border border-amber-500/30 px-1.5 rounded">
                               <Flame className="w-2.5 h-2.5 text-amber-400" />
-                              <span>{topic.Topic_PYQ_Count} PYQs</span>
+                              <span>{pyqs} PYQs</span>
                             </span>
                           )}
                         </div>

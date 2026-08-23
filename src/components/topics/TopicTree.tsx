@@ -4,6 +4,7 @@ import { TopicTreeNodeType } from '../../types/topic';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { buildTopicTree, calculateTopicProgress } from '../../utils/hierarchyUtils';
 import { formatHours } from '../../utils/timeUtils';
+import { INITIAL_SUBJECTS, INITIAL_TOPICS } from '../../utils/sampleData';
 import { TopicTreeNode } from './TopicTreeNode';
 import { EmptyState } from '../common/EmptyState';
 import { Button } from '../common/Button';
@@ -14,6 +15,8 @@ import {
   CheckCircle2,
   Clock,
   X,
+  Flame,
+  ArrowUpDown,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -34,6 +37,9 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
   const [searchFilter, setSearchFilter] = useState('');
   const [isRootDropOver, setIsRootDropOver] = useState(false);
   const [activeMenuTopicId, setActiveMenuTopicId] = useState<string | null>(null);
+  const [isPyqRanked, setIsPyqRanked] = useState(false);
+
+  const initialTopicMap = useMemo(() => new Map(INITIAL_TOPICS.map((t) => [t.id, t])), []);
 
   // Global listener to close context menus whenever clicking or right-clicking anywhere outside
   React.useEffect(() => {
@@ -55,10 +61,35 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
     };
   }, [activeMenuTopicId]);
 
+  const subjectPYQs = useMemo(() => {
+    return subject.Subject_PYQ_Count || INITIAL_SUBJECTS.find((s) => s.id === subject.id)?.Subject_PYQ_Count || 0;
+  }, [subject]);
+
+  const getNodePYQ = (node: TopicTreeNodeType): number => {
+    return node.Topic_PYQ_Count || initialTopicMap.get(node.id)?.Topic_PYQ_Count || 0;
+  };
+
   // Build recursive tree for this subject
   const treeNodes = useMemo(() => {
-    return buildTopicTree(topics, subject.id, null);
-  }, [topics, subject.id]);
+    const rawNodes = buildTopicTree(topics, subject.id, null);
+
+    if (!isPyqRanked) return rawNodes;
+
+    // Helper to sort tree nodes by PYQ count descending recursively
+    function sortNodeByPYQs(node: TopicTreeNodeType): TopicTreeNodeType {
+      const sortedChildren = [...node.children]
+        .map(sortNodeByPYQs)
+        .sort((a, b) => getNodePYQ(b) - getNodePYQ(a));
+      return {
+        ...node,
+        children: sortedChildren,
+      };
+    }
+
+    return [...rawNodes]
+      .map(sortNodeByPYQs)
+      .sort((a, b) => getNodePYQ(b) - getNodePYQ(a));
+  }, [topics, subject.id, isPyqRanked, initialTopicMap]);
 
   // Compute subject metrics
   const stats = useMemo(() => {
@@ -114,7 +145,7 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
       {/* Subject Header & Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-slate-800/80">
         <div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <span
               className="w-4 h-4 rounded-full shadow-[0_0_15px_rgba(139,92,246,0.6)] shrink-0"
               style={{ backgroundColor: subject.Subject_Color || '#8b5cf6' }}
@@ -122,6 +153,12 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
               {subject.Subject_Name}
             </h2>
+            {subjectPYQs > 0 && (
+              <span className="flex items-center gap-1.5 px-3.5 py-1 text-xs font-mono font-black text-amber-300 bg-amber-950/50 border border-amber-500/40 rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                <Flame className="w-3.5 h-3.5 text-amber-400" />
+                <span>{subjectPYQs} PYQs</span>
+              </span>
+            )}
             <span className="px-3.5 py-1 text-xs font-bold font-mono rounded-xl bg-slate-900 border border-slate-700 text-slate-300">
               {stats.percentage}% Complete
             </span>
@@ -147,25 +184,44 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
         </div>
       </div>
 
-      {/* Toolbar: Search input and Stats summary badges */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 my-8">
-        {/* Search Input */}
-        <div className="relative flex-1 max-w-lg">
-          <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchFilter}
-            onChange={(e) => setSearchFilter(e.target.value)}
-            className="w-full pl-11 pr-10 py-3 text-xs rounded-2xl bg-slate-900/80 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500/60 transition-all shadow-inner"
-          />
-          {searchFilter && (
-            <button
-              onClick={() => setSearchFilter('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+      {/* Toolbar: Search input, PYQ Ranking Toggle, and Stats summary badges */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 my-8">
+        <div className="flex items-center gap-3 flex-1 max-w-xl">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search topics in this subject..."
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="w-full pl-11 pr-10 py-3 text-xs rounded-2xl bg-slate-900/80 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500/60 transition-all shadow-inner"
+            />
+            {searchFilter && (
+              <button
+                onClick={() => setSearchFilter('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* PYQ Sort / Ranking Pill Button */}
+          <button
+            onClick={() => setIsPyqRanked(!isPyqRanked)}
+            className={clsx(
+              'flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-bold border transition-all shrink-0 active:scale-95 select-none',
+              isPyqRanked
+                ? 'bg-amber-950/60 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/40'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+            )}
+            title="Sort topics from most PYQs to least PYQs"
+          >
+            <Flame className={clsx('w-4 h-4', isPyqRanked ? 'text-amber-400 fill-current' : 'text-slate-400')} />
+            <span>Rank by PYQs</span>
+            <ArrowUpDown className="w-3 h-3 text-slate-400" />
+          </button>
         </div>
 
         {/* Counts summary pills */}
@@ -189,19 +245,19 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
 
       {/* Topic Tree Nodes List with comfortable row spacing */}
       <div className="flex-1 overflow-y-auto space-y-4 pt-2">
-        {treeNodes.length === 0 ? (
+        {filteredTreeNodes.length === 0 ? (
           <EmptyState
             icon={FolderTree}
-            title="No Topics in this Subject Yet"
-            description="Add your first main topic to begin structuring and organizing your study roadmap."
-            actionText="Add Main Topic"
-            onAction={onAddMainTopic}
+            title={searchFilter ? 'No Matching Topics' : 'No Topics in this Subject Yet'}
+            description={
+              searchFilter
+                ? 'Try a different search keyword.'
+                : 'Add your first main topic to begin structuring and organizing your study roadmap.'
+            }
+            actionText={searchFilter ? undefined : 'Add Main Topic'}
+            onAction={searchFilter ? undefined : onAddMainTopic}
             actionIcon={<Plus className="w-4 h-4" />}
           />
-        ) : filteredTreeNodes.length === 0 ? (
-          <div className="text-center py-20 text-slate-400 text-sm rounded-3xl border border-dashed border-slate-800">
-            No matching topics found.
-          </div>
         ) : (
           filteredTreeNodes.map((node) => (
             <TopicTreeNode
@@ -216,24 +272,21 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
             />
           ))
         )}
+      </div>
 
-        {/* Drop Target to promote any subtopic to Root Level */}
-        {treeNodes.length > 0 && (
-          <div
-            onDragOver={handleRootDragOver}
-            onDragLeave={handleRootDragLeave}
-            onDrop={handleRootDrop}
-            className={clsx(
-              'mt-6 p-4 rounded-3xl border-2 border-dashed transition-all text-center text-xs font-semibold select-none flex items-center justify-center gap-2',
-              isRootDropOver
-                ? 'border-brand-400 bg-brand-500/20 text-brand-200 shadow-glow-lg scale-[1.01]'
-                : 'border-slate-800/80 bg-slate-950/40 text-slate-500 hover:border-slate-700 hover:text-slate-400'
-            )}
-          >
-            <FolderTree className="w-4 h-4 text-brand-400" />
-            <span>Drag & drop any subtopic here to convert it into a Root Topic</span>
-          </div>
+      {/* Drop Target to make topic a Root Topic */}
+      <div
+        onDragOver={handleRootDragOver}
+        onDragLeave={handleRootDragLeave}
+        onDrop={handleRootDrop}
+        className={clsx(
+          'mt-6 p-4 rounded-2xl border-2 border-dashed text-center text-xs font-semibold transition-all select-none',
+          isRootDropOver
+            ? 'border-brand-500 bg-brand-500/10 text-brand-300 shadow-glow-sm'
+            : 'border-slate-800/80 text-slate-500 hover:border-slate-700'
         )}
+      >
+        <span>Drop here to promote topic to Root Level</span>
       </div>
     </div>
   );
