@@ -223,24 +223,53 @@ export const INITIAL_TOPICS: Topic[] = [
 
   // =========================================================================
   // 3. DATABASE MANAGEMENT SYSTEM (subj-dbms) - 302 Total PYQs
+  //    Organized into 6 GATE syllabus chapters with subtopics
   // =========================================================================
-  makeTopic('db-1', 'subj-dbms', null, 'SQL Queries', 'SELECT clauses, GROUP BY, HAVING, subqueries, nested correlated subqueries, and NULL 3-valued logic (58 PYQs).', 1, true, 58),
-  makeTopic('db-1-1', 'subj-dbms', 'db-1', 'Nested & Correlated Subqueries', 'EXISTS / NOT EXISTS, IN / NOT IN, correlated row evaluations.', 1, true, 32),
-  makeTopic('db-1-2', 'subj-dbms', 'db-1', 'Aggregations & HAVING Filtering', 'GROUP BY multiple columns, aggregate function semantics.', 2, true, 26),
 
-  makeTopic('db-2', 'subj-dbms', null, 'Database Normalization', '1NF, 2NF, 3NF, BCNF, Functional Dependencies, Canonical Minimal Cover, Lossless Join decomposition (56 PYQs).', 2, true, 56),
-  makeTopic('db-2-1', 'subj-dbms', 'db-2', '3NF and BCNF Normal Forms', 'Superkey criteria, prime attributes, identifying highest normal form.', 1, true, 30),
-  makeTopic('db-2-2', 'subj-dbms', 'db-2', 'Lossless Join & Dependency Preservation', 'Decomposition validation tests R1 cap R2 -> (R1 - R2).', 2, true, 26),
+  // --- Chapter 1: ER-Model & Relational Model (22 PYQs) ---
+  makeTopic('db-ch-er', 'subj-dbms', null, 'ER-Model & Relational Model', 'Entity-Relationship model, cardinality ratios, participation, relational database schema, integrity constraints, and foreign keys.', 1, true),
+  makeTopic('db-9', 'subj-dbms', 'db-ch-er', 'ER Diagram', 'Entity-Relationship models, entity sets, weak entity sets, cardinality ratios, participation constraints, mapping ER to relational tables (12 PYQs).', 1, true, 12),
+  makeTopic('db-sub-ref-int', 'subj-dbms', 'db-ch-er', 'Referential Integrity', 'Foreign key constraints, ON DELETE / ON UPDATE CASCADE / SET NULL / RESTRICT semantics (6 PYQs).', 2, true, 6),
+  makeTopic('db-sub-rel-mod', 'subj-dbms', 'db-ch-er', 'Relational Model', 'Relational database schema, domain constraints, key constraints, primary key rules, relational instances (2 PYQs).', 3, true, 2),
+  makeTopic('db-sub-db-design', 'subj-dbms', 'db-ch-er', 'Database Design', 'Conceptual, logical, and physical database design lifecycle, mapping constraints (1 PYQ).', 4, true, 1),
+  makeTopic('db-sub-db-schema', 'subj-dbms', 'db-ch-er', 'Database Schema', 'Relational schema definitions, attribute domains, table schemas, DDL schemas (1 PYQ).', 5, true, 1),
 
-  makeTopic('db-3', 'subj-dbms', null, 'Relational Algebra', 'Selection, Projection, Join (Natural, Outer, Theta), Cartesian product, and Relational Division (33 PYQs).', 3, true, 33),
-  makeTopic('db-4', 'subj-dbms', null, 'B Tree & B+ Tree', 'B/B+ Tree order p, maximum/minimum key bounds, node splits on insertion, disk block I/O calculations (32 PYQs).', 4, true, 32),
-  makeTopic('db-5', 'subj-dbms', null, 'Transaction and Concurrency', 'ACID properties, Serializability schedules, View Serializability, Recoverable and Cascadeless schedules, 2PL (27 PYQs).', 5, true, 27),
-  makeTopic('db-6', 'subj-dbms', null, 'Indexing', 'Primary, Secondary, Clustered, and Dense vs Sparse index structures and block access costs (15 PYQs).', 6, true, 15),
-  makeTopic('db-7', 'subj-dbms', null, 'Relational Calculus', 'Tuple Relational Calculus (TRC), Domain Relational Calculus (DRC), and safety conditions (13 PYQs).', 7, true, 13),
-  makeTopic('db-8', 'subj-dbms', null, 'Conflict Serializable', 'Conflict operations (R-W, W-R, W-W), Precedence Graphs cycle detection, equivalent serial order (12 PYQs).', 8, true, 12),
-  makeTopic('db-9', 'subj-dbms', null, 'ER Diagram', 'Entity-Relationship models, cardinality ratios, participation constraints, mapping ER to tables (12 PYQs).', 9, true, 12),
-  makeTopic('db-10', 'subj-dbms', null, 'Candidate Key', 'Attribute closure X+ algorithms, finding all minimal candidate keys and superkeys (7 PYQs).', 10, true, 7),
-  makeTopic('db-11', 'subj-dbms', null, 'Joins in DBMS', 'INNER JOIN, LEFT/RIGHT/FULL OUTER JOIN, natural join truth tables and join algorithms (7 PYQs).', 11, true, 7),
+  // --- Chapter 2: Relational Algebra & Relational Calculus (53 PYQs) ---
+  makeTopic('db-ch-relalg', 'subj-dbms', null, 'Relational Algebra & Relational Calculus', 'Selection, projection, joins, division, Tuple Relational Calculus (TRC), Domain Relational Calculus (DRC), and safe queries.', 2, true),
+  makeTopic('db-3', 'subj-dbms', 'db-ch-relalg', 'Relational Algebra', 'Selection sigma, Projection pi, Cartesian product x, Joins (Theta, Natural, Outer), and Relational Division (33 PYQs).', 1, true, 33),
+  makeTopic('db-7', 'subj-dbms', 'db-ch-relalg', 'Relational Calculus', 'Tuple Relational Calculus (TRC), Domain Relational Calculus (DRC), quantifiers, and expressive completeness (13 PYQs).', 2, true, 13),
+  makeTopic('db-sub-nat-join', 'subj-dbms', 'db-ch-relalg', 'Natural Join', 'Natural join condition R * S, common attribute equality filtering, join output tuple cardinality bounds (3 PYQs).', 3, true, 3),
+  makeTopic('db-sub-trc', 'subj-dbms', 'db-ch-relalg', 'Tuple Relational Calculus', 'Tuple variable expressions { t | P(t) }, existential (exists) and universal (forall) quantifier queries (3 PYQs).', 4, true, 3),
+  makeTopic('db-sub-safe-q', 'subj-dbms', 'db-ch-relalg', 'Safe Query', 'Safety conditions for relational calculus, domain-independent safe queries (1 PYQ).', 5, true, 1),
+
+  // --- Chapter 3: Structured Query Language (SQL) (68 PYQs) ---
+  makeTopic('db-ch-sql', 'subj-dbms', null, 'Structured Query Language (SQL)', 'SQL DDL, DML, DQL (SELECT, FROM, WHERE, GROUP BY, HAVING), nested queries, correlated subqueries, and SQL joins.', 3, true),
+  makeTopic('db-1', 'subj-dbms', 'db-ch-sql', 'SQL', 'SELECT clauses, GROUP BY, HAVING, nested correlated subqueries, EXISTS / NOT EXISTS, and NULL 3-valued logic (58 PYQs).', 1, true, 58),
+  makeTopic('db-11', 'subj-dbms', 'db-ch-sql', 'Joins', 'INNER JOIN, LEFT / RIGHT / FULL OUTER JOIN, CROSS JOIN, multiple table join execution and truth table semantics (7 PYQs).', 2, true, 7),
+  makeTopic('db-sub-query', 'subj-dbms', 'db-ch-sql', 'Query', 'Complex SQL query formulation, aggregate functions (COUNT, SUM, AVG, MIN, MAX), and HAVING conditions (3 PYQs).', 3, true, 3),
+
+  // --- Chapter 4: Database Design & Normalization (71 PYQs) ---
+  makeTopic('db-ch-norm', 'subj-dbms', null, 'Database Design & Normalization', 'Functional dependencies, attribute closure, Armstrong axioms, minimal cover, 1NF, 2NF, 3NF, BCNF, 4NF, and lossless decomposition.', 4, true),
+  makeTopic('db-2', 'subj-dbms', 'db-ch-norm', 'Database Normalization', '1NF, 2NF, 3NF, BCNF, Functional Dependencies, Canonical Minimal Cover, Lossless Join decomposition (56 PYQs).', 1, true, 56),
+  makeTopic('db-10', 'subj-dbms', 'db-ch-norm', 'Candidate Key', 'Attribute closure X+ algorithms, finding all minimal candidate keys and superkeys (7 PYQs).', 2, true, 7),
+  makeTopic('db-sub-fd', 'subj-dbms', 'db-ch-norm', 'Functional Dependency', 'Functional dependency X -> Y definitions, trivial vs non-trivial FDs, canonical minimal cover algorithms (3 PYQs).', 3, true, 3),
+  makeTopic('db-sub-armstrong', 'subj-dbms', 'db-ch-norm', 'Armstrong Axioms', 'Inference rules for functional dependencies: Reflexivity, Augmentation, Transitivity, Union, Decomposition, Pseudo-transitivity (1 PYQ).', 4, true, 1),
+  makeTopic('db-sub-decomp', 'subj-dbms', 'db-ch-norm', 'Decomposition', 'Lossless join decomposition test R1 cap R2 -> (R1 - R2), and dependency preservation testing (1 PYQ).', 5, true, 1),
+  makeTopic('db-sub-4nf', 'subj-dbms', 'db-ch-norm', 'Multivalued Dependency 4NF', 'Multivalued dependencies X ->> Y, Fourth Normal Form (4NF) validation and decomposition (1 PYQ).', 6, true, 1),
+  makeTopic('db-sub-norm-forms', 'subj-dbms', 'db-ch-norm', 'Normal Forms', 'Identifying highest normal form: 1NF (atomic values), 2NF (no partial dependency), 3NF (no transitive dependency), BCNF (LHS is superkey) (1 PYQ).', 7, true, 1),
+  makeTopic('db-sub-superkey', 'subj-dbms', 'db-ch-norm', 'Super Key', 'Superkey definitions, counting total number of possible superkeys given candidate keys (1 PYQ).', 8, true, 1),
+
+  // --- Chapter 5: Transactions & Concurrency Control (41 PYQs) ---
+  makeTopic('db-ch-trans', 'subj-dbms', null, 'Transactions & Concurrency Control', 'ACID properties, serializability, conflict & view serializability, precedence graphs, 2PL, timestamp ordering, and recovery.', 5, true),
+  makeTopic('db-5', 'subj-dbms', 'db-ch-trans', 'Transaction and Concurrency', 'ACID properties, Serializability schedules, View Serializability, Recoverable and Cascadeless schedules, 2PL (27 PYQs).', 1, true, 27),
+  makeTopic('db-8', 'subj-dbms', 'db-ch-trans', 'Conflict Serializable', 'Conflict operations (R-W, W-R, W-W), Precedence Graphs cycle detection, equivalent serial order (12 PYQs).', 2, true, 12),
+  makeTopic('db-sub-ts', 'subj-dbms', 'db-ch-trans', 'Timestamp Ordering', 'Timestamp ordering protocol, Read_TS and Write_TS validation, Thomas Write Rule (1 PYQ).', 3, true, 1),
+  makeTopic('db-sub-2pl', 'subj-dbms', 'db-ch-trans', 'Two Phase Locking Protocol', 'Two-Phase Locking (2PL), Growing Phase, Shrinking Phase, Basic 2PL vs Strict 2PL vs Rigorous 2PL (1 PYQ).', 4, true, 1),
+
+  // --- Chapter 6: File Organization, Indexing & B/B+ Trees (47 PYQs) ---
+  makeTopic('db-ch-index', 'subj-dbms', null, 'File Organization, Indexing & B/B+ Trees', 'Primary, secondary, clustered, dense/sparse indexing, B-Tree and B+ Tree node order, capacity, and block access calculations.', 6, true),
+  makeTopic('db-4', 'subj-dbms', 'db-ch-index', 'B Tree', 'B/B+ Tree order p, maximum/minimum key bounds, node splits on insertion, disk block I/O calculations (32 PYQs).', 1, true, 32),
+  makeTopic('db-6', 'subj-dbms', 'db-ch-index', 'Indexing', 'Primary, Secondary, Clustered, and Dense vs Sparse index structures and block access costs (15 PYQs).', 2, true, 15),
 
   // =========================================================================
   // 4. DIGITAL LOGIC (subj-dl) - 313 Total PYQs
