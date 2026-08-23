@@ -1,0 +1,188 @@
+import React, { useState, useEffect } from 'react';
+import { Subject } from '../types/subject';
+import { useTopicMaster } from '../context/TopicMasterContext';
+import { useToast } from '../context/ToastContext';
+import { Modal } from '../components/common/Modal';
+import { FolderTree, Plus } from 'lucide-react';
+
+export interface AddTopicModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  subject: Subject;
+  parentId?: string | null;
+}
+
+export const AddTopicModal: React.FC<AddTopicModalProps> = ({
+  isOpen,
+  onClose,
+  subject,
+  parentId = null,
+}) => {
+  const { addTopic, topics } = useTopicMaster();
+  const { toast } = useToast();
+
+  const [topicName, setTopicName] = useState('');
+  const [description, setDescription] = useState('');
+  const [isStarred, setIsStarred] = useState(false);
+  const [requirePractice, setRequirePractice] = useState(false);
+  const [lectureNeeded, setLectureNeeded] = useState<number>(0);
+  const [deadline, setDeadline] = useState('');
+
+  const parentTopic = parentId ? topics.find((t) => t.id === parentId) : null;
+
+  useEffect(() => {
+    if (isOpen) {
+      setTopicName('');
+      setDescription('');
+      setIsStarred(false);
+      setRequirePractice(false);
+      setLectureNeeded(0);
+      setDeadline('');
+    }
+  }, [isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!topicName.trim()) return;
+
+    const created = addTopic({
+      Subject_Id: subject.id,
+      Parent_Id: parentId,
+      Topic_Name: topicName.trim(),
+      Topic_Description: description.trim(),
+      Topic_Status: 'To Do',
+      Topic_Difficulty: 'Normal',
+      Topic_Tags: {
+        Done: false,
+        Star: isStarred,
+        Require_Practice: requirePractice,
+        Lecture_Needed: lectureNeeded,
+        Deadline: deadline ? deadline : null,
+      },
+    });
+
+    toast.success('Topic Added', `Added "${created.Topic_Name}" to ${subject.Subject_Name}`);
+    onClose();
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="md"
+      title={
+        <div className="flex items-center gap-3 text-white">
+          <div className="p-2 rounded-xl bg-brand-500/20 text-brand-400 border border-brand-500/30">
+            <FolderTree className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black tracking-tight">
+              {parentTopic
+                ? `Add Subtopic under "${parentTopic.Topic_Name}"`
+                : `Add Main Topic to ${subject.Subject_Name}`}
+            </h3>
+            <p className="text-xs text-slate-400">
+              Arbitrary depth topic node with real-time tree synchronization
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            Topic Name *
+          </label>
+          <input
+            type="text"
+            value={topicName}
+            onChange={(e) => setTopicName(e.target.value)}
+            placeholder={
+              parentTopic
+                ? 'e.g. FCFS, Round Robin, Banker’s Algorithm'
+                : 'e.g. CPU Scheduling, Process Management, Memory Hierarchy'
+            }
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+            required
+            autoFocus
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            Description / Overview (Optional)
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+            placeholder="Key points, formula notes, exam importance..."
+            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+          />
+        </div>
+
+        {/* Tag Options */}
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <label className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 cursor-pointer text-xs select-none">
+            <input
+              type="checkbox"
+              checked={isStarred}
+              onChange={(e) => setIsStarred(e.target.checked)}
+              className="w-4 h-4 rounded text-amber-500 accent-amber-500"
+            />
+            <span className="font-semibold text-slate-200">Star / Important</span>
+          </label>
+
+          <label className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 cursor-pointer text-xs select-none">
+            <input
+              type="checkbox"
+              checked={requirePractice}
+              onChange={(e) => setRequirePractice(e.target.checked)}
+              className="w-4 h-4 rounded text-brand-500 accent-brand-500"
+            />
+            <span className="font-semibold text-slate-200">Require Practice</span>
+          </label>
+
+          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs flex items-center justify-between">
+            <span className="text-slate-400">Lectures:</span>
+            <input
+              type="number"
+              min="0"
+              max="20"
+              value={lectureNeeded}
+              onChange={(e) => setLectureNeeded(parseInt(e.target.value, 10) || 0)}
+              className="w-12 text-center bg-slate-900 border border-slate-700 rounded-lg text-white font-mono"
+            />
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs flex items-center justify-between">
+            <span className="text-slate-400">Deadline:</span>
+            <input
+              type="date"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              className="px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs cursor-pointer"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="flex items-center gap-1.5 px-5 py-2 text-xs font-bold rounded-xl bg-brand-600 hover:bg-brand-500 text-white transition-all shadow-glow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Topic</span>
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+};

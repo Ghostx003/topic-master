@@ -1,0 +1,186 @@
+import React, { useState, useMemo } from 'react';
+import { Subject, SubjectImportance, IMPORTANCE_ORDER } from '../types/subject';
+import { useTopicMaster } from '../context/TopicMasterContext';
+import { SubjectCard } from '../components/subjects/SubjectCard';
+import { SubjectStatsBar } from '../components/subjects/SubjectStatsBar';
+import { SubjectFilterSort, SubjectSortOption } from '../components/subjects/SubjectFilterSort';
+import { EmptyState } from '../components/common/EmptyState';
+import { ConfirmationModal } from '../components/common/ConfirmationModal';
+import { AddSubjectModal } from '../modals/AddSubjectModal';
+import { calculateTopicProgress } from '../utils/hierarchyUtils';
+import { BookOpen, Plus } from 'lucide-react';
+
+export const MySubjectsPage: React.FC = () => {
+  const { subjects, topics, deleteSubject } = useTopicMaster();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedImportance, setSelectedImportance] = useState<SubjectImportance | 'all'>('all');
+  const [sortBy, setSortBy] = useState<SubjectSortOption>('importance');
+
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [subjectToEdit, setSubjectToEdit] = useState<Subject | null>(null);
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
+
+  // Filter & Sort Subjects
+  const filteredAndSortedSubjects = useMemo(() => {
+    let result = [...subjects];
+
+    // Filter search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (s) =>
+          s.Subject_Name.toLowerCase().includes(q) ||
+          (s.Subject_Description || '').toLowerCase().includes(q)
+      );
+    }
+
+    // Filter importance
+    if (selectedImportance !== 'all') {
+      result = result.filter((s) => s.Subject_Importance === selectedImportance);
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      if (sortBy === 'importance') {
+        return (
+          IMPORTANCE_ORDER.indexOf(a.Subject_Importance) -
+          IMPORTANCE_ORDER.indexOf(b.Subject_Importance)
+        );
+      }
+      if (sortBy === 'name') {
+        return a.Subject_Name.localeCompare(b.Subject_Name);
+      }
+      if (sortBy === 'progress') {
+        const statsA = calculateTopicProgress(topics, a.id);
+        const statsB = calculateTopicProgress(topics, b.id);
+        return statsB.percentage - statsA.percentage;
+      }
+      if (sortBy === 'hours') {
+        const statsA = calculateTopicProgress(topics, a.id);
+        const statsB = calculateTopicProgress(topics, b.id);
+        return statsB.totalHours - statsA.totalHours;
+      }
+      if (sortBy === 'recent') {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      return 0;
+    });
+
+    return result;
+  }, [subjects, topics, searchQuery, selectedImportance, sortBy]);
+
+  return (
+    <div className="space-y-6 pb-24">
+      {/* Top Header & Intro */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+              My Subjects
+            </h1>
+            <span className="px-2.5 py-0.5 text-xs font-bold font-mono bg-brand-500/20 text-brand-300 rounded-full border border-brand-500/30">
+              {subjects.length} Active
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Organize study curriculum, track hierarchical completion rates, and allocate focus time.
+          </p>
+        </div>
+
+        {/* Primary Desktop Action */}
+        <button
+          onClick={() => {
+            setSubjectToEdit(null);
+            setAddModalOpen(true);
+          }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-500 hover:to-indigo-400 text-white font-bold text-sm shadow-glow-sm hover:shadow-glow transition-all active:scale-95 shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          <span>New Subject</span>
+        </button>
+      </div>
+
+      {/* Top Stats Overview Bar */}
+      <SubjectStatsBar />
+
+      {/* Filter and Sort Toolbar */}
+      <SubjectFilterSort
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedImportance={selectedImportance}
+        onImportanceChange={setSelectedImportance}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+      />
+
+      {/* Subjects Cards Grid */}
+      {subjects.length === 0 ? (
+        <EmptyState
+          icon={BookOpen}
+          title="No Subjects Yet"
+          description="Create your first subject to start organizing your study plan, hierarchy, and schedules."
+          actionText="Add Subject"
+          onAction={() => setAddModalOpen(true)}
+          actionIcon={<Plus className="w-4 h-4" />}
+        />
+      ) : filteredAndSortedSubjects.length === 0 ? (
+        <div className="py-16 text-center text-slate-400 rounded-2xl border border-dashed border-slate-800">
+          No subjects matched your filter criteria.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredAndSortedSubjects.map((subject) => (
+            <SubjectCard
+              key={subject.id}
+              subject={subject}
+              onEdit={(s) => {
+                setSubjectToEdit(s);
+                setAddModalOpen(true);
+              }}
+              onDelete={(s) => setSubjectToDelete(s)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* REQUIRED BY SPEC (Section 7): Floating + button in the bottom-right */}
+      <button
+        onClick={() => {
+          setSubjectToEdit(null);
+          setAddModalOpen(true);
+        }}
+        aria-label="Add Subject"
+        title="Add Subject (+)"
+        className="fixed bottom-8 right-8 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 hover:from-brand-500 hover:to-indigo-400 text-white shadow-glow-lg hover:scale-110 active:scale-95 transition-all duration-300 border border-white/20"
+      >
+        <Plus className="w-7 h-7 stroke-[2.5]" />
+      </button>
+
+      {/* Add / Edit Subject Modal */}
+      <AddSubjectModal
+        isOpen={addModalOpen}
+        onClose={() => {
+          setAddModalOpen(false);
+          setSubjectToEdit(null);
+        }}
+        subjectToEdit={subjectToEdit}
+      />
+
+      {/* Confirmation Modal for Delete Subject */}
+      {subjectToDelete && (
+        <ConfirmationModal
+          isOpen={Boolean(subjectToDelete)}
+          onClose={() => setSubjectToDelete(null)}
+          onConfirm={() => {
+            deleteSubject(subjectToDelete.id);
+            setSubjectToDelete(null);
+          }}
+          title="Delete Subject"
+          message={`Are you sure you want to permanently delete "${subjectToDelete.Subject_Name}"? All its topics, subtopics, and study sessions will also be deleted.`}
+          confirmText="Delete Subject"
+        />
+      )}
+    </div>
+  );
+};
