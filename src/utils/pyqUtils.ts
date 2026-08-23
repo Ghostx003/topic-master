@@ -407,10 +407,14 @@ const KEYWORD_PYQ_RULES: { keywords: string[]; pyq: number }[] = [
   { keywords: ['coding decoding', 'decoding encrypted messages using letter-position'], pyq: 1 },
 ];
 
+const AUTHORITATIVE_PYQ_CACHE = new Map<string, number>();
+
+export function clearAuthoritativePYQCache(): void {
+  AUTHORITATIVE_PYQ_CACHE.clear();
+}
+
 /**
  * Universal authoritative resolver for Topic & Subtopic PYQ counts.
-/**
- * Authoritative, dynamic PYQ Count Resolver for any topic or hierarchy node.
  * Checks explicit attributes, catalog database, keyword rules, year filters, and parent/child hierarchies.
  */
 export function getAuthoritativeTopicPYQ(
@@ -421,13 +425,21 @@ export function getAuthoritativeTopicPYQ(
 ): number {
   if (!topicOrNode) return 0;
 
+  const cacheKey = `${topicOrNode.id || topicOrNode.Topic_Name}::${yearFilter}::${subjectName || topicOrNode.Subject_Id || ''}`;
+  const cached = AUTHORITATIVE_PYQ_CACHE.get(cacheKey);
+  if (cached !== undefined) return cached;
+
+  let result = 0;
+
   // 1. If this is a tree node with children, it is a parent topic.
   //    Parent PYQ count is STRICTLY and ALWAYS equal to the sum of all its subtopics.
   if ('children' in topicOrNode && Array.isArray((topicOrNode as any).children) && (topicOrNode as any).children.length > 0) {
-    return (topicOrNode as any).children.reduce(
+    result = (topicOrNode as any).children.reduce(
       (acc: number, c: any) => acc + getAuthoritativeTopicPYQ(c, allTopics, yearFilter, subjectName),
       0
     );
+    AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
+    return result;
   }
 
   // 2. If it has children in allTopics, it is a parent topic.
@@ -435,10 +447,12 @@ export function getAuthoritativeTopicPYQ(
   if (allTopics.length > 0) {
     const children = allTopics.filter((t) => t.Parent_Id === topicOrNode.id);
     if (children.length > 0) {
-      return children.reduce(
+      result = children.reduce(
         (acc, c) => acc + getAuthoritativeTopicPYQ(c, allTopics, yearFilter, subjectName),
         0
       );
+      AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
+      return result;
     }
   }
 
@@ -451,27 +465,33 @@ export function getAuthoritativeTopicPYQ(
   if (effSubjectName) {
     const matchedQs = getQuestionsForTopic(effSubjectName, topicOrNode.Topic_Name, []);
     if (matchedQs.length > 0) {
-      if (yearFilter === 'all') {
-        return matchedQs.length;
-      }
-      return filterQuestionsByYear(matchedQs, yearFilter).length;
+      result = yearFilter === 'all'
+        ? matchedQs.length
+        : filterQuestionsByYear(matchedQs, yearFilter).length;
+      AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
+      return result;
     }
   }
 
   // If a year filter is active and this topic has no questions in the DB for that year
   if (yearFilter !== 'all') {
+    AUTHORITATIVE_PYQ_CACHE.set(cacheKey, 0);
     return 0;
   }
 
   // 4. Direct explicit count (leaf topics only — no children above)
   if (typeof topicOrNode.Topic_PYQ_Count === 'number' && topicOrNode.Topic_PYQ_Count > 0) {
-    return topicOrNode.Topic_PYQ_Count;
+    result = topicOrNode.Topic_PYQ_Count;
+    AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
+    return result;
   }
 
   // 5. Initial Sample Dataset match by ID (for leaf topics with no children)
   const fromInitial = initialTopicMap.get(topicOrNode.id)?.Topic_PYQ_Count;
   if (fromInitial && fromInitial > 0) {
-    return fromInitial;
+    result = fromInitial;
+    AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
+    return result;
   }
 
   // 6. Keyword / Concept matching (for leaf topics with no children and no catalog entry)
@@ -481,11 +501,14 @@ export function getAuthoritativeTopicPYQ(
 
   for (const rule of KEYWORD_PYQ_RULES) {
     if (rule.keywords.some((kw) => text.includes(kw.toLowerCase()))) {
-      return rule.pyq;
+      result = rule.pyq;
+      AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
+      return result;
     }
   }
 
   // 7. Unknown / custom-created topic with no children → return 0, never fabricate counts
+  AUTHORITATIVE_PYQ_CACHE.set(cacheKey, 0);
   return 0;
 }
 

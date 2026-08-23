@@ -6,8 +6,9 @@ const PYQ_YEAR_FILTER_STORAGE_KEY = 'topic_master_pyq_year_filter_v1';
 
 export const ALL_PYQ_QUESTIONS: PYQQuestion[] = rawQuestions as PYQQuestion[];
 
-// Normalized lookup helpers
+// Fast normalized lookup helper
 function normalize(s: string): string {
+  if (!s) return '';
   return s.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
@@ -66,53 +67,89 @@ const CHAPTER_ALIASES: Record<string, string> = {
   'most appropriate word': 'verbal aptitude',
 };
 
-// Check if a question belongs to a specific topic or its subtopics
-export function matchQuestionToTopic(
-  question: PYQQuestion,
-  subjectName: string,
-  topicName: string,
-  subtopicNames: string[] = []
-): boolean {
-  if (normalize(question.subject) !== normalize(subjectName)) {
-    return false;
+// ================= PRE-INDEXED FAST DATA STRUCTURES =================
+
+// Subject -> List of questions
+const QUESTIONS_BY_SUBJECT_MAP = new Map<string, PYQQuestion[]>();
+
+// Subject + '::' + Chapter -> List of questions
+const QUESTIONS_BY_CHAPTER_MAP = new Map<string, PYQQuestion[]>();
+
+// Populate pre-indexed maps once on startup
+ALL_PYQ_QUESTIONS.forEach((q) => {
+  const normSubj = normalize(q.subject);
+  const normChap = normalize(q.chapter);
+
+  // By subject
+  let subjList = QUESTIONS_BY_SUBJECT_MAP.get(normSubj);
+  if (!subjList) {
+    subjList = [];
+    QUESTIONS_BY_SUBJECT_MAP.set(normSubj, subjList);
   }
+  subjList.push(q);
 
-  const qChap = question.chapter;
-  const normQ = normalize(qChap);
-  const aliasQ = normalize(CHAPTER_ALIASES[qChap.toLowerCase()] || qChap);
-
-  const targets = [topicName, ...subtopicNames];
-
-  for (const target of targets) {
-    const normTarget = normalize(target);
-
-    // Exact match
-    if (normQ === normTarget || aliasQ === normTarget) return true;
-
-    // Substring match
-    if (normTarget.length >= 4 && (normQ.includes(normTarget) || normTarget.includes(normQ))) {
-      return true;
-    }
-    if (aliasQ.length >= 4 && (aliasQ.includes(normTarget) || normTarget.includes(aliasQ))) {
-      return true;
-    }
+  // By subject + chapter
+  const chapKey = `${normSubj}::${normChap}`;
+  let chapList = QUESTIONS_BY_CHAPTER_MAP.get(chapKey);
+  if (!chapList) {
+    chapList = [];
+    QUESTIONS_BY_CHAPTER_MAP.set(chapKey, chapList);
   }
+  chapList.push(q);
+});
 
+// Cache for topic question queries (O(1) subsequent lookups)
+const TOPIC_QUERY_CACHE = new Map<string, PYQQuestion[]>();
+
+/**
+ * Check if a question chapter matches target topic
+ */
+function isChapterMatch(qChapNorm: string, targetNorm: string): boolean {
+  if (qChapNorm === targetNorm) return true;
+  if (targetNorm.length >= 4 && (qChapNorm.includes(targetNorm) || targetNorm.includes(qChapNorm))) {
+    return true;
+  }
   return false;
 }
 
 /**
- * Retrieve questions for a specific topic (and optionally all its subtopics), always sorted newest to oldest
+ * Retrieve questions for a specific topic (and optionally all its subtopics), always sorted newest to oldest.
+ * Fully memoized for instantaneous O(1) retrieval.
  */
 export function getQuestionsForTopic(
   subjectName: string,
   topicName: string,
   subtopicNames: string[] = []
 ): PYQQuestion[] {
-  const matched = ALL_PYQ_QUESTIONS.filter((q) =>
-    matchQuestionToTopic(q, subjectName, topicName, subtopicNames)
+  const cacheKey = `${normalize(subjectName)}::${normalize(topicName)}::${subtopicNames.map(normalize).join('|')}`;
+  const cached = TOPIC_QUERY_CACHE.get(cacheKey);
+  if (cached) return cached;
+
+  const normSubj = normalize(subjectName);
+  const subjectQuestions = QUESTIONS_BY_SUBJECT_MAP.get(normSubj) || [];
+
+  const targets = [topicName, ...subtopicNames].map(normalize);
+  const targetAliases = [topicName, ...subtopicNames].map((t) =>
+    normalize(CHAPTER_ALIASES[t.toLowerCase()] || t)
   );
-  return sortQuestionsNewestFirst(matched);
+
+  const matched = subjectQuestions.filter((q) => {
+    const normQ = normalize(q.chapter);
+    const aliasQ = normalize(CHAPTER_ALIASES[q.chapter.toLowerCase()] || q.chapter);
+
+    for (let i = 0; i < targets.length; i++) {
+      const target = targets[i];
+      const targetAlias = targetAliases[i];
+
+      if (isChapterMatch(normQ, target) || isChapterMatch(aliasQ, target)) return true;
+      if (isChapterMatch(normQ, targetAlias) || isChapterMatch(aliasQ, targetAlias)) return true;
+    }
+    return false;
+  });
+
+  const sorted = sortQuestionsNewestFirst(matched);
+  TOPIC_QUERY_CACHE.set(cacheKey, sorted);
+  return sorted;
 }
 
 /**
@@ -120,8 +157,8 @@ export function getQuestionsForTopic(
  */
 export function getQuestionsForSubject(subjectName: string): PYQQuestion[] {
   const normSubj = normalize(subjectName);
-  const matched = ALL_PYQ_QUESTIONS.filter((q) => normalize(q.subject) === normSubj);
-  return sortQuestionsNewestFirst(matched);
+  const list = QUESTIONS_BY_SUBJECT_MAP.get(normSubj) || [];
+  return sortQuestionsNewestFirst(list);
 }
 
 /**
@@ -131,7 +168,7 @@ export function filterQuestionsByYear(
   questions: PYQQuestion[],
   filter: PYQYearFilter
 ): PYQQuestion[] {
-  if (filter === 'all') return questions;
+  if (filter === 'all' || !questions.length) return questions;
 
   return questions.filter((q) => {
     const y = extractYearNumber(q.year);

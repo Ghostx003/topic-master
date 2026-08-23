@@ -34,32 +34,48 @@ export const PYQAnalyzerPage: React.FC = () => {
   const initialTopicMap = useMemo(() => new Map(INITIAL_TOPICS.map((t) => [t.id, t])), []);
   const subjectsMap = useMemo(() => new Map(subjects.map((s) => [s.id, s])), [subjects]);
 
+  // Precompute O(1) PYQ count maps once
+  const { topicPyqMap, subjectPyqMap, totalPYQs, completedPYQs } = useMemo(() => {
+    const tMap = new Map<string, number>();
+    const sMap = new Map<string, number>();
+
+    let total = 0;
+    let completed = 0;
+
+    // 1. Calculate for every topic once
+    topics.forEach((t) => {
+      const subj = subjectsMap.get(t.Subject_Id);
+      const count = getAuthoritativeTopicPYQ(t, topics, 'all', subj?.Subject_Name);
+      tMap.set(t.id, count);
+      if (t.Topic_Tags?.Done) {
+        completed += count;
+      }
+    });
+
+    // 2. Calculate for subjects once (sum of root topics)
+    subjects.forEach((s) => {
+      const rootTopics = topics.filter((t) => t.Subject_Id === s.id && !t.Parent_Id);
+      const sum = rootTopics.reduce((acc, t) => acc + (tMap.get(t.id) || 0), 0);
+      const val = sum > 0 ? sum : (s.Subject_PYQ_Count || initialSubjMap.get(s.id)?.Subject_PYQ_Count || 0);
+      sMap.set(s.id, val);
+      total += val;
+    });
+
+    return {
+      topicPyqMap: tMap,
+      subjectPyqMap: sMap,
+      totalPYQs: total > 0 ? total : 3184,
+      completedPYQs: completed,
+    };
+  }, [topics, subjects, subjectsMap, initialSubjMap]);
+
   const getTopicPYQs = (topic: Topic): number => {
-    return getAuthoritativeTopicPYQ(topic, topics);
+    return topicPyqMap.get(topic.id) || 0;
   };
 
   const getSubjectPYQs = (subj: Subject): number => {
-    if (subj.Subject_PYQ_Count && subj.Subject_PYQ_Count > 0) return subj.Subject_PYQ_Count;
-    const fromInit = initialSubjMap.get(subj.id)?.Subject_PYQ_Count;
-    if (fromInit && fromInit > 0) return fromInit;
-    return (
-      topics
-        .filter((t) => t.Subject_Id === subj.id)
-        .reduce((sum, t) => sum + getTopicPYQs(t), 0) || 0
-    );
+    return subjectPyqMap.get(subj.id) || 0;
   };
-
-  // Overall Statistics
-  const totalPYQs = useMemo(() => {
-    const sum = subjects.reduce((acc, s) => acc + getSubjectPYQs(s), 0);
-    return sum > 0 ? sum : 3184;
-  }, [subjects, topics]);
-
-  const completedPYQs = useMemo(() => {
-    return topics
-      .filter((t) => Boolean(t.Topic_Tags?.Done))
-      .reduce((sum, t) => sum + getTopicPYQs(t), 0);
-  }, [topics]);
 
   const completedPercentage = totalPYQs > 0 ? Math.round((completedPYQs / totalPYQs) * 100) : 0;
 
@@ -67,12 +83,12 @@ export const PYQAnalyzerPage: React.FC = () => {
     return topics.filter((t) => t.Topic_Tags?.Star || initialTopicMap.get(t.id)?.Topic_Tags?.Star).length;
   }, [topics, initialTopicMap]);
 
-  // Sort subjects by PYQ count descending
+  // Sort subjects by PYQ count descending (O(1) lookups)
   const sortedSubjects = useMemo(() => {
-    return [...subjects].sort((a, b) => getSubjectPYQs(b) - getSubjectPYQs(a));
-  }, [subjects, topics]);
+    return [...subjects].sort((a, b) => (subjectPyqMap.get(b.id) || 0) - (subjectPyqMap.get(a.id) || 0));
+  }, [subjects, subjectPyqMap]);
 
-  // Tier counts
+  // Tier counts (O(1) lookups)
   const tierCounts = useMemo(() => {
     const counts = {
       all: 0,
@@ -85,7 +101,7 @@ export const PYQAnalyzerPage: React.FC = () => {
 
     topics.forEach((t) => {
       if (selectedSubjectId !== 'all' && t.Subject_Id !== selectedSubjectId) return;
-      const pyqs = getTopicPYQs(t);
+      const pyqs = topicPyqMap.get(t.id) || 0;
       const isStarred = Boolean(t.Topic_Tags?.Star || initialTopicMap.get(t.id)?.Topic_Tags?.Star);
       if (pyqs <= 0 && !isStarred) return;
 
@@ -99,11 +115,11 @@ export const PYQAnalyzerPage: React.FC = () => {
     });
 
     return counts;
-  }, [topics, selectedSubjectId, initialTopicMap]);
+  }, [topics, selectedSubjectId, initialTopicMap, topicPyqMap]);
 
-  // Filtered & Sorted Topics with PYQs
+  // Filtered & Sorted Topics with PYQs (O(1) lookups)
   const filteredTopics = useMemo(() => {
-    let list = topics.filter((t) => getTopicPYQs(t) > 0 || t.Topic_Tags?.Star || initialTopicMap.get(t.id)?.Topic_Tags?.Star);
+    let list = topics.filter((t) => (topicPyqMap.get(t.id) || 0) > 0 || t.Topic_Tags?.Star || initialTopicMap.get(t.id)?.Topic_Tags?.Star);
 
     // Filter by subject
     if (selectedSubjectId !== 'all') {
@@ -122,11 +138,11 @@ export const PYQAnalyzerPage: React.FC = () => {
 
     // Filter by frequency tier
     if (frequencyFilter === 'ultra') {
-      list = list.filter((t) => getTopicPYQs(t) >= 30);
+      list = list.filter((t) => (topicPyqMap.get(t.id) || 0) >= 30);
     } else if (frequencyFilter === 'high') {
-      list = list.filter((t) => getTopicPYQs(t) >= 15 && getTopicPYQs(t) < 30);
+      list = list.filter((t) => (topicPyqMap.get(t.id) || 0) >= 15 && (topicPyqMap.get(t.id) || 0) < 30);
     } else if (frequencyFilter === 'core') {
-      list = list.filter((t) => getTopicPYQs(t) > 0 && getTopicPYQs(t) < 15);
+      list = list.filter((t) => (topicPyqMap.get(t.id) || 0) > 0 && (topicPyqMap.get(t.id) || 0) < 15);
     } else if (frequencyFilter === 'done') {
       list = list.filter((t) => Boolean(t.Topic_Tags?.Done));
     } else if (frequencyFilter === 'pending') {
@@ -134,9 +150,9 @@ export const PYQAnalyzerPage: React.FC = () => {
     }
 
     // Sort descending by PYQ count
-    list.sort((a, b) => getTopicPYQs(b) - getTopicPYQs(a));
+    list.sort((a, b) => (topicPyqMap.get(b.id) || 0) - (topicPyqMap.get(a.id) || 0));
     return list;
-  }, [topics, selectedSubjectId, searchQuery, frequencyFilter, initialTopicMap]);
+  }, [topics, selectedSubjectId, searchQuery, frequencyFilter, initialTopicMap, topicPyqMap]);
 
   return (
     <div className="space-y-8 pb-28">
