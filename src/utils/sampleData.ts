@@ -7,7 +7,7 @@ export const INITIAL_SUBJECTS: Subject[] = [
     id: 'subj-cn',
     Subject_Name: 'Computer Networks',
     Subject_Importance: 'Important',
-    Subject_Description: 'OSI/TCP-IP models, IPv4/IPv6 addressing, subnetting, TCP flow/congestion control, routing algorithms, MAC protocols, and security.',
+    Subject_Description: 'OSI/TCP-IP models, IPv4/IPv6 addressing, subnetting, TCP flow/congestion control, routing algorithms, MAC protocols, and network security.',
     Subject_Color: '#06b6d4', // Cyan
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
     updated_at: new Date().toISOString(),
@@ -105,9 +105,9 @@ export const INITIAL_SUBJECTS: Subject[] = [
   {
     id: 'subj-em',
     Subject_Name: 'Engineering Mathematics',
-    Subject_Importance: 'High Scoring',
-    Subject_Description: 'Linear algebra matrices, rank, eigenvalues, calculus limits, maxima/minima, Bayes theorem, and probability distributions.',
-    Subject_Color: '#0ea5e9', // Sky
+    Subject_Importance: 'Important',
+    Subject_Description: 'Linear algebra eigenvalues/vectors, matrix rank, calculus maxima/minima, and probability distributions Bayes theorem.',
+    Subject_Color: '#0ea5e9', // Sky Blue
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -115,372 +115,393 @@ export const INITIAL_SUBJECTS: Subject[] = [
     id: 'subj-ga',
     Subject_Name: 'General Aptitude',
     Subject_Importance: 'High Scoring',
-    Subject_Description: 'Quantitative arithmetic, time & work, speed-distance-time, data interpretation, logical reasoning, syllogisms, and verbal English.',
+    Subject_Description: 'Quantitative arithmetic, logical reasoning syllogisms, spatial pattern folding, and English verbal grammar.',
     Subject_Color: '#eab308', // Yellow
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
     updated_at: new Date().toISOString(),
   },
 ];
 
-// Helper to create fresh clean topic objects (All To-Do, 0 hours, clean tags, keeping only heavy-hitter Star)
-function makeTopic(
+// Helper to construct structured topics with clean To-Do state and accurate Star heavy-hitter tags
+const makeTopic = (
   id: string,
-  Subject_Id: string,
-  Parent_Id: string | null,
-  Topic_Name: string,
-  Topic_Description: string,
-  Topic_Order: number,
+  subjectId: string,
+  parentId: string | null,
+  name: string,
+  description: string,
+  order: number,
   isStar: boolean = false
-): Topic {
-  return {
-    id,
-    Subject_Id,
-    Parent_Id,
-    Topic_Name,
-    Topic_Description,
-    Topic_Status: 'To Do',
-    Topic_Difficulty: isStar ? 'Important' : 'Normal',
-    Topic_Tags: {
-      Done: false,
-      Require_Practice: false,
-      Confidence: 'None',
-      Skip: false,
-      Star: isStar,
-      Redo: false,
-      Lecture_Needed: 0,
-      Deadline: null,
-      Recall_Activity: false,
-      Practice_DPP: false,
-    },
-    Topic_Study_Hours: 0,
-    Topic_Sessions: [],
-    Topic_Blocks: [],
-    Topic_Order,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-}
+): Topic => ({
+  id,
+  Subject_Id: subjectId,
+  Parent_Id: parentId,
+  Topic_Name: name,
+  Topic_Description: description,
+  Topic_Status: 'To Do',
+  Topic_Difficulty: isStar ? 'Important' : 'Normal',
+  Topic_Study_Hours: 0,
+  Topic_Order: order,
+  Topic_Sessions: [],
+  Topic_Blocks: [],
+  Topic_Tags: {
+    Done: false,
+    Confidence: 'None',
+    Require_Practice: false,
+    Redo: false,
+    Skip: false,
+    Lecture_Needed: 0,
+    Deadline: null,
+    Recall_Activity: false,
+    Practice_DPP: false,
+    Star: isStar,
+  },
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+});
 
 export const INITIAL_TOPICS: Topic[] = [
-  // =========================================================================
-  // 1. COMPUTER NETWORKS (CN)
-  // =========================================================================
-  makeTopic('cn-01', 'subj-cn', null, 'Introduction to Computer Networks', 'OSI 7-layer & TCP/IP 4-layer architectural models, packet vs circuit switching principles.', 1, false),
-  makeTopic('cn-01-1', 'subj-cn', 'cn-01', 'OSI vs TCP/IP Architecture', 'Encapsulation/decapsulation, protocol data units (PDU) per layer, and service primitives.', 1, false),
-  makeTopic('cn-01-2', 'subj-cn', 'cn-01', 'Packet Switching vs Circuit Switching', 'Store-and-forward latency, statistical multiplexing gain, and virtual circuit vs datagram networks.', 2, false),
-
-  makeTopic('cn-02', 'subj-cn', null, 'IPV4 Addressing', 'Classful vs Classless (CIDR) notation, subnetting arithmetic, VLSM allocation, and supernetting route aggregation.', 2, true),
-  makeTopic('cn-02-1', 'subj-cn', 'cn-02', 'Classful Addressing & Net ID / Host ID', 'Class A-E boundary bit masks, special IP ranges (127.0.0.1, RFC 1918 private subnets), and broadcast formulas.', 1, false),
-  makeTopic('cn-02-2', 'subj-cn', 'cn-02', 'CIDR & Classless Subnetting', 'Prefix mask /n calculation, determining network ID, first/last usable host addresses, and direct broadcast addresses.', 2, true),
-  makeTopic('cn-02-3', 'subj-cn', 'cn-02', 'VLSM & Variable Length Subnet Masking', 'Hierarchical block allocation satisfying heterogeneous host demand powers of 2 without wasted address space.', 3, true),
-  makeTopic('cn-02-4', 'subj-cn', 'cn-02', 'Supernetting & Route Aggregation', 'Combining contiguous address blocks with matching prefix bits to reduce routing table entry counts.', 4, true),
-
-  makeTopic('cn-03', 'subj-cn', null, 'Error Control & Flow Control', 'Sliding window protocols: Stop-and-Wait, Go-Back-N, Selective Repeat efficiency calculations and CRC error detection.', 3, true),
-  makeTopic('cn-03-1', 'subj-cn', 'cn-03', 'Stop & Wait Protocol & Efficiency', 'Efficiency eta = 1 / (1 + 2a) where a = Tp / Tt; bandwidth-delay product and optimal packet size.', 1, true),
-  makeTopic('cn-03-2', 'subj-cn', 'cn-03', 'Go-Back-N (GBN) Protocol', 'Sender window Ws = 2^k - 1, receiver Wr = 1, cumulative ACKs, retransmission timeout, and efficiency eta = Ws / (1 + 2a).', 2, true),
-  makeTopic('cn-03-3', 'subj-cn', 'cn-03', 'Selective Repeat (SR) Protocol', 'Sender & receiver window sizes Ws = Wr = 2^(k-1), independent ACKs, out-of-order buffer management.', 3, true),
-  makeTopic('cn-03-4', 'subj-cn', 'cn-03', 'CRC & Polynomial Division', 'Cyclic redundancy check generator polynomial modulo-2 arithmetic, burst error detection capabilities.', 4, true),
-
-  makeTopic('cn-04', 'subj-cn', null, 'IPV4 Header & Fragmentation', 'IPv4 datagram format fields: IHL, Total Length, TTL, Identification, Flags (DF, MF), and 8-byte Fragment Offset calculations.', 4, true),
-  makeTopic('cn-04-1', 'subj-cn', 'cn-04', 'IPv4 Header Fields & Checksum', 'Header length 4-byte scaling, TTL decrement loop prevention, protocol field multiplexing.', 1, false),
-  makeTopic('cn-04-2', 'subj-cn', 'cn-04', 'Fragmentation, MTU & Offset Calculation', 'MTU boundary splitting, payload division by 8 for Offset, DF bit dropped packet error handling.', 2, true),
-
-  makeTopic('cn-05', 'subj-cn', null, 'Medium Access Control', 'Random access protocols: Pure & Slotted ALOHA throughput formulas, CSMA/CD minimum frame length L >= 2*Tp*B.', 5, true),
-  makeTopic('cn-05-1', 'subj-cn', 'cn-05', 'Pure & Slotted ALOHA', 'Vulnerable time 2*Tt (Pure, G*e^-2G max 18.4%) vs Tt (Slotted, G*e^-G max 36.8%) throughput efficiency.', 1, false),
-  makeTopic('cn-05-2', 'subj-cn', 'cn-05', 'CSMA/CD & Exponential Backoff', 'Collision detection condition Frame Size >= 2 * Propagation Delay * Bandwidth, truncated binary backoff 2^k - 1.', 2, true),
-
-  makeTopic('cn-06', 'subj-cn', null, 'Routing Protocols & Switching', 'Distance Vector (Bellman-Ford, Count to Infinity), Link State (Dijkstra, OSPF, Link State Packets), and Bridges/Switches.', 6, true),
-  makeTopic('cn-06-1', 'subj-cn', 'cn-06', 'Distance Vector & Count to Infinity', 'Routing table vector exchange, split horizon and poison reverse mitigation techniques.', 1, true),
-  makeTopic('cn-06-2', 'subj-cn', 'cn-06', 'Link State Routing (Dijkstra / OSPF)', 'Global network topology flooding, shortest path tree generation, and event-driven updates.', 2, true),
-
-  makeTopic('cn-07', 'subj-cn', null, 'TCP & UDP Transport Protocols', '3-way handshake connection lifecycle, TCP flags, header structure, and TCP Congestion Control AIMD states.', 7, true),
-  makeTopic('cn-07-1', 'subj-cn', 'cn-07', 'TCP 3-Way Handshake & Connection Termination', 'SYN, SYN-ACK, ACK sequence number synchronization and FIN/TIME-WAIT 2MSL teardown.', 1, false),
-  makeTopic('cn-07-2', 'subj-cn', 'cn-07', 'TCP Congestion Control (Slow Start & AIMD)', 'Exponential Slow Start, Linear Congestion Avoidance, Fast Retransmit (3 dup ACKs), and Fast Recovery.', 2, true),
-
-  makeTopic('cn-08', 'subj-cn', null, 'Application Layer & Network Security', 'DNS iterative/recursive resolution, HTTP persistent/pipelined, SMTP, and RSA/AES encryption principles.', 8, false),
-  makeTopic('cn-08-1', 'subj-cn', 'cn-08', 'DNS, HTTP, SMTP & FTP', 'Port mappings (53, 80, 443, 25, 20/21), iterative vs recursive name resolution, and HTTP status codes.', 1, false),
-  makeTopic('cn-08-2', 'subj-cn', 'cn-08', 'Network Security (RSA & Public Key Cryptography)', 'Euler totient phi(n) = (p-1)(q-1), modular inverse d = e^-1 mod phi(n), and digital signatures.', 2, true),
-
-  // =========================================================================
-  // 2. OPERATING SYSTEMS (OS)
-  // =========================================================================
-  makeTopic('os-01', 'subj-os', null, 'Introduction & Process Concept', 'Dual-mode CPU execution, system calls, PCB structure, process state models, and user vs kernel level threads.', 1, false),
-  makeTopic('os-01-1', 'subj-os', 'os-01', 'System Calls & OS Dual-Mode', 'Trap instructions, kernel mode switch, context switching overhead, and fork() process creation trees.', 1, false),
-  makeTopic('os-01-2', 'subj-os', 'os-01', 'Threads & Multithreading Models', 'Thread shared resources (code, data, files) vs private stack/registers, Many-to-One and Many-to-Many models.', 2, false),
-
-  makeTopic('os-02', 'subj-os', null, 'CPU Scheduling', 'Preemptive vs non-preemptive algorithms: FCFS, SJF, SRTF, Round Robin with quantum, and priority scheduling metrics.', 2, true),
-  makeTopic('os-02-1', 'subj-os', 'os-02', 'FCFS & Convoy Effect', 'First-Come First-Served FIFO queue ordering, convoy effect leading to high average waiting times.', 1, false),
-  makeTopic('os-02-2', 'subj-os', 'os-02', 'SJF & Shortest Remaining Time First (SRTF)', 'Provably optimal average waiting time; preemptive SRTF Gantt chart scheduling calculations.', 2, true),
-  makeTopic('os-02-3', 'subj-os', 'os-02', 'Round Robin Scheduling & Time Quantum', 'Preemptive time-sliced circular scheduling; effect of quantum q on context switches and response time.', 3, true),
-
-  makeTopic('os-03', 'subj-os', null, 'Process Synchronization', 'Critical section conditions (Mutual Exclusion, Progress, Bounded Wait), Peterson algorithm, Semaphores, and classic IPC problems.', 3, true),
-  makeTopic('os-03-1', 'subj-os', 'os-03', 'Critical Section Problem & Peterson Solution', 'Entry, Critical, and Exit sections; 2-process software synchronization using flag array and turn variable.', 1, true),
-  makeTopic('os-03-2', 'subj-os', 'os-03', 'Counting & Binary Semaphores', 'Atomic Wait(P) and Signal(V) primitive operations, tracking positive resource counts and negative waiting queues.', 2, true),
-  makeTopic('os-03-3', 'subj-os', 'os-03', 'Classic Synchronization Problems', 'Producer-Consumer bounded buffer, Readers-Writers priority starvation, and Dining Philosophers deadlock.', 3, true),
-
-  makeTopic('os-04', 'subj-os', null, 'DeadLock', 'Necessary conditions (Coffman), Resource Allocation Graph (RAG), Deadlock Prevention, and Banker Algorithm safety checks.', 4, true),
-  makeTopic('os-04-1', 'subj-os', 'os-04', 'Deadlock Conditions & Prevention', 'Mutual exclusion, Hold and Wait, No preemption, and Circular wait negation strategies.', 1, false),
-  makeTopic('os-04-2', 'subj-os', 'os-04', 'Banker Algorithm (Safety & Resource Request)', 'Available, Max, Allocation, Need matrices calculation; finding safe sequences to avoid deadlocks.', 2, true),
-  makeTopic('os-04-3', 'subj-os', 'os-04', 'Resource Allocation Graph & Detection', 'Cycle detection in single-unit vs multi-unit resource allocation graphs.', 3, false),
-
-  makeTopic('os-05', 'subj-os', null, 'Memory Management', 'Contiguous allocation, Single & Multi-level Paging, TLB effective access time (EAT), and Inverted page tables.', 5, true),
-  makeTopic('os-05-1', 'subj-os', 'os-05', 'Paging & Address Translation', 'Logical address (Page Number p, Offset d) to Physical address (Frame Number f, Offset d) mapping formulas.', 1, true),
-  makeTopic('os-05-2', 'subj-os', 'os-05', 'Multi-Level Paging & Page Table Size', 'Hierarchical page table splitting, calculating page table memory overhead across nested levels.', 2, true),
-  makeTopic('os-05-3', 'subj-os', 'os-05', 'TLB & Effective Memory Access Time (EMAT)', 'EMAT = h*(t_TLB + t_M) + (1-h)*(t_TLB + (k+1)*t_M) formula for k-level paging systems.', 3, true),
-
-  makeTopic('os-06', 'subj-os', null, 'Virtual Memory', 'Demand paging, page fault handling routine, FIFO and Belady Anomaly, Optimal replacement, and LRU page algorithms.', 6, true),
-  makeTopic('os-06-1', 'subj-os', 'os-06', 'Page Replacement Algorithms (FIFO, LRU, OPT)', 'FIFO queue ordering, Belady anomaly demonstration, Optimal lookahead replacement, and LRU stack tracking.', 1, true),
-  makeTopic('os-06-2', 'subj-os', 'os-06', 'Thrashing & Working Set Model', 'Page fault frequency spikes when process locality set exceeds available physical frame allocation.', 2, false),
-
-  makeTopic('os-07', 'subj-os', null, 'File System & Disk Scheduling', 'Unix inode multi-level block calculation, and disk head scheduling algorithms (SSTF, SCAN, C-SCAN, LOOK).', 7, false),
-  makeTopic('os-07-1', 'subj-os', 'os-07', 'Unix Inode File Allocation Calculation', 'Direct, Single Indirect, Double Indirect, Triple Indirect block pointers capacity summation formulas.', 1, true),
-  makeTopic('os-07-2', 'subj-os', 'os-07', 'Disk Scheduling (SSTF, SCAN, C-SCAN, LOOK)', 'Calculating total head movement / seek distance across cylinder requests for elevator and circular scan.', 2, false),
-
-  // =========================================================================
-  // 3. C-PROGRAMMING
-  // =========================================================================
-  makeTopic('prog-01', 'subj-prog', null, 'Data Types & Operators', 'Primitive data types, size & ranges, bitwise operations (&, |, ^, ~, <<, >>), and operator precedence & associativity.', 1, true),
-  makeTopic('prog-01-1', 'subj-prog', 'prog-01', 'Operator Precedence & Associativity', 'Unary postfix > prefix > multiplicative > additive > shift > relational > bitwise > logical > ternary > assignment.', 1, true),
-  makeTopic('prog-01-2', 'subj-prog', 'prog-01', 'Bitwise Operators & Bit Manipulation', 'Checking, setting, clearing bits using bitmasks, XOR swap, and power of 2 check (n & (n-1)) == 0.', 2, true),
-
-  makeTopic('prog-02', 'subj-prog', null, 'Functions & Storage Classes', 'Pass-by-value vs pass-by-reference semantics, recursion tree call stack tracing, auto, static, extern, and register scopes.', 2, true),
-  makeTopic('prog-02-1', 'subj-prog', 'prog-02', 'Recursion & Call Stack Tracing', 'Activation records tracking base cases, head vs tail recursion, and recursive return value unrolling.', 1, true),
-  makeTopic('prog-02-2', 'subj-prog', 'prog-02', 'Storage Classes (static, extern, auto, register)', 'Static variable persistence between function calls, global linkage, and register hardware allocation.', 2, true),
-
-  makeTopic('prog-03', 'subj-prog', null, 'Arrays & Pointers', 'Pointer arithmetic, pointer dereferencing, multi-dimensional array memory mapping, and function pointers.', 3, true),
-  makeTopic('prog-03-1', 'subj-prog', 'prog-03', 'Pointer Arithmetic & Dereferencing', 'Array decay into pointer to first element, *(arr + i) == arr[i], and pointer scale factor sizeof(*ptr).', 1, true),
-  makeTopic('prog-03-2', 'subj-prog', 'prog-03', '2D Arrays & Row-Major vs Column-Major Address', 'Address of A[i][j] = Base + ((i - L1)*N + (j - L2)) * Element_Size row-major formula calculations.', 2, true),
-  makeTopic('prog-03-3', 'subj-prog', 'prog-03', 'Dynamic Memory Allocation (malloc, calloc, free)', 'Heap memory allocation, memory leaks prevention, dangling pointer risks, and pointer realloc resizing.', 3, false),
-
-  makeTopic('prog-04', 'subj-prog', null, 'Structures & Unions', 'Memory alignment padding, sizeof structures, self-referential structs for linked lists, and union memory overlap.', 4, false),
-  makeTopic('prog-04-1', 'subj-prog', 'prog-04', 'Structure Padding & Alignment Rules', 'Calculating padding bytes for natural alignment on 32-bit and 64-bit architectures.', 1, true),
-  makeTopic('prog-04-2', 'subj-prog', 'prog-04', 'Unions vs Structures', 'Shared memory allocation equal to largest member, and tagged union usage.', 2, false),
-
-  // =========================================================================
-  // 4. DATA STRUCTURES
-  // =========================================================================
-  makeTopic('ds-01', 'subj-ds', null, 'Linked List', 'Singly, doubly, and circular linked list operations: node insertion, deletion, list reversal, and Floyd cycle detection.', 1, true),
-  makeTopic('ds-01-1', 'subj-ds', 'ds-01', 'Singly & Doubly Linked List Operations', 'O(1) head insertion/deletion, O(n) middle operations, and pointer update ordering.', 1, false),
-  makeTopic('ds-01-2', 'subj-ds', 'ds-01', 'Reversing a Linked List & Cycle Detection', 'Iterative 3-pointer reversal algorithm and Floyd Tortoise & Hare fast/slow pointer cycle detection.', 2, true),
-
-  makeTopic('ds-02', 'subj-ds', null, 'Stack & Queues', 'LIFO/FIFO principles, Infix to Postfix conversion, Postfix evaluation, circular queue boundary formulas, and Min-Stack.', 2, true),
-  makeTopic('ds-02-1', 'subj-ds', 'ds-02', 'Infix to Postfix & Expression Evaluation', 'Operator precedence stack parsing, associativity rules, and operand post-fix evaluation.', 1, true),
-  makeTopic('ds-02-2', 'subj-ds', 'ds-02', 'Circular Queue & Double-Ended Queue (Deque)', 'Modulo arithmetic (rear + 1) % size == front full queue condition, and deque implementations.', 2, true),
-
-  makeTopic('ds-03', 'subj-ds', null, 'Trees & Binary Search Trees', 'Tree properties (height, node counts, leaf relations), In/Pre/Post-order traversals, BST operations, and AVL tree rotations.', 3, true),
-  makeTopic('ds-03-1', 'subj-ds', 'ds-03', 'Binary Tree Properties & Traversals', 'Leaf nodes L = I_2 + 1 relation, and unique tree reconstruction from Inorder + Preorder/Postorder.', 1, true),
-  makeTopic('ds-03-2', 'subj-ds', 'ds-03', 'Binary Search Tree (BST) Operations', 'BST invariant, search, insertion, deletion (0, 1, or 2 children with inorder successor), and counting BSTs.', 2, true),
-  makeTopic('ds-03-3', 'subj-ds', 'ds-03', 'AVL Tree Balancing & Rotations', 'Balance factor {-1, 0, 1}, single LL/RR and double LR/RL rotations, and min nodes for height h formula N(h).', 3, true),
-
-  makeTopic('ds-04', 'subj-ds', null, 'Binary Heaps & Priority Queues', 'Min-Heap and Max-Heap complete binary tree array representation, O(n) bottom-up heapify, insert, and extract.', 4, true),
-  makeTopic('ds-04-1', 'subj-ds', 'ds-04', 'Heapify Operation & Build Heap O(n)', 'Sum of geometric series proof for O(n) build-heap vs O(n log n) repeated insertions.', 1, true),
-  makeTopic('ds-04-2', 'subj-ds', 'ds-04', 'Heap Insert, Delete & HeapSort', 'Percolate up / down operations in O(log n), and in-place O(n log n) HeapSort algorithm.', 2, true),
-
-  makeTopic('ds-05', 'subj-ds', null, 'Hashing', 'Hash functions, collision resolution: Separate Chaining, Open Addressing (Linear, Quadratic, Double Hashing), and Load Factor.', 5, true),
-  makeTopic('ds-05-1', 'subj-ds', 'ds-05', 'Linear & Quadratic Probing', 'Primary clustering in linear probing, probe sequence formulas h(k, i) = (h(k) + c1*i + c2*i^2) mod m.', 1, true),
-  makeTopic('ds-05-2', 'subj-ds', 'ds-05', 'Separate Chaining & Load Factor', 'Expected search time O(1 + alpha) where load factor alpha = n/m, and dynamic table rehashing.', 2, false),
-
-  // =========================================================================
-  // 5. DIGITAL LOGIC
-  // =========================================================================
-  makeTopic('dl-01', 'subj-dl', null, 'Logic Gates & Minimization', 'Boolean theorems, De Morgan laws, 2-5 variable K-Maps, Prime Implicants (PI), Essential Prime Implicants (EPI).', 1, true),
-  makeTopic('dl-01-1', 'subj-dl', 'dl-01', 'K-Map Minimization (2, 3, 4 Variables)', 'Gray code adjacency grouping in powers of 2, identifying EPIs and minimal SOP / POS expressions.', 1, true),
-  makeTopic('dl-01-2', 'subj-dl', 'dl-01', 'Universal Gates (NAND / NOR Implementation)', 'Minimum number of 2-input NAND and NOR gates required to implement NOT, AND, OR, XOR, XNOR.', 2, true),
-
-  makeTopic('dl-02', 'subj-dl', null, 'Combinational Circuit', 'Half/Full Adders, Ripple Carry Adder delay, Carry Lookahead Adder, Multiplexers (MUX as universal logic), Decoders, Encoders.', 2, true),
-  makeTopic('dl-02-1', 'subj-dl', 'dl-02', 'Adders & Carry Lookahead Adders', 'Full adder logic sum = A ^ B ^ Cin, carry propagation and generation terms in CLA for O(1) delay.', 1, true),
-  makeTopic('dl-02-2', 'subj-dl', 'dl-02', 'Multiplexers (MUX) & Demultiplexers', 'Implementing arbitrary n-variable boolean functions using 2^(n-1) to 1 MUX and cascading MUX trees.', 2, true),
-
-  makeTopic('dl-03', 'subj-dl', null, 'Sequential Circuit', 'Latches, SR/JK/D/T Flip-Flops, Master-Slave JK, characteristic equations, and Synchronous / Asynchronous Mod-N Counters.', 3, true),
-  makeTopic('dl-03-1', 'subj-dl', 'dl-03', 'Flip-Flops & Characteristic Equations', 'SR: Q+ = S + R*Q, JK: Q+ = J*Q + K*Q, D: Q+ = D, T: Q+ = T ^ Q; race-around condition solutions.', 1, true),
-  makeTopic('dl-03-2', 'subj-dl', 'dl-03', 'Synchronous & Asynchronous Mod-N Counters', 'State transition tables, excitation tables, counter design, and lock-out state recovery.', 2, true),
-
-  makeTopic('dl-04', 'subj-dl', null, 'Number System', 'Radix conversions, 1s & 2s complement signed arithmetic, range of numbers, and signed arithmetic overflow rules.', 4, true),
-  makeTopic('dl-04-1', 'subj-dl', 'dl-04', '2s Complement Representation & Arithmetic', 'Range of n-bit 2s complement integers [-2^(n-1), 2^(n-1) - 1], sign extension, and arithmetic negation.', 1, true),
-  makeTopic('dl-04-2', 'subj-dl', 'dl-04', 'Signed Overflow Detection', 'Overflow condition V = Cin ^ Cout on the sign bit, adding two positive or two negative operands.', 2, true),
-
-  // =========================================================================
-  // 6. THEORY OF COMPUTATION (TOC)
-  // =========================================================================
-  makeTopic('toc-01', 'subj-toc', null, 'Finite Automata', 'Deterministic (DFA), Non-deterministic (NFA), epsilon-NFA, subset construction, DFA minimization, and state count calculations.', 1, true),
-  makeTopic('toc-01-1', 'subj-toc', 'toc-01', 'DFA Construction & State Count', 'Constructing minimal DFA for strings starting/ending with patterns, modulo string length counters.', 1, true),
-  makeTopic('toc-01-2', 'subj-toc', 'toc-01', 'NFA to DFA Conversion & Minimization', 'Subset construction powerset 2^Q bound, and Myhill-Nerode / Table Filling equivalence partitioning.', 2, true),
-
-  makeTopic('toc-02', 'subj-toc', null, 'Regular Expressions & Languages', 'Regular expressions algebraic identities (Arden Theorem), Pumping Lemma for regularity, and Closure properties.', 2, true),
-  makeTopic('toc-02-1', 'subj-toc', 'toc-02', 'Closure Properties of Regular Languages', 'Regular languages closed under union, intersection, complement, concatenation, Kleene star, reversal, hom.', 1, true),
-  makeTopic('toc-02-2', 'subj-toc', 'toc-02', 'Pumping Lemma for Regular Languages', 'Proving non-regularity of languages L = {a^n b^n} using string decomposition s = xyz with |xy| <= p.', 2, false),
-
-  makeTopic('toc-03', 'subj-toc', null, 'Push Down Automata & CFG', 'Context-free grammars, derivations, ambiguity in CFGs, DPDA vs NPDA, CFL vs DCFL, and Chomsky Normal Form (CNF).', 3, true),
-  makeTopic('toc-03-1', 'subj-toc', 'toc-03', 'Context-Free Grammars & Ambiguity', 'Leftmost and rightmost derivations, parse tree ambiguity, and inherently ambiguous languages.', 1, true),
-  makeTopic('toc-03-2', 'subj-toc', 'toc-03', 'Pushdown Automata (DPDA vs NPDA)', 'Stack operations, acceptance by final state vs empty stack, and DCFL complementation closure.', 2, true),
-
-  makeTopic('toc-04', 'subj-toc', null, 'Turing Machine & Chomsky Hierarchy', 'Standard TM model, Turing-recognizable (RE) vs Turing-decidable (Recursive) languages, and Chomsky 4-tier hierarchy.', 4, true),
-  makeTopic('toc-04-1', 'subj-toc', 'toc-04', 'Turing Machines & Recursive vs RE Languages', 'Halting vs looping behavior; recursive languages closed under complement, RE languages not closed under complement.', 1, true),
-  makeTopic('toc-04-2', 'subj-toc', 'toc-04', 'Chomsky Hierarchy of Languages', 'Type 3 (Regular) subset Type 2 (CFL) subset Type 1 (CSL) subset Type 0 (Unrestricted / RE).', 2, true),
-
-  makeTopic('toc-05', 'subj-toc', null, 'Decidability & Undecidability', 'Halting problem of Turing machines, Rice Theorem (semantic properties), Post Correspondence Problem (PCP), and Decidability Matrix.', 5, true),
-  makeTopic('toc-05-1', 'subj-toc', 'toc-05', 'Halting Problem & Reductions', 'Turing machine self-reference paradox proof and reducing known undecidable problems to target problems.', 1, true),
-  makeTopic('toc-05-2', 'subj-toc', 'toc-05', 'Decidability Matrix across Language Classes', 'Emptiness, Membership, Finiteness, Equivalence, and Disjointness decidability table per grammar class.', 2, true),
-
-  // =========================================================================
-  // 7. COMPILER DESIGN
-  // =========================================================================
-  makeTopic('cd-01', 'subj-cd', null, 'Lexical Analysis', 'Token, pattern, lexeme concepts, transition diagrams, handling whitespace/comments, and input buffering schemes.', 1, false),
-  makeTopic('cd-01-1', 'subj-cd', 'cd-01', 'Token, Lexeme & Regular Definitions', 'Token classification, recognizing identifiers vs keywords, and string matching using finite state automatons.', 1, false),
-
-  makeTopic('cd-02', 'subj-cd', null, 'Syntax Analysis & Parsing', 'Top-Down parsing: FIRST & FOLLOW sets, LL(1) parse table, Left Recursion/Factoring; Bottom-Up: LR(0), SLR(1), CLR(1), LALR(1).', 2, true),
-  makeTopic('cd-02-1', 'subj-cd', 'cd-02', 'FIRST & FOLLOW Sets Calculation', 'Rules for calculating FIRST(alpha) and FOLLOW(A) with epsilon propagation across productions.', 1, true),
-  makeTopic('cd-02-2', 'subj-cd', 'cd-02', 'LL(1) Parsing Table & Conflicts', 'Constructing LL(1) parsing matrix M[A, a], identifying First/Follow conflicts, and grammar transformation.', 2, true),
-  makeTopic('cd-02-3', 'subj-cd', 'cd-02', 'LR Parsers (LR(0), SLR(1), LALR(1), CLR(1))', 'Canonical LR item sets, Shift-Reduce and Reduce-Reduce conflicts, and parser power hierarchy: LR(0) < SLR(1) < LALR(1) < CLR(1).', 3, true),
-
-  makeTopic('cd-03', 'subj-cd', null, 'Syntax Directed Translation', 'Syntax-Directed Definitions (SDD), Synthesized vs Inherited attributes, S-Attributed vs L-Attributed SDDs, and Evaluation order.', 3, true),
-  makeTopic('cd-03-1', 'subj-cd', 'cd-03', 'Synthesized vs Inherited Attributes', 'Synthesized computed from children (bottom-up), Inherited computed from parent/left-siblings (top-down).', 1, true),
-  makeTopic('cd-03-2', 'subj-cd', 'cd-03', 'S-Attributed vs L-Attributed SDDs', 'S-Attributed uses only synthesized (evaluated in LR parse); L-Attributed allows synthesized + left-inherited attributes.', 2, true),
-
-  makeTopic('cd-04', 'subj-cd', null, 'Intermediate Code & Code Optimization', 'Three-Address Code (TAC), Quadruples/Triples, Basic Blocks, Control Flow Graphs, and Local/Loop Optimizations.', 4, true),
-  makeTopic('cd-04-1', 'subj-cd', 'cd-04', 'Three Address Code & Basic Blocks', 'Determining Basic Block leaders (first instruction, target of jumps, instruction after jump), and constructing CFG.', 1, true),
-  makeTopic('cd-04-2', 'subj-cd', 'cd-04', 'Code Optimization Techniques', 'Common subexpression elimination, constant folding/propagation, dead code elimination, and loop invariant code motion.', 2, true),
-
-  // =========================================================================
-  // 8. ALGORITHMS
-  // =========================================================================
-  makeTopic('algo-01', 'subj-algo', null, 'Analysis Of Algorithms', 'Asymptotic bounds (O, Omega, Theta, o, omega), order of growth comparisons, Master Theorem, and Recurrence relations.', 1, true),
-  makeTopic('algo-01-1', 'subj-algo', 'algo-01', 'Asymptotic Notations & Function Ordering', 'Formal mathematical definitions of Big-O, Omega, Theta; ranking polynomial, logarithmic, exponential functions.', 1, true),
-  makeTopic('algo-01-2', 'subj-algo', 'algo-01', 'Master Theorem for Recurrences', 'T(n) = a*T(n/b) + f(n) cases comparing n^(log_b a) with f(n), and extended logarithmic cases.', 2, true),
-
-  makeTopic('algo-02', 'subj-algo', null, 'Design Strategies & Divide and Conquer', 'Merge Sort inversion count, Quick Sort partition best/worst/average analysis, and Binary Search analysis.', 2, true),
-  makeTopic('algo-02-1', 'subj-algo', 'algo-02', 'Merge Sort & Inversion Counting', 'Divide and conquer recurrence T(n) = 2T(n/2) + O(n) -> O(n log n), counting inversions during merge phase.', 1, true),
-  makeTopic('algo-02-2', 'subj-algo', 'algo-02', 'Quick Sort & Partitioning Analysis', 'Lomuto/Hoare partition mechanisms, O(n log n) average vs O(n^2) worst case on sorted inputs, randomized pivot.', 2, true),
-
-  makeTopic('algo-03', 'subj-algo', null, 'Greedy Method', 'Huffman Coding prefix-free tree bits calculation, Fractional Knapsack, Activity Selection / Interval Scheduling, Job Sequencing.', 3, true),
-  makeTopic('algo-03-1', 'subj-algo', 'algo-03', 'Huffman Coding & Optimal Prefix Codes', 'Bottom-up priority queue merge of least frequent characters, calculating total encoded message bits and tree length.', 1, true),
-  makeTopic('algo-03-2', 'subj-algo', 'algo-03', 'Activity Selection & Fractional Knapsack', 'Sorting by finish time greedy choice proof, value-per-weight density greedy selection in fractional knapsack.', 2, false),
-
-  makeTopic('algo-04', 'subj-algo', null, 'Dynamic Programming', 'Principle of Optimality, Memoization vs Tabulation, 0/1 Knapsack, LCS, Matrix Chain Multiplication (MCM), and LIS.', 4, true),
-  makeTopic('algo-04-1', 'subj-algo', 'algo-04', '0/1 Knapsack Problem', 'DP state transition T[i, w] = max(T[i-1, w], val[i] + T[i-1, w-wt[i]]) in pseudo-polynomial O(n*W) time.', 1, true),
-  makeTopic('algo-04-2', 'subj-algo', 'algo-04', 'Longest Common Subsequence (LCS)', 'Recurrence matching characters c[i, j] = c[i-1, j-1] + 1 else max(c[i-1, j], c[i, j-1]) in O(m*n) time.', 2, true),
-  makeTopic('algo-04-3', 'subj-algo', 'algo-04', 'Matrix Chain Multiplication (MCM)', 'Minimum scalar multiplications m[i, j] = min_k (m[i, k] + m[k+1, j] + p_{i-1}*p_k*p_j) optimal parenthesization.', 3, true),
-
-  makeTopic('algo-05', 'subj-algo', null, 'Graph Algorithms & Shortest Paths', 'BFS/DFS traversals, Topological sort, Dijkstra single-source shortest path, Bellman-Ford, Prim & Kruskal MST.', 5, true),
-  makeTopic('algo-05-1', 'subj-algo', 'algo-05', 'Dijkstra & Bellman-Ford Shortest Paths', 'Dijkstra greedy relaxation with min-heap O((V+E)log V), Bellman-Ford O(V*E) negative weight cycle detection.', 1, true),
-  makeTopic('algo-05-2', 'subj-algo', 'algo-05', 'Minimum Spanning Trees (Prim & Kruskal)', 'Prim cut property with min-heap vs Kruskal cycle property with Disjoint Set Union (DSU) in O(E log V).', 2, true),
-
-  makeTopic('algo-06', 'subj-algo', null, 'NP-Completeness & Reductions', 'P, NP, NP-Hard, and NP-Complete complexity classes, polynomial time verifiers, and classic problem reductions (3-SAT, Vertex Cover).', 6, true),
-  makeTopic('algo-06-1', 'subj-algo', 'algo-06', 'Complexity Classes (P, NP, NP-Complete, NP-Hard)', 'Deterministic vs non-deterministic polynomial time, Cook-Levin Theorem, and proving NP-Completeness via reduction.', 1, true),
-
-  // =========================================================================
-  // 9. DATABASE MANAGEMENT SYSTEM (DBMS)
-  // =========================================================================
-  makeTopic('dbms-01', 'subj-dbms', null, 'ER-Diagram & Relational Model', 'Entity sets, relationships (1:1, 1:N, M:N), weak entity sets, and minimum tables required when converting ER to Relational schema.', 1, false),
-  makeTopic('dbms-01-1', 'subj-dbms', 'dbms-01', 'ER Modeling & Cardinality Constraints', 'Total vs partial participation, identifying relationships for weak entities with composite primary keys.', 1, false),
-  makeTopic('dbms-01-2', 'subj-dbms', 'dbms-01', 'Converting ER Diagrams to Relational Tables', 'Minimum table count rules: combining 1:N into one table, M:N requiring separate junction table.', 2, true),
-
-  makeTopic('dbms-02', 'subj-dbms', null, 'Relational Algebra & Tuple Calculus', 'Relational operators: Select (sigma), Project (pi), Cartesian product, Natural join (bowtie), Division (divide), and TRC safe queries.', 2, true),
-  makeTopic('dbms-02-1', 'subj-dbms', 'dbms-02', 'Relational Algebra Operations', 'Selection filter, Projection deduplication, theta joins, division operator for all-matching queries.', 1, true),
-  makeTopic('dbms-02-2', 'subj-dbms', 'dbms-02', 'Tuple Relational Calculus (TRC)', 'First-order logic formula syntax, existential and universal quantifiers, and domain independence safety.', 2, false),
-
-  makeTopic('dbms-03', 'subj-dbms', null, 'Query Language (SQL)', 'DDL/DML commands, nested subqueries, correlated queries, aggregate functions with GROUP BY and HAVING, and SQL outer joins.', 3, true),
-  makeTopic('dbms-03-1', 'subj-dbms', 'dbms-03', 'SQL Joins, Subqueries & Aggregations', 'Inner join, Left/Right/Full outer joins, GROUP BY multi-column grouping, HAVING predicate filtering.', 1, true),
-  makeTopic('dbms-03-2', 'subj-dbms', 'dbms-03', 'Correlated Subqueries & EXISTS / NOT EXISTS', 'Row-by-row outer query evaluation, EXISTS truth value testing, and finding missing relationship subsets.', 2, true),
-
-  makeTopic('dbms-04', 'subj-dbms', null, 'FDs and Normalisation', 'Armstrong axioms, attribute closure, candidate key finding, 1NF, 2NF, 3NF, BCNF, lossless decomposition, and dependency preservation.', 4, true),
-  makeTopic('dbms-04-1', 'subj-dbms', 'dbms-04', 'Candidate Keys & Minimal Cover Calculation', 'Computing attribute closure X+, finding all prime attributes and candidate keys, canonical cover reduction.', 1, true),
-  makeTopic('dbms-04-2', 'subj-dbms', 'dbms-04', 'Normal Forms (2NF, 3NF, BCNF)', '2NF: no partial dependency; 3NF: for X->Y, X is superkey OR Y is prime; BCNF: for X->Y, X must be superkey.', 2, true),
-  makeTopic('dbms-04-3', 'subj-dbms', 'dbms-04', 'Lossless Join & Dependency Preservation', 'Decomposition R1, R2 is lossless if (R1 intersect R2) -> R1 OR (R1 intersect R2) -> R2; testing F+ preservation.', 3, true),
-
-  makeTopic('dbms-05', 'subj-dbms', null, 'Transaction and Concurrency Control', 'ACID properties, Conflict Serializability (Precedence Graph cycles), View Serializability, Recoverability, Strict 2PL, and Deadlocks.', 5, true),
-  makeTopic('dbms-05-1', 'subj-dbms', 'dbms-05', 'Conflict Serializability & Precedence Graph', 'Conflicting operations (same data item, at least one write); constructing precedence graph to test acyclicity.', 1, true),
-  makeTopic('dbms-05-2', 'subj-dbms', 'dbms-05', 'Recoverability, Cascading Aborts & Strict Schedules', 'Recoverable: commit Ti after all Tj it read from; ACA: read committed items only; Strict: write/read committed items only.', 2, true),
-  makeTopic('dbms-05-3', 'subj-dbms', 'dbms-05', 'Two-Phase Locking (2PL) & Timestamp Ordering', 'Growing and shrinking lock phases; Strict 2PL prevents cascading aborts; Timestamp Ordering with Thomas Write Rule.', 3, true),
-
-  makeTopic('dbms-06', 'subj-dbms', null, 'File Organisation & Indexing', 'Primary, Secondary, Clustering indexes, dense vs sparse index entries, and B-Trees & B+ Tree order, height, and capacity calculations.', 6, true),
-  makeTopic('dbms-06-1', 'subj-dbms', 'dbms-06', 'B-Tree & B+ Tree Node Capacity Calculation', 'Order p calculation from block size B, key size K, and record pointer Rp / block pointer P formulas.', 1, true),
-  makeTopic('dbms-06-2', 'subj-dbms', 'dbms-06', 'Index Types (Primary, Secondary, Clustering)', 'Ordered vs unordered files, dense vs sparse index record access bounds, and multi-level index search.', 2, false),
-
-  // =========================================================================
-  // 10. COMPUTER ORGANISATION & ARCHITECTURE (COA)
-  // =========================================================================
-  makeTopic('coa-01', 'subj-coa', null, 'Machine Instruction and Addressing Modes', 'Instruction cycle, opcode expansion techniques, and addressing modes (Immediate, Direct, Indirect, Indexed, Register Indirect, Auto).', 1, true),
-  makeTopic('coa-01-1', 'subj-coa', 'coa-01', 'Addressing Modes & Effective Address Calculation', 'Direct EA = A, Indirect EA = (A), Indexed EA = A + R, PC-Relative EA = PC + Offset calculation formulas.', 1, true),
-  makeTopic('coa-01-2', 'subj-coa', 'coa-01', 'Instruction Formats & Expanding Opcode', 'Calculating maximum allowed 1-address and 0-address instructions given fixed word length and 2-address counts.', 2, true),
-
-  makeTopic('coa-02', 'subj-coa', null, 'Floating Point Representation', 'IEEE 754 32-bit Single Precision (1 sign, 8 exponent bias 127, 23 mantissa) and 64-bit Double Precision representations.', 2, true),
-  makeTopic('coa-02-1', 'subj-coa', 'coa-02', 'IEEE 754 32-bit Single Precision Format', 'Value = (-1)^s * (1.M) * 2^(E - 127), converting decimal floats to hexadecimal bit patterns and vice-versa.', 1, true),
-  makeTopic('coa-02-2', 'subj-coa', 'coa-02', 'Special Values (Zero, Infinity, NaN, Denormalized)', 'Exponent E = 0 (denormalized, zero) vs E = 255 (Infinity, NaN) IEEE boundary condition handling.', 2, false),
-
-  makeTopic('coa-03', 'subj-coa', null, 'Instruction And Pipelining', 'Pipeline stages (IF, ID, EX, MEM, WB), Speedup S = (k*n)/(k+n-1), Pipeline Hazards (Structural, Data RAW/WAR/WAW, Control branch delays).', 3, true),
-  makeTopic('coa-03-1', 'subj-coa', 'coa-03', 'Pipeline Performance & Speedup Formula', 'Speedup = Non-pipelined time / Pipelined time = (n * k * t) / ((k + n - 1) * t + stall_cycles).', 1, true),
-  makeTopic('coa-03-2', 'subj-coa', 'coa-03', 'Pipeline Hazards (RAW, Forwarding & Branch Penalties)', 'Data hazard RAW stall resolution via operand forwarding paths, branch penalty delay slot optimization.', 2, true),
-
-  makeTopic('coa-04', 'subj-coa', null, 'Cache Memory', 'Direct Mapping, Fully Associative, Set-Associative Mapping (Tag, Set, Word Offset bits), Write policies, and AMAT access time calculations.', 4, true),
-  makeTopic('coa-04-1', 'subj-coa', 'coa-04', 'Cache Mapping (Direct & Set-Associative)', 'Memory address bit division: Tag, Set Index = log2(sets), Block/Word Offset = log2(bytes_per_block).', 1, true),
-  makeTopic('coa-04-2', 'subj-coa', 'coa-04', 'Average Memory Access Time (AMAT)', 'AMAT = Hit_Time + (Miss_Rate * Miss_Penalty); multi-level L1, L2 cache hierarchy calculations.', 2, true),
-
-  makeTopic('coa-05', 'subj-coa', null, 'Memory Hierarchy & IO Interface', 'RAM/ROM chips connection, Memory expansion, Interrupt-driven IO, and Direct Memory Access (DMA) cycle stealing.', 5, false),
-  makeTopic('coa-05-1', 'subj-coa', 'coa-05', 'DMA Controller & Cycle Stealing Calculations', 'DMA burst transfer time vs cycle-stealing CPU percentage slowdown = (Prep_time + Transfer_time) / Cycle_time.', 1, true),
-  makeTopic('coa-05-2', 'subj-coa', 'coa-05', 'Memory Interleaving & Chip Interconnection', 'Low-order vs high-order interleaving for contiguous multi-word memory module access speedup.', 2, false),
-
-  // =========================================================================
-  // 11. DISCRETE MATHEMATICS (DM)
-  // =========================================================================
-  makeTopic('dm-01', 'subj-dm', null, 'Mathematical Logic', 'Propositional logic, truth tables, tautology, logical equivalences, laws of inference, and First-Order Predicate Logic quantifiers.', 1, true),
-  makeTopic('dm-01-1', 'subj-dm', 'dm-01', 'Propositional Equivalences & Rules of Inference', 'Conditional P -> Q equivalent to ~P v Q, contrapositive ~Q -> ~P, Modus Ponens and Resolution refutation.', 1, true),
-  makeTopic('dm-01-2', 'subj-dm', 'dm-01', 'First-Order Predicate Logic & Quantifiers', 'Universal (forall) and Existential (exists) quantifier rules, order of quantifiers, and translating English to logic.', 2, true),
-
-  makeTopic('dm-02', 'subj-dm', null, 'Set Theory & Relations', 'Power sets, Cartesian products, relation properties (Reflexive, Symmetric, Anti-symmetric, Transitive), Equivalence classes, Posets, and Lattices.', 2, true),
-  makeTopic('dm-02-1', 'subj-dm', 'dm-02', 'Equivalence Relations & Counting Relations', 'Reflexive closure, symmetric closure; counting reflexive (2^(n^2-n)), symmetric (2^(n(n+1)/2)) relations.', 1, true),
-  makeTopic('dm-02-2', 'subj-dm', 'dm-02', 'Posets, Hasse Diagrams & Lattices', 'Partial order sets, maximal/minimal elements, bounds, and lattice property (unique LUB and GLB for every pair).', 2, true),
-
-  makeTopic('dm-03', 'subj-dm', null, 'Combinatorics & Counting', 'Permutations & Combinations, Pigeonhole Principle (PHP), Principle of Inclusion-Exclusion (PIE), Derangements, and Generating functions.', 3, true),
-  makeTopic('dm-03-1', 'subj-dm', 'dm-03', 'Pigeonhole Principle (PHP) Applications', 'Generalized PHP ceil(N/k) guaranteeing minimum item collisions in constrained subsets.', 1, true),
-  makeTopic('dm-03-2', 'subj-dm', 'dm-03', 'Inclusion-Exclusion & Derangements', 'PIE formula for n sets, and derangements formula D(n) = n! * sum_{k=0}^n (-1)^k / k! with D(n) = (n-1)*(D(n-1)+D(n-2)).', 2, true),
-
-  makeTopic('dm-04', 'subj-dm', null, 'Graph Theory', 'Handshaking Lemma, Complete/Bipartite graphs, Eulerian & Hamiltonian paths/cycles, Planar graphs (Euler formula), and Chromatic Coloring.', 4, true),
-  makeTopic('dm-04-1', 'subj-dm', 'dm-04', 'Graph Properties & Handshaking Lemma', 'Sum of vertex degrees = 2 * |E|, counting odd degree vertices (always even), and bipartite graph odd cycle condition.', 1, true),
-  makeTopic('dm-04-2', 'subj-dm', 'dm-04', 'Eulerian & Hamiltonian Graphs', 'Euler circuit if all degrees even; Euler path if exactly 0 or 2 odd vertices; Dirac theorem for Hamiltonian cycles.', 2, true),
-  makeTopic('dm-04-3', 'subj-dm', 'dm-04', 'Planar Graphs & Euler Formula', 'Connected planar formula V - E + R = 2, max edges E <= 3V - 6 (or 2V - 4 for triangle-free), and Chromatic number chi(G).', 3, true),
-
-  makeTopic('dm-05', 'subj-dm', null, 'Recurrence Relations & Generating Functions', 'Solving homogeneous and non-homogeneous linear recurrence relations with characteristic roots.', 5, false),
-  makeTopic('dm-05-1', 'subj-dm', 'dm-05', 'Solving Linear Recurrence Relations', 'Finding characteristic equation roots, distinct vs repeated root general solution templates.', 1, true),
-
-  // =========================================================================
-  // 12. ENGINEERING MATHEMATICS (EM)
-  // =========================================================================
-  makeTopic('em-01', 'subj-em', null, 'Linear Algebra', 'Matrix operations, Rank of matrix, System of linear equations (AX = B consistency tests), Eigenvalues & Eigenvectors, and Cayley-Hamilton Theorem.', 1, true),
-  makeTopic('em-01-1', 'subj-em', 'em-01', 'Rank & System of Linear Equations (AX = B)', 'Row echelon reduction, Augmented matrix [A|B] rank comparison: Unique (r=n), Infinite (r<n), No solution (r(A) < r(A|B)).', 1, true),
-  makeTopic('em-01-2', 'subj-em', 'em-01', 'Eigenvalues, Eigenvectors & Properties', 'Trace(A) = sum(lambda), Det(A) = prod(lambda), eigenvalues of A^k and A^-1, orthogonal eigenvectors of symmetric matrices.', 2, true),
-  makeTopic('em-01-3', 'subj-em', 'em-01', 'Cayley-Hamilton Theorem & Matrix Inverses', 'Every square matrix satisfies its characteristic polynomial |A - lambda*I| = 0; computing high powers A^n and A^-1.', 3, true),
-
-  makeTopic('em-02', 'subj-em', null, 'Calculus', 'Limits, L Hopital Rule, Continuity & Differentiability, Mean Value Theorems (Rolle, Lagrange, Cauchy), Maxima/Minima, and Definite Integrals.', 2, true),
-  makeTopic('em-02-1', 'subj-em', 'em-02', 'Limits & L Hopital Rule', '0/0 and inf/inf indeterminate forms reduction via numerator/denominator differentiation, standard limits.', 1, true),
-  makeTopic('em-02-2', 'subj-em', 'em-02', 'Maxima, Minima & Mean Value Theorems', 'Critical points f (x) = 0, second derivative test f (x) sign, Rolle theorem f (c) = 0, Lagrange MVT f (c) = (f(b)-f(a))/(b-a).', 2, true),
-
-  makeTopic('em-03', 'subj-em', null, 'Probability & Statistics', 'Axioms of probability, Conditional probability, Bayes Theorem, Random variables, Expectation, Variance, and Standard Distributions.', 3, true),
-  makeTopic('em-03-1', 'subj-em', 'em-03', 'Conditional Probability & Bayes Theorem', 'P(A|B) = P(A cap B) / P(B), posterior probability updates using Total Probability Law expansion.', 1, true),
-  makeTopic('em-03-2', 'subj-em', 'em-03', 'Discrete & Continuous Probability Distributions', 'Binomial (n*p, n*p*q), Poisson (mean lambda = var lambda), Uniform, and Normal (Gaussian mu, sigma^2) curve properties.', 2, true),
-
-  // =========================================================================
-  // 13. GENERAL APTITUDE (GA)
-  // =========================================================================
-  makeTopic('ga-01', 'subj-ga', null, 'Quantitative Aptitude', 'Percentages, Profit & Loss, Ratio & Proportion, Time and Work, Speed-Distance-Time, and Simple/Compound Interest.', 1, true),
-  makeTopic('ga-01-1', 'subj-ga', 'ga-01', 'Percentages, Profit & Loss', 'Cost Price, Selling Price, Marked Price, Discount percentages, and successive percentage change formulas.', 1, true),
-  makeTopic('ga-01-2', 'subj-ga', 'ga-01', 'Time and Work & Pipes-Cisterns', 'Unitary work rate method 1/T, combined efficiency, negative work in leakage pipes, and alternate day tasks.', 2, true),
-  makeTopic('ga-01-3', 'subj-ga', 'ga-01', 'Speed, Distance, Time & Trains', 'Speed = Distance / Time, relative speed (opposite direction add, same direction subtract), and train crossing platforms.', 3, true),
-
-  makeTopic('ga-02', 'subj-ga', null, 'Data Interpretation & Analytical Reasoning', 'Data tables, Bar charts, Pie charts, Line graphs, Syllogisms, Venn diagrams, Seating arrangements, and Blood relations.', 2, true),
-  makeTopic('ga-02-1', 'subj-ga', 'ga-02', 'Data Interpretation (Charts & Graphs)', 'Fast percentage growth, ratio comparisons, and weighted average extraction from multi-bar/pie charts.', 1, true),
-  makeTopic('ga-02-2', 'subj-ga', 'ga-02', 'Syllogisms & Venn Diagrams', 'Deductive reasoning validity checks using overlapping Euler circles for All, Some, None premises.', 2, true),
-
-  makeTopic('ga-03', 'subj-ga', null, 'Spatial & Verbal Aptitude', '2D/3D shape transformations, paper folding/cutting, cube rotations, English grammar rules, vocabulary, and Reading Comprehension.', 3, false),
-  makeTopic('ga-03-1', 'subj-ga', 'ga-03', 'Spatial Reasoning & Paper Folding', 'Mirror reflections, rotational symmetry, folding axes tracking, and opposite face identification on unfolded cubes.', 1, false),
-  makeTopic('ga-03-2', 'subj-ga', 'ga-03', 'Verbal Ability & Reading Comprehension', 'Subject-verb agreement, tenses, vocabulary analogies, and critical reading paragraph inference extraction.', 2, false),
+  // ==========================================
+  // 1. COMPUTER NETWORKS (subj-cn)
+  // ==========================================
+  makeTopic('cn-1', 'subj-cn', null, 'IPv4 Addressing & Subnetting', 'Classful vs CIDR subnet masks, Network/Broadcast IDs, subnet allocation, and VLSM.', 1, true),
+  makeTopic('cn-1-1', 'subj-cn', 'cn-1', 'Classful Addressing & Net ID / Host ID', 'Class A, B, C range boundaries, leading bits, valid host count 2^h - 2.', 1, false),
+  makeTopic('cn-1-2', 'subj-cn', 'cn-1', 'CIDR & Classless Subnetting', 'Prefix length /n, subnet mask calculation, subnet bit borrowing, host capacity.', 2, true),
+  makeTopic('cn-1-3', 'subj-cn', 'cn-1', 'VLSM & Variable Length Subnetting', 'Hierarchical prefix allocation, minimizing wasted address space.', 3, true),
+  makeTopic('cn-1-4', 'subj-cn', 'cn-1', 'Supernetting & Route Aggregation', 'Combining contiguous CIDR blocks, longest prefix matching in routing tables.', 4, true),
+
+  makeTopic('cn-2', 'subj-cn', null, 'IP Packet Header & Fragmentation', 'IPv4 header fields, TTL expiry, and MTU boundary fragmentation offset arithmetic.', 2, true),
+  makeTopic('cn-2-1', 'subj-cn', 'cn-2', 'IPv4 Header Fields & Checksum', 'VER, HLEN (x4 scale), Total Length, TTL, Protocol numbers (TCP=6, UDP=17).', 1, false),
+  makeTopic('cn-2-2', 'subj-cn', 'cn-2', 'Packet Fragmentation Offset & Flags', 'MTU boundary split, 8-byte offset scale factor, MF/DF flag bits analysis.', 2, true),
+
+  makeTopic('cn-3', 'subj-cn', null, 'Data Link Layer & Flow Control', 'Framing, CRC error detection, and sliding window flow control protocols.', 3, true),
+  makeTopic('cn-3-1', 'subj-cn', 'cn-3', 'CRC & Polynomial Error Detection', 'Generator polynomial modulo-2 binary division, transmitted frame bit length.', 1, true),
+  makeTopic('cn-3-2', 'subj-cn', 'cn-3', 'Stop & Wait Protocol Efficiency', 'Propagation delay Tp, transmission delay Tt, efficiency formula η = 1 / (1 + 2a).', 2, true),
+  makeTopic('cn-3-3', 'subj-cn', 'cn-3', 'Go-Back-N (GBN) Protocol', 'Sender window Ws = 2^k - 1, receiver window Wr = 1, cumulative ACKs, retransmissions.', 3, true),
+  makeTopic('cn-3-4', 'subj-cn', 'cn-3', 'Selective Repeat (SR) Protocol', 'Sender window Ws = 2^(k-1), receiver window Wr = 2^(k-1), individual ACKs.', 4, true),
+
+  makeTopic('cn-4', 'subj-cn', null, 'Medium Access Control (MAC)', 'Random access protocols: ALOHA throughput formulas, CSMA/CD minimum frame length.', 4, true),
+  makeTopic('cn-4-1', 'subj-cn', 'cn-4', 'Pure & Slotted ALOHA', 'Vulnerable time 2*Tt (Pure, G*e^-2G max 18.4%) vs Tt (Slotted, G*e^-G max 36.8%).', 1, false),
+  makeTopic('cn-4-2', 'subj-cn', 'cn-4', 'CSMA/CD & Exponential Backoff', 'Collision detection condition Frame Size >= 2 * Propagation Delay * Bandwidth, truncated binary backoff 2^k - 1.', 2, true),
+
+  makeTopic('cn-5', 'subj-cn', null, 'Routing Protocols & Switching', 'Distance Vector (Bellman-Ford, Count to Infinity), Link State (Dijkstra, OSPF), and Bridges/Switches.', 5, true),
+  makeTopic('cn-5-1', 'subj-cn', 'cn-5', 'Distance Vector & Count to Infinity', 'Routing table vector exchange, split horizon and poison reverse mitigation techniques.', 1, true),
+  makeTopic('cn-5-2', 'subj-cn', 'cn-5', 'Link State Routing (Dijkstra / OSPF)', 'Global network topology flooding, shortest path tree generation, and event-driven updates.', 2, true),
+  makeTopic('cn-5-3', 'subj-cn', 'cn-5', 'Bridges & Transparent Switching', 'Self-learning MAC address tables, collision domains vs broadcast domains.', 3, false),
+
+  makeTopic('cn-6', 'subj-cn', null, 'TCP & UDP Transport Protocols', '3-way handshake connection lifecycle, TCP flags, header structure, and TCP Congestion Control AIMD states.', 6, true),
+  makeTopic('cn-6-1', 'subj-cn', 'cn-6', 'TCP 3-Way Handshake & Teardown', 'SYN, SYN-ACK, ACK sequence numbers, FIN teardown, TIME_WAIT state purpose.', 1, true),
+  makeTopic('cn-6-2', 'subj-cn', 'cn-6', 'TCP Congestion Control (AIMD)', 'Slow Start (exponential), Congestion Avoidance (linear), Threshold halving, Triple Dup ACK vs Timeout.', 2, true),
+  makeTopic('cn-6-3', 'subj-cn', 'cn-6', 'UDP Datagram & Checksum', 'Connectionless overhead, pseudo-header checksum, real-time streaming usage.', 3, false),
+
+  makeTopic('cn-7', 'subj-cn', null, 'Application Layer Protocols & Security', 'DNS record resolution, HTTP/HTTPS persistent connections, SMTP, and RSA Cryptography.', 7, false),
+  makeTopic('cn-7-1', 'subj-cn', 'cn-7', 'DNS Hierarchy & Resolution', 'Iterative vs recursive query resolution, Authoritative vs Root nameservers.', 1, false),
+  makeTopic('cn-7-2', 'subj-cn', 'cn-7', 'HTTP/1.1 vs HTTP/2 & Web Caching', 'Non-persistent vs persistent pipelined connections, conditional GET headers.', 2, false),
+  makeTopic('cn-7-3', 'subj-cn', 'cn-7', 'RSA Public Key Cryptography', 'Prime selection, Euler totient phi(n), modular inverse d = e^-1 mod phi(n), encryption/decryption.', 3, true),
+
+  // ==========================================
+  // 2. OPERATING SYSTEMS (subj-os)
+  // ==========================================
+  makeTopic('os-1', 'subj-os', null, 'Process Management & Forking', 'Process Control Block (PCB), context switching overhead, process state transitions, and fork system call trees.', 1, true),
+  makeTopic('os-1-1', 'subj-os', 'os-1', 'Process States & PCB Structure', 'Ready, Running, Waiting, Terminated, context switch saving registers/stack.', 1, false),
+  makeTopic('os-1-2', 'subj-os', 'os-1', 'Fork System Call Trees & Zombie Processes', 'Child process PID return values, concurrent execution tracing, zombie/orphan lifecycles.', 2, true),
+
+  makeTopic('os-2', 'subj-os', null, 'CPU Scheduling Algorithms', 'FCFS, SJF, SRTF, Round Robin with time quantum selection, Priority scheduling, and multi-level feedback queues.', 2, true),
+  makeTopic('os-2-1', 'subj-os', 'os-2', 'Non-Preemptive vs Preemptive SJF (SRTF)', 'Gantt chart generation, minimizing average waiting time, starvation conditions.', 1, true),
+  makeTopic('os-2-2', 'subj-os', 'os-2', 'Round Robin Scheduling & Quantum Sizing', 'Context switch overhead impact, responsiveness vs throughput trade-off.', 2, true),
+  makeTopic('os-2-3', 'subj-os', 'os-2', 'Multi-Level Feedback Queue (MLFQ)', 'Dynamic priority decay, aging mechanisms to prevent priority starvation.', 3, false),
+
+  makeTopic('os-3', 'subj-os', null, 'Process Synchronization', 'Critical Section problem, Mutual Exclusion, Progress, Bounded Waiting, Peterson algorithm, and Counting Semaphores.', 3, true),
+  makeTopic('os-3-1', 'subj-os', 'os-3', 'Critical Section Criteria & Hardware Locks', 'Mutual exclusion, progress, bounded waiting, TestAndSet atomic instructions.', 1, true),
+  makeTopic('os-3-2', 'subj-os', 'os-3', 'Peterson Algorithm for 2 Processes', 'Flag array and turn variable verification for race conditions.', 2, true),
+  makeTopic('os-3-3', 'subj-os', 'os-3', 'Counting & Binary Semaphores', 'Wait (P) and Signal (V) operations, value range calculations under concurrent threads.', 3, true),
+  makeTopic('os-3-4', 'subj-os', 'os-3', 'Classical Synchronization Problems', 'Producer-Consumer, Reader-Writer (Readers preference vs Writers preference), Dining Philosophers.', 4, true),
+
+  makeTopic('os-4', 'subj-os', null, 'Deadlocks: Detection, Prevention & Avoidance', 'Necessary conditions for deadlock, Resource Allocation Graph (RAG), and Banker Algorithm for multi-instance safety.', 4, true),
+  makeTopic('os-4-1', 'subj-os', 'os-4', 'Deadlock Conditions & RAG Cycles', 'Mutual exclusion, Hold & Wait, No Preemption, Circular Wait, knot detection in RAG.', 1, false),
+  makeTopic('os-4-2', 'subj-os', 'os-4', 'Banker Algorithm for Safety & Resource Request', 'Need matrix computation, safety state sequence finding, resource request validation.', 2, true),
+
+  makeTopic('os-5', 'subj-os', null, 'Memory Management & Paging', 'Contiguous memory allocation, logical to physical address translation, Page Tables, and Multilevel Paging.', 5, true),
+  makeTopic('os-5-1', 'subj-os', 'os-5', 'Single & Multi-Level Page Table Translation', 'Page number/offset split, Page Table Entry (PTE) size, Page Table Base Register (PTBR).', 1, true),
+  makeTopic('os-5-2', 'subj-os', 'os-5', 'Inverted Page Tables & Segmentation', 'Hashing global frame table by process ID, segmentation with base/limit registers.', 2, false),
+
+  makeTopic('os-6', 'subj-os', null, 'Virtual Memory & Page Replacement', 'Demand paging, Translation Lookaside Buffer (TLB) Effective Memory Access Time, and Page Replacement Algorithms.', 6, true),
+  makeTopic('os-6-1', 'subj-os', 'os-6', 'TLB Hit Ratio & Effective Memory Access Time (EMAT)', 'Formula: EMAT = h*(TLB + M) + (1-h)*(TLB + 2*M), multi-level page table EMAT.', 1, true),
+  makeTopic('os-6-2', 'subj-os', 'os-6', 'Page Replacement: FIFO, LRU, Optimal & Belady Anomaly', 'Page fault counting on reference strings, FIFO Belady anomaly demonstration, stack property in LRU.', 2, true),
+  makeTopic('os-6-3', 'subj-os', 'os-6', 'Thrashing & Working Set Model', 'Page fault frequency, working set window Delta, frame allocation to avoid CPU collapse.', 3, false),
+
+  makeTopic('os-7', 'subj-os', null, 'Disk Scheduling & File Systems', 'Disk geometry, Seek time calculations (FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK), and Unix Inode structural calculations.', 7, true),
+  makeTopic('os-7-1', 'subj-os', 'os-7', 'Disk Arm Scheduling Algorithms', 'Track movement calculations for SCAN/ELEVATOR vs C-SCAN (unidirectional) vs LOOK.', 1, true),
+  makeTopic('os-7-2', 'subj-os', 'os-7', 'Unix Inode File System Structure', 'Direct, Single Indirect, Double Indirect, Triple Indirect block pointers and maximum file size calculations.', 2, true),
+
+  // ==========================================
+  // 3. C-PROGRAMMING (subj-prog)
+  // ==========================================
+  makeTopic('pr-1', 'subj-prog', null, 'Operators, Expressions & Control Flow', 'Operator precedence, associativity rules, short-circuit boolean evaluation, type conversions, and switch-case flow.', 1, false),
+  makeTopic('pr-1-1', 'subj-prog', 'pr-1', 'Operator Precedence & Associativity', 'Prefix/Postfix ++/--, bitwise vs logical operators, ternary evaluation.', 1, false),
+  makeTopic('pr-1-2', 'subj-prog', 'pr-1', 'Short-Circuiting in Logical Expressions', 'Evaluation skipping in && (stops on 0) and || (stops on 1).', 2, true),
+
+  makeTopic('pr-2', 'subj-prog', null, 'Pointers & Pointer Arithmetic', 'Pointer arithmetic, pointers to pointers, pointer arrays, array decaying, and function pointers.', 2, true),
+  makeTopic('pr-2-1', 'subj-prog', 'pr-2', 'Pointer Arithmetic & Array Subscripting', 'Equivalence of a[i] == *(a+i) == i[a], multi-dimensional array address offsets.', 1, true),
+  makeTopic('pr-2-2', 'subj-prog', 'pr-2', 'Array of Pointers vs Pointer to Array', 'Syntax differences: int *arr[10] vs int (*ptr)[10], memory allocation.', 2, true),
+  makeTopic('pr-2-3', 'subj-prog', 'pr-2', 'Function Pointers & Callbacks', 'Declaring and calling via function pointer signatures: void (*fp)(int).', 3, false),
+
+  makeTopic('pr-3', 'subj-prog', null, 'Recursion & Call Stack Execution', 'Recursive tracing, base conditions, tree recursion call stacks, and static/global variable side effects in recursion.', 3, true),
+  makeTopic('pr-3-1', 'subj-prog', 'pr-3', 'Tree Recursion & Stack Activation Records', 'Recursive return value aggregation, activation record stack depth, unwinding phases.', 1, true),
+  makeTopic('pr-3-2', 'subj-prog', 'pr-3', 'Static & Global Variables inside Recursive Functions', 'Persistent state across recursive activations, tracing output mutations.', 2, true),
+
+  makeTopic('pr-4', 'subj-prog', null, 'Structures, Unions & Dynamic Memory', 'Memory layout, padding/alignment, struct dereferencing, and malloc/calloc/realloc/free management.', 4, false),
+  makeTopic('pr-4-1', 'subj-prog', 'pr-4', 'Struct Padding & Data Alignment', 'Word alignment boundaries, sizeof calculations, bit fields in structures.', 1, false),
+  makeTopic('pr-4-2', 'subj-prog', 'pr-4', 'Dynamic Memory Management & Memory Leaks', 'malloc vs calloc initialization, dangling pointers, memory leak causes.', 2, false),
+
+  // ==========================================
+  // 4. DATA STRUCTURES (subj-ds)
+  // ==========================================
+  makeTopic('ds-1', 'subj-ds', null, 'Arrays & Linked Lists', 'Array address calculations (row-major vs column-major), Singly/Doubly/Circular linked lists, and cycle detection.', 1, false),
+  makeTopic('ds-1-1', 'subj-ds', 'ds-1', 'Row-Major & Column-Major Array Offsets', 'Address calculation formula: Base + ((i - L1)*dim2 + (j - L2)) * element_size.', 1, true),
+  makeTopic('ds-1-2', 'subj-ds', 'ds-1', 'Linked List Operations & Floyd Cycle Detection', 'In-place linked list reversal, slow/fast pointer cycle detection and entry point.', 2, false),
+
+  makeTopic('ds-2', 'subj-ds', null, 'Stacks, Queues & Applications', 'LIFO stack operations, Infix to Postfix/Prefix conversion, Postfix expression evaluation, and Circular Queues.', 2, true),
+  makeTopic('ds-2-1', 'subj-ds', 'ds-2', 'Infix, Postfix & Prefix Conversions', 'Stack-based operator precedence handling, parentheses matching, expression evaluation.', 1, true),
+  makeTopic('ds-2-2', 'subj-ds', 'ds-2', 'Circular Queue & Deque Implementations', 'Modulo arithmetic for full/empty queue conditions: (rear+1)%N == front.', 2, false),
+
+  makeTopic('ds-3', 'subj-ds', null, 'Binary Trees & Tree Traversals', 'Tree properties (height, node counts), Inorder, Preorder, Postorder traversals, and unique tree reconstruction.', 3, true),
+  makeTopic('ds-3-1', 'subj-ds', 'ds-3', 'Tree Properties & Node Count Bounds', 'Strict binary tree leaf nodes: L = I + 1, maximum nodes at depth d: 2^d.', 1, true),
+  makeTopic('ds-3-2', 'subj-ds', 'ds-3', 'Tree Reconstruction from Traversals', 'Unique binary tree construction requiring Inorder + (Preorder OR Postorder).', 2, true),
+
+  makeTopic('ds-4', 'subj-ds', null, 'Binary Search Trees (BST) & AVL Trees', 'BST search/insertion/deletion, Inorder predecessor/successor, and AVL tree rotations & height balance.', 4, true),
+  makeTopic('ds-4-1', 'subj-ds', 'ds-4', 'BST Search, Insertion & Deletion Cases', 'Node deletion cases (0, 1, 2 children), BST validation from preorder sequence.', 1, true),
+  makeTopic('ds-4-2', 'subj-ds', 'ds-4', 'AVL Tree Rotations & Balance Factor', 'LL, RR, LR, RL single and double rotations, minimum nodes for height h: N(h) = N(h-1) + N(h-2) + 1.', 2, true),
+
+  makeTopic('ds-5', 'subj-ds', null, 'Binary Heaps & Priority Queues', 'Min-Heap and Max-Heap properties, array representation, Heapify algorithm, and Heap Sort analysis.', 5, true),
+  makeTopic('ds-5-1', 'subj-ds', 'ds-5', 'Heapify Algorithm & Build-Heap Complexity', 'Bottom-up O(n) Build-Heap derivation vs top-down O(n log n) insertion sequence.', 1, true),
+  makeTopic('ds-5-2', 'subj-ds', 'ds-5', 'Extract-Min/Max & Priority Queue Operations', 'Percolate down / up operations in O(log n), Kth largest element using heap.', 2, true),
+
+  makeTopic('ds-6', 'subj-ds', null, 'Hashing & Collision Resolution', 'Hash functions, Linear Probing, Quadratic Probing, Double Hashing, Separate Chaining, and load factor.', 6, true),
+  makeTopic('ds-6-1', 'subj-ds', 'ds-6', 'Open Addressing Collision Probing', 'Linear probing clustering vs Quadratic probing vs Double hashing secondary hash.', 1, true),
+  makeTopic('ds-6-2', 'subj-ds', 'ds-6', 'Separate Chaining & Search Complexities', 'Load factor alpha = n/m, average successful and unsuccessful search times.', 2, true),
+
+  // ==========================================
+  // 5. DIGITAL LOGIC (subj-dl)
+  // ==========================================
+  makeTopic('dl-1', 'subj-dl', null, 'Boolean Algebra & K-Map Minimization', 'Boolean theorems, SOP/POS forms, Karnaugh Maps, Prime Implicants, and Essential Prime Implicants.', 1, true),
+  makeTopic('dl-1-1', 'subj-dl', 'dl-1', 'Boolean Laws & Canonical Forms', 'De Morgan laws, Consensus theorem, Duality principle, minterms and maxterms.', 1, false),
+  makeTopic('dl-1-2', 'subj-dl', 'dl-1', 'K-Map Minimization with Don\'t Cares', 'Finding Essential Prime Implicants, minimizing multi-variable Boolean expressions.', 2, true),
+
+  makeTopic('dl-2', 'subj-dl', null, 'Number Representations & Arithmetic', 'Signed magnitude, 1s complement, 2s complement range/arithmetic, overflow detection, and IEEE 754 floating point format.', 2, true),
+  makeTopic('dl-2-1', 'subj-dl', 'dl-2', '2s Complement Representation & Overflow', 'Range [-2^(n-1), 2^(n-1)-1], overflow detection rule (Cin XOR Cout of MSB).', 1, true),
+  makeTopic('dl-2-2', 'subj-dl', 'dl-2', 'IEEE 754 Floating-Point Standard', 'Single precision (32-bit: 1 sign, 8 exponent with bias 127, 23 mantissa), normalized values.', 2, true),
+
+  makeTopic('dl-3', 'subj-dl', null, 'Combinational Logic Circuits', 'Multiplexers, Demultiplexers, Decoders, Encoders, Priority Encoders, Half/Full Adders, and Carry Look-Ahead Adders.', 3, true),
+  makeTopic('dl-3-1', 'subj-dl', 'dl-3', 'Multiplexer Implementation of Logic Functions', 'Implementing n-variable boolean functions using 2^(n-1) to 1 MUX.', 1, true),
+  makeTopic('dl-3-2', 'subj-dl', 'dl-3', 'Decoders & Encoders with Enable Lines', 'Constructing higher order decoders from smaller decoders, active-low logic.', 2, false),
+  makeTopic('dl-3-3', 'subj-dl', 'dl-3', 'Carry Look-Ahead Adder Delay Analysis', 'Carry propagate Pi and generate Gi logic, constant addition delay.', 3, true),
+
+  makeTopic('dl-4', 'subj-dl', null, 'Sequential Circuits & Flip-Flops', 'SR, JK, D, T Flip-Flops, characteristic equations, Master-Slave configuration, and Setup/Hold timing violations.', 4, true),
+  makeTopic('dl-4-1', 'subj-dl', 'dl-4', 'Flip-Flop Characteristic & Excitation Equations', 'JK race-around condition, D flip-flop Q(t+1)=D, T flip-flop toggle logic.', 1, true),
+  makeTopic('dl-4-2', 'subj-dl', 'dl-4', 'Setup Time, Hold Time & Maximum Clock Frequency', 'Clock period Tclk >= Tcq + Tcomb + Tsetup, skew calculations.', 2, true),
+
+  makeTopic('dl-5', 'subj-dl', null, 'Counters & State Machines', 'Synchronous & Asynchronous (Ripple) counters, Mod-N counters, Up/Down counters, and Mealy vs Moore state models.', 5, true),
+  makeTopic('dl-5-1', 'subj-dl', 'dl-5', 'Synchronous vs Ripple Counter Delays', 'Ripple counter propagation delay n*Tpd vs synchronous clocking.', 1, true),
+  makeTopic('dl-5-2', 'subj-dl', 'dl-5', 'Mod-N Counter Design & State Diagram Sequence', 'Unused states, lockout prevention, ring counter and Johnson counter mod values.', 2, true),
+
+  // ==========================================
+  // 6. THEORY OF COMPUTATION (subj-toc)
+  // ==========================================
+  makeTopic('toc-1', 'subj-toc', null, 'Finite Automata: DFA & NFA', 'Deterministic and Non-Deterministic Finite Automata, subset construction, DFA state minimization, and dead states.', 1, true),
+  makeTopic('toc-1-1', 'subj-toc', 'toc-1', 'DFA Construction & Substring/Modulus Languages', 'Constructing minimal DFAs for binary numbers divisible by k, modulo arithmetic states.', 1, true),
+  makeTopic('toc-1-2', 'subj-toc', 'toc-1', 'DFA State Minimization & Myhill-Nerode Theorem', 'Table-filling equivalence partitioning algorithm, finding minimum state count.', 2, true),
+  makeTopic('toc-1-3', 'subj-toc', 'toc-1', 'NFA to DFA Conversion & State Power-Set Bounds', 'Subset construction algorithm, maximum states in equivalent DFA (2^n).', 3, false),
+
+  makeTopic('toc-2', 'subj-toc', null, 'Regular Expressions & Regular Languages', 'Regular expressions, Arden Theorem, Pumping Lemma for regular languages, and closure properties of regular languages.', 2, true),
+  makeTopic('toc-2-1', 'subj-toc', 'toc-2', 'Regular Expression Identities & Equivalence', 'Arden theorem: R = Q + RP => R = QP*, converting DFA transitions to RegEx.', 1, false),
+  makeTopic('toc-2-2', 'subj-toc', 'toc-2', 'Pumping Lemma for Regular Languages & Non-Regularity', 'Pumping lemma condition |xy| <= p, y != epsilon, proving languages like a^n b^n are non-regular.', 2, true),
+  makeTopic('toc-2-3', 'subj-toc', 'toc-2', 'Closure Properties of Regular Languages', 'Union, intersection, complement, concatenation, Kleene star, reversal, homomorphism.', 3, true),
+
+  makeTopic('toc-3', 'subj-toc', null, 'Context-Free Grammars & Pushdown Automata', 'CFG generation, ambiguous grammars, Chomsky Normal Form, and Deterministic vs Non-Deterministic Pushdown Automata.', 3, true),
+  makeTopic('toc-3-1', 'subj-toc', 'toc-3', 'CFG Ambiguity & Inherently Ambiguous Languages', 'Multiple leftmost derivations/parse trees for the same string, ambiguity undecidability.', 1, true),
+  makeTopic('toc-3-2', 'subj-toc', 'toc-3', 'Pushdown Automata (DPDA vs NPDA)', 'DPDA (DCFL) strictly less powerful than NPDA (CFL), acceptance by empty stack vs final state.', 2, true),
+  makeTopic('toc-3-3', 'subj-toc', 'toc-3', 'Closure Properties of CFL & DCFL', 'CFL closed under union/concatenation/star, NOT closed under intersection/complement.', 3, true),
+
+  makeTopic('toc-4', 'subj-toc', null, 'Turing Machines & Chomsky Hierarchy', 'Turing machine formal definition, Recursive vs Recursively Enumerable languages, and Chomsky 4-tier grammar hierarchy.', 4, true),
+  makeTopic('toc-4-1', 'subj-toc', 'toc-4', 'Chomsky Hierarchy: Types 0, 1, 2, 3', 'Regular (Type 3) subset of DCFL subset of CFL (Type 2) subset of CSL (Type 1) subset of Recursive subset of RE (Type 0).', 1, true),
+  makeTopic('toc-4-2', 'subj-toc', 'toc-4', 'Recursive (REC) vs Recursively Enumerable (RE)', 'REC halts on all inputs (decidable), RE halts on yes-instances (semi-decidable).', 2, true),
+
+  makeTopic('toc-5', 'subj-toc', null, 'Decidability, Halting Problem & Reductions', 'Decidable vs Undecidable problems across language classes, Halting Problem proof, Rice Theorem, and PCP.', 5, true),
+  makeTopic('toc-5-1', 'subj-toc', 'toc-5', 'Decidability Table for Language Families', 'Membership, Emptiness, Finiteness, Equivalence, Intersection-emptiness decidability grid.', 1, true),
+  makeTopic('toc-5-2', 'subj-toc', 'toc-5', 'Halting Problem & Rice\'s Theorem', 'Halting problem undecidability proof, Rice Theorem on non-trivial semantic properties of RE languages.', 2, true),
+  makeTopic('toc-5-3', 'subj-toc', 'toc-5', 'Post Correspondence Problem (PCP)', 'PCP and Modified PCP undecidability, reductions from PCP to CFG ambiguity.', 3, false),
+
+  // ==========================================
+  // 7. COMPILER DESIGN (subj-cd)
+  // ==========================================
+  makeTopic('cd-1', 'subj-cd', null, 'Lexical Analysis', 'Tokenization, Lex specification, transition diagrams, longest match rule, and handling buffer pairs.', 1, false),
+  makeTopic('cd-1-1', 'subj-cd', 'cd-1', 'Token, Pattern, Lexeme Recognition', 'Differentiating keywords, identifiers, constants, regular expressions in Lex.', 1, false),
+
+  makeTopic('cd-2', 'subj-cd', null, 'Top-Down Parsing: LL(1)', 'FIRST and FOLLOW set computation algorithms, LL(1) parsing table construction, and eliminating left recursion & left factoring.', 2, true),
+  makeTopic('cd-2-1', 'subj-cd', 'cd-2', 'FIRST & FOLLOW Computation Algorithms', 'Nullable productions, epsilon propagation rules, end-marker $ placement.', 1, true),
+  makeTopic('cd-2-2', 'subj-cd', 'cd-2', 'LL(1) Parsing Table & Conflict Detection', 'Table cell collisions M[A, a], condition for grammar to be LL(1) (disjoint FIRST sets).', 2, true),
+  makeTopic('cd-2-3', 'subj-cd', 'cd-2', 'Eliminating Left Recursion & Left Factoring', 'Immediate left recursion elimination A -> A alpha | beta to A -> beta A\', A\' -> alpha A\' | eps.', 3, false),
+
+  makeTopic('cd-3', 'subj-cd', null, 'Bottom-Up Parsing: LR Parsers', 'Shift-reduce parsing, LR(0) items, SLR(1), CLR(1), LALR(1) item sets, and resolving Shift-Reduce / Reduce-Reduce conflicts.', 3, true),
+  makeTopic('cd-3-1', 'subj-cd', 'cd-3', 'LR(0) and SLR(1) Parsing Tables & Conflicts', 'Augmented grammar, CLOSURE, GOTO operations, SLR(1) reduction only in FOLLOW(A).', 1, true),
+  makeTopic('cd-3-2', 'subj-cd', 'cd-3', 'CLR(1) vs LALR(1) Parsing & State Merging', 'LR(1) lookahead propagation, merging states with identical cores, LALR(1) introduce RR conflicts only.', 2, true),
+  makeTopic('cd-3-3', 'subj-cd', 'cd-3', 'Parser Power Hierarchy Comparison', 'LR(0) < SLR(1) < LALR(1) < CLR(1), number of states: LR(0) = SLR(1) = LALR(1) < CLR(1).', 3, true),
+
+  makeTopic('cd-4', 'subj-cd', null, 'Syntax-Directed Translation (SDT)', 'Syntax-Directed Definitions (SDD), Synthesized vs Inherited attributes, S-attributed definitions, and L-attributed definitions.', 4, true),
+  makeTopic('cd-4-1', 'subj-cd', 'cd-4', 'S-Attributed Definitions & Bottom-Up Evaluation', 'Only synthesized attributes, evaluated during bottom-up parsing reductions.', 1, true),
+  makeTopic('cd-4-2', 'subj-cd', 'cd-4', 'L-Attributed Definitions & Dependency Graphs', 'Inherited attributes depend only on parent and left siblings, top-down and bottom-up evaluation.', 2, true),
+
+  makeTopic('cd-5', 'subj-cd', null, 'Intermediate Code Generation & Code Optimization', 'Three-Address Code (TAC), Quadruples, Triples, Basic Blocks, Control Flow Graphs (CFG), and Loop Optimizations.', 5, true),
+  makeTopic('cd-5-1', 'subj-cd', 'cd-5', 'Three-Address Code Generation & DAG Representation', 'Directed Acyclic Graphs (DAG) for basic blocks, subexpression elimination.', 1, true),
+  makeTopic('cd-5-2', 'subj-cd', 'cd-5', 'Basic Block Partitioning & CFG Leaders', 'Leader identification rules: First statement, target of jump, statement following jump.', 2, true),
+  makeTopic('cd-5-3', 'subj-cd', 'cd-5', 'Code Optimization Techniques', 'Constant folding, constant propagation, dead code elimination, loop invariant code motion.', 3, false),
+
+  // ==========================================
+  // 8. ALGORITHMS (subj-algo)
+  // ==========================================
+  makeTopic('alg-1', 'subj-algo', null, 'Asymptotic Analysis & Recurrences', 'Big-O, Omega, Theta, Little-o/omega notations, Master Theorem cases, Akra-Bazzi method, and recursion tree analysis.', 1, true),
+  makeTopic('alg-1-1', 'subj-algo', 'alg-1', 'Asymptotic Growth Rates & Function Ordering', 'Comparing log n, n^c, c^n, n!, n^n growth rates using limits.', 1, true),
+  makeTopic('alg-1-2', 'subj-algo', 'alg-1', 'Master Theorem for Divide & Conquer', 'Cases T(n) = aT(n/b) + f(n): compare f(n) with n^(log_b a), log factors.', 2, true),
+
+  makeTopic('alg-2', 'subj-algo', null, 'Sorting & Searching Algorithms', 'Comparison sorts: Merge Sort, Quick Sort (partitioning & worst-case analysis), Heap Sort, Counting Sort, and lower bounds.', 2, true),
+  makeTopic('alg-2-1', 'subj-algo', 'alg-2', 'Quick Sort Partitioning & Worst-Case Analysis', 'Lomuto/Hoare partitioning, worst-case O(n^2) when already sorted with extreme pivot, randomized quicksort.', 1, true),
+  makeTopic('alg-2-2', 'subj-algo', 'alg-2', 'Merge Sort & Comparison Lower Bound Omega(n log n)', 'Divide & conquer stability, decision tree model for comparison-based sorting lower bound.', 2, true),
+
+  makeTopic('alg-3', 'subj-algo', null, 'Greedy Algorithms', 'Greedy-choice property, Fractional Knapsack, Huffman Coding tree construction, and Activity Selection scheduling.', 3, true),
+  makeTopic('alg-3-1', 'subj-algo', 'alg-3', 'Huffman Coding & Optimal Prefix Codes', 'Bottom-up prefix code tree, minimum bits calculation for message transmission.', 1, true),
+  makeTopic('alg-3-2', 'subj-algo', 'alg-3', 'Fractional Knapsack & Activity Selection', 'Sorting by value/weight ratio or finish times, optimal greedy schedule proof.', 2, false),
+
+  makeTopic('alg-4', 'subj-algo', null, 'Dynamic Programming', 'Optimal substructure, overlapping subproblems, 0/1 Knapsack, Longest Common Subsequence (LCS), Matrix Chain Multiplication (MCM).', 4, true),
+  makeTopic('alg-4-1', 'subj-algo', 'alg-4', '0/1 Knapsack Problem DP Formulation', 'DP state transition T[i, w] = max(T[i-1, w], val[i] + T[i-1, w-wt[i]]), space optimization.', 1, true),
+  makeTopic('alg-4-2', 'subj-algo', 'alg-4', 'Longest Common Subsequence (LCS) & Edit Distance', 'Table filling algorithm O(m*n), string transformation cost analysis.', 2, true),
+  makeTopic('alg-4-3', 'subj-algo', 'alg-4', 'Matrix Chain Multiplication (MCM)', 'Parenthesization cost minimization m[i,j] = min(m[i,k] + m[k+1,j] + p_{i-1}p_k p_j).', 3, true),
+
+  makeTopic('alg-5', 'subj-algo', null, 'Graph Algorithms: Traversal, Shortest Paths & MST', 'BFS, DFS, Topological Sorting, Dijkstra, Bellman-Ford, Floyd-Warshall, Kruskal, and Prim algorithms.', 5, true),
+  makeTopic('alg-5-1', 'subj-algo', 'alg-5', 'BFS, DFS & Topological Sorting', 'Queue BFS vs Stack DFS, cycle detection in directed graphs, Kahn algorithm.', 1, true),
+  makeTopic('alg-5-2', 'subj-algo', 'alg-5', 'Shortest Paths: Dijkstra, Bellman-Ford, Floyd-Warshall', 'Dijkstra non-negative weights O((V+E)log V), Bellman-Ford negative cycle detection O(V*E), Floyd-Warshall O(V^3).', 2, true),
+  makeTopic('alg-5-3', 'subj-algo', 'alg-5', 'Minimum Spanning Trees: Kruskal & Prim', 'Kruskal using Disjoint Set Union (DSU) O(E log E), Prim greedy cut property O(E log V).', 3, true),
+
+  makeTopic('alg-6', 'subj-algo', null, 'NP-Completeness & Reductions', 'P vs NP, NP-Hard vs NP-Complete definitions, polynomial-time reductions, Circuit SAT, 3-SAT, Vertex Cover, and Clique.', 6, false),
+  makeTopic('alg-6-1', 'subj-algo', 'alg-6', 'P, NP, NP-Complete & NP-Hard Classes', 'Deterministic vs non-deterministic polynomial time, verification vs finding certificates.', 1, false),
+  makeTopic('alg-6-2', 'subj-algo', 'alg-6', 'Classical NP-Complete Problems & Reductions', 'Cook-Levin Theorem (SAT), 3-SAT to Vertex Cover and Independent Set reductions.', 2, true),
+
+  // ==========================================
+  // 9. DATABASE MANAGEMENT SYSTEMS (subj-dbms)
+  // ==========================================
+  makeTopic('db-1', 'subj-dbms', null, 'ER-Model & Relational Model', 'Entity-Relationship diagrams, cardinality/participation constraints, converting ER to relational tables, and weak entities.', 1, false),
+  makeTopic('db-1-1', 'subj-dbms', 'db-1', 'ER Diagrams to Relational Tables Mapping', 'Minimum tables required for 1:1, 1:N, M:N relationships, handling weak entity keys.', 1, true),
+
+  makeTopic('db-2', 'subj-dbms', null, 'Relational Algebra & Tuple Calculus', 'Selection, Projection, Cartesian Product, Set Difference, Joins (Natural, Outer, Theta), Division, and TRC safety.', 2, true),
+  makeTopic('db-2-1', 'subj-dbms', 'db-2', 'Relational Algebra Operators & Relational Division', 'Division operator R / S for "for all" queries, natural join vs cross product.', 1, true),
+  makeTopic('db-2-2', 'subj-dbms', 'db-2', 'Tuple & Domain Relational Calculus (TRC / DRC)', 'First-order logic queries, safe vs unsafe expressions in relational calculus.', 2, false),
+
+  makeTopic('db-3', 'subj-dbms', null, 'SQL Queries, Joins & Aggregations', 'SELECT clauses, GROUP BY, HAVING, subqueries, Correlated Subqueries, INNER/LEFT/RIGHT/FULL OUTER JOIN, and NULL logic.', 3, true),
+  makeTopic('db-3-1', 'subj-dbms', 'db-3', 'SQL Joins & NULL Value 3-Valued Logic', 'TRUE, FALSE, UNKNOWN truth tables, LEFT OUTER JOIN with NULL filtering.', 1, true),
+  makeTopic('db-3-2', 'subj-dbms', 'db-3', 'GROUP BY, HAVING & Nested Correlated Subqueries', 'Aggregate functions (COUNT, SUM, AVG), EXISTS / NOT EXISTS correlated subqueries.', 2, true),
+
+  makeTopic('db-4', 'subj-dbms', null, 'Functional Dependencies & Normalization', 'Armstrong axioms, Attribute Closure, Candidate Keys, Canonical Cover, 1NF, 2NF, 3NF, BCNF, and Decomposition.', 4, true),
+  makeTopic('db-4-1', 'subj-dbms', 'db-4', 'Attribute Closure & Finding Candidate Keys', 'Computing X+, finding all candidate keys and super keys algorithm.', 1, true),
+  makeTopic('db-4-2', 'subj-dbms', 'db-4', 'Canonical / Minimal Cover of Functional Dependencies', 'Eliminating extraneous left attributes, removing redundant FDs.', 2, true),
+  makeTopic('db-4-3', 'subj-dbms', 'db-4', 'Normal Forms: 2NF, 3NF, BCNF Identification', '2NF (no partial dependency), 3NF (transitive dependency: X is superkey or Y is prime), BCNF (X is superkey).', 3, true),
+  makeTopic('db-4-4', 'subj-dbms', 'db-4', 'Lossless Join & Dependency Preserving Decompositions', 'Lossless join test: R1 cap R2 -> (R1 - R2) or (R2 - R1), dependency preservation checking.', 4, true),
+
+  makeTopic('db-5', 'subj-dbms', null, 'Transactions & Concurrency Control', 'ACID properties, Schedule Serializability, Conflict Serializability (Precedence Graphs), Recoverability, and 2PL.', 5, true),
+  makeTopic('db-5-1', 'subj-dbms', 'db-5', 'Conflict Serializability & Precedence Graph Cycles', 'Conflict operations (R-W, W-R, W-W on same data item), topological sort for equivalent serial order.', 1, true),
+  makeTopic('db-5-2', 'subj-dbms', 'db-5', 'Recoverable & Cascadeless Schedules', 'Dirty read problem, uncommitted dependency abort recovery order.', 2, true),
+  makeTopic('db-5-3', 'subj-dbms', 'db-5', 'Two-Phase Locking (2PL) & Strict / Rigorous 2PL', 'Growing vs shrinking phase, Strict 2PL ensures conflict serializability + recoverable schedule.', 3, true),
+
+  makeTopic('db-6', 'subj-dbms', null, 'File Organization & B / B+ Trees', 'Primary, Secondary, Clustered indexing, B-Tree and B+ Tree order, maximum/minimum keys, node splits, and height.', 6, true),
+  makeTopic('db-6-1', 'subj-dbms', 'db-6', 'B+ Tree Structure & Node Key Bounds', 'Order p: leaf node vs internal node pointer/key counts, ceiling(p/2) minimum capacity.', 1, true),
+  makeTopic('db-6-2', 'subj-dbms', 'db-6', 'Search, Insert & Block Access Calculations in B+ Trees', 'Calculating I/O block accesses for search, node splitting on overflow.', 2, true),
+
+  // ==========================================
+  // 10. COMPUTER ORGANIZATION & ARCHITECTURE (subj-coa)
+  // ==========================================
+  makeTopic('coa-1', 'subj-coa', null, 'Machine Instructions & Addressing Modes', 'Instruction formats (0, 1, 2, 3 address), Addressing modes (Immediate, Direct, Indirect, Indexed, Base, Relative), and instruction cycles.', 1, true),
+  makeTopic('coa-1-1', 'subj-coa', 'coa-1', 'Addressing Modes & Effective Address Calculations', 'Immediate, Register Indirect, Auto-increment, PC-Relative offset, Indexed addressing.', 1, true),
+  makeTopic('coa-1-2', 'subj-coa', 'coa-1', 'Instruction Encoding & Expanding Opcodes', 'Variable length opcode encoding, maximum instructions given register count and address bits.', 2, true),
+
+  makeTopic('coa-2', 'subj-coa', null, 'Instruction Pipelining & Hazard Analysis', 'Pipeline stages (IF, ID, EX, MEM, WB), Speedup formula, Structural, Data (RAW, WAR, WAW), and Control Hazards with branch penalties.', 2, true),
+  makeTopic('coa-2-1', 'subj-coa', 'coa-2', 'Pipeline Speedup, Throughput & Efficiency', 'Formula: Speedup S = (n * k) / (k + n - 1 + stalls) as n -> infinity S -> k.', 1, true),
+  makeTopic('coa-2-2', 'subj-coa', 'coa-2', 'Data Hazards & Operand Forwarding', 'Read-After-Write (RAW) true dependency, stall cycles calculation with/without forwarding.', 2, true),
+  makeTopic('coa-2-3', 'subj-coa', 'coa-2', 'Control Hazards & Branch Prediction', 'Branch penalty clock cycles, delayed branching, branch target buffer (BTB).', 3, true),
+
+  makeTopic('coa-3', 'subj-coa', null, 'Cache Memory Organization & AMAT', 'Direct mapped, Fully Associative, Set-Associative mapping, Tag/Set/Offset bit partitions, Write-through vs Write-back, and AMAT.', 3, true),
+  makeTopic('coa-3-1', 'subj-coa', 'coa-3', 'Cache Address Splitting: Tag, Set, Block Offset', 'Formulas: Offset = log2(Block Size), Set = log2(Num Sets), Tag = Addr - Set - Offset.', 1, true),
+  makeTopic('coa-3-2', 'subj-coa', 'coa-3', 'Average Memory Access Time (AMAT) & Multi-Level Cache', 'AMAT = T_L1 + M_L1 * (T_L2 + M_L2 * T_Main), simultaneous vs hierarchical access.', 2, true),
+  makeTopic('coa-3-3', 'subj-coa', 'coa-3', 'Write Policies & Cache Replacement (LRU, FIFO)', 'Write-through with write-buffer vs write-back with dirty bit, LRU bit tracking.', 3, false),
+
+  makeTopic('coa-4', 'subj-coa', null, 'Main Memory Interleaving & Virtual Memory', 'High-order vs Low-order interleaved memory banks, memory access cycle time, Page tables, and TLB hit access.', 4, true),
+  makeTopic('coa-4-1', 'subj-coa', 'coa-4', 'Memory Interleaving & Bandwidth Analysis', 'Low-order interleaving for continuous pipeline memory bandwidth.', 1, false),
+  makeTopic('coa-4-2', 'subj-coa', 'coa-4', 'Virtual Memory Address Translation in Hardware', 'Virtual Page Number (VPN) to Physical Frame Number (PFN) translation with TLB.', 2, true),
+
+  makeTopic('coa-5', 'subj-coa', null, 'Data-Path, Control Unit & I/O / DMA', 'Single-cycle vs multi-cycle datapath, Hardwired vs Microprogrammed control, Interrupt latency, and Direct Memory Access (DMA).', 5, false),
+  makeTopic('coa-5-1', 'subj-coa', 'coa-5', 'Hardwired vs Microprogrammed Control Units', 'Horizontal vs vertical microinstructions, control store size calculations.', 1, false),
+  makeTopic('coa-5-2', 'subj-coa', 'coa-5', 'I/O Organization & DMA Transfer Modes', 'Cycle stealing mode vs Burst mode DMA transfer bandwidth calculations.', 2, true),
+
+  // ==========================================
+  // 11. DISCRETE MATHEMATICS (subj-dm)
+  // ==========================================
+  makeTopic('dm-1', 'subj-dm', null, 'Propositional & First-Order Logic', 'Truth tables, Logical equivalences, Tautology/Contradiction, CNF/DNF normal forms, Predicate quantifiers (Forall, Exists), and validity.', 1, true),
+  makeTopic('dm-1-1', 'subj-dm', 'dm-1', 'Propositional Logic & Tautological Equivalences', 'Implication p -> q == ~p v q, Contrapositive, De Morgan rules in logic.', 1, true),
+  makeTopic('dm-1-2', 'subj-dm', 'dm-1', 'First-Order Predicate Logic & Quantifier Scope', 'Negating quantifiers ~(forall x P(x)) == exists x ~P(x), translating English statements.', 2, true),
+
+  makeTopic('dm-2', 'subj-dm', null, 'Sets, Relations, Functions & Posets', 'Equivalence relations, Partial Orders (Posets), Hasse diagrams, Lattices (complete/distributive), and Injective/Surjective functions.', 2, true),
+  makeTopic('dm-2-1', 'subj-dm', 'dm-2', 'Relations: Reflexive, Symmetric, Transitive & Closures', 'Number of reflexive 2^(n^2-n), symmetric 2^(n(n+1)/2), and equivalence relations (Bell numbers).', 1, true),
+  makeTopic('dm-2-2', 'subj-dm', 'dm-2', 'Posets, Hasse Diagrams & Lattices', 'GLB (meet), LUB (join), complemented and distributive lattice properties.', 2, true),
+
+  makeTopic('dm-3', 'subj-dm', null, 'Combinatorics & Recurrence Relations', 'Permutations & Combinations, Pigeonhole Principle, Inclusion-Exclusion, Generating Functions, and Homogeneous/Non-homogeneous Recurrences.', 3, true),
+  makeTopic('dm-3-1', 'subj-dm', 'dm-3', 'Pigeonhole Principle & Combinatorial Counting', 'Generalized pigeonhole principle ceil(N/k), stars and bars distribution formula C(n+k-1, k-1).', 1, true),
+  makeTopic('dm-3-2', 'subj-dm', 'dm-3', 'Linear Recurrence Relations & Characteristic Roots', 'Solving an = c1*a_{n-1} + c2*a_{n-2}, repeated roots, particular solutions.', 2, true),
+
+  makeTopic('dm-4', 'subj-dm', null, 'Graph Theory: Paths, Cycles & Coloring', 'Handshaking lemma, Euler tours, Hamiltonian cycles, Planar graphs, Euler formula, Chromatic numbers, and Graph Isomorphism.', 4, true),
+  makeTopic('dm-4-1', 'subj-dm', 'dm-4', 'Handshaking Lemma & Degree Sequences', 'Sum of degrees = 2 * |E|, Havel-Hakimi theorem for graphical degree sequences.', 1, true),
+  makeTopic('dm-4-2', 'subj-dm', 'dm-4', 'Eulerian Graphs vs Hamiltonian Graphs', 'Eulerian iff all vertices have even degree, Dirac/Ore sufficient conditions for Hamiltonian.', 2, true),
+  makeTopic('dm-4-3', 'subj-dm', 'dm-4', 'Planar Graphs, Euler Formula & Graph Coloring', 'Euler formula V - E + F = 2, max edges E <= 3V - 6, chromatic number chi(G) bounds.', 3, true),
+
+  makeTopic('dm-5', 'subj-dm', null, 'Group Theory & Algebraic Structures', 'Semi-groups, Monoids, Groups, Abelian Groups, Subgroups, Cyclic groups, and Lagrange Theorem.', 5, false),
+  makeTopic('dm-5-1', 'subj-dm', 'dm-5', 'Groups, Cyclic Groups & Lagrange Theorem', 'Order of group and elements, order of subgroup divides order of finite group.', 1, false),
+
+  // ==========================================
+  // 12. ENGINEERING MATHEMATICS (subj-em)
+  // ==========================================
+  makeTopic('em-1', 'subj-em', null, 'Linear Algebra: Matrices & Systems', 'Matrix operations, Determinants, Rank of a matrix, Systems of Linear Equations (AX=B consistency, unique/infinite/no solution).', 1, true),
+  makeTopic('em-1-1', 'subj-em', 'em-1', 'Matrix Rank & Systems of Linear Equations AX = B', 'Augmented matrix [A|B], consistency condition rank(A) = rank(A|B), unique vs infinite solutions.', 1, true),
+
+  makeTopic('em-2', 'subj-em', null, 'Eigenvalues, Eigenvectors & Cayley-Hamilton', 'Characteristic equation |A - lambda*I| = 0, properties of eigenvalues (trace=sum, det=product), Diagonalization, and Cayley-Hamilton Theorem.', 2, true),
+  makeTopic('em-2-1', 'subj-em', 'em-2', 'Eigenvalue Properties & Spectral Theorems', 'Symmetric matrix real eigenvalues, orthogonal eigenvectors, trace and determinant shortcuts.', 1, true),
+  makeTopic('em-2-2', 'subj-em', 'em-2', 'Cayley-Hamilton Theorem & Matrix Inverses', 'Matrix satisfies its own characteristic polynomial A^n + ... = 0, calculating high matrix powers.', 2, true),
+
+  makeTopic('em-3', 'subj-em', null, 'Calculus: Limits, Continuity & Extrema', 'Limits (L\'Hopital rule), Continuity, Differentiability, Mean Value Theorems, Taylor/Maclaurin series, and Maxima/Minima of single/multi variables.', 3, false),
+  makeTopic('em-3-1', 'subj-em', 'em-3', 'Limits & L\'Hopital Rule', 'Indeterminate forms 0/0 and inf/inf, standard exponential limits (1 + a/x)^x -> e^a.', 1, false),
+  makeTopic('em-3-2', 'subj-em', 'em-3', 'Maxima, Minima & Saddle Points', 'First and second derivative tests, Hessian matrix discriminant for multivariable extrema.', 2, true),
+
+  makeTopic('em-4', 'subj-em', null, 'Probability & Distributions', 'Sample space, Conditional Probability, Bayes\' Theorem, Random Variables, Expectation, Variance, Uniform, Normal, Poisson, Exponential distributions.', 4, true),
+  makeTopic('em-4-1', 'subj-em', 'em-4', 'Conditional Probability & Bayes\' Theorem', 'P(A|B) = P(B|A)*P(A) / P(B), total probability theorem application.', 1, true),
+  makeTopic('em-4-2', 'subj-em', 'em-4', 'Discrete Distributions: Binomial & Poisson', 'Binomial P(X=k)=C(n,k)p^k q^(n-k), Poisson P(X=k)=e^-lambda * lambda^k / k! with mean=variance=lambda.', 2, true),
+  makeTopic('em-4-3', 'subj-em', 'em-4', 'Continuous Distributions: Uniform, Normal & Exponential', 'Probability density functions, memoryless property of exponential distribution P(X > s+t | X > s) = P(X > t).', 3, true),
+
+  // ==========================================
+  // 13. GENERAL APTITUDE (subj-ga)
+  // ==========================================
+  makeTopic('ga-1', 'subj-ga', null, 'Quantitative Aptitude', 'Percentages, Profit & Loss, Ratio & Proportion, Work & Time, Speed Time Distance, Number Systems, and Elementary Statistics.', 1, true),
+  makeTopic('ga-1-1', 'subj-ga', 'ga-1', 'Work & Time, Pipes & Cisterns', 'Efficiency method, combined work rate 1/T = 1/A + 1/B.', 1, true),
+  makeTopic('ga-1-2', 'subj-ga', 'ga-1', 'Speed, Time & Distance, Relative Speed', 'Relative speed for trains (same vs opposite direction), average speed formula.', 2, true),
+
+  makeTopic('ga-2', 'subj-ga', null, 'Analytical & Spatial Aptitude', 'Logical deductions, Syllogisms, Seating arrangements, Blood relations, Paper folding, Mirror reflection, and 2D/3D rotations.', 2, true),
+  makeTopic('ga-2-1', 'subj-ga', 'ga-2', 'Syllogisms & Logical Deductions', 'Venn diagram representations of "All", "Some", "No" propositions.', 1, true),
+  makeTopic('ga-2-2', 'subj-ga', 'ga-2', 'Spatial Aptitude: Paper Folding & 3D Assembly', 'Mirror reflections, surface unfolding of cubes, pattern completion.', 2, true),
+
+  makeTopic('ga-3', 'subj-ga', null, 'Verbal Aptitude', 'English grammar (tenses, subject-verb agreement, prepositions), vocabulary in context, reading comprehension, and narrative sequencing.', 3, false),
+  makeTopic('ga-3-1', 'subj-ga', 'ga-3', 'English Grammar & Sentence Correction', 'Subject-verb agreement, conditional clauses, dangling modifiers.', 1, false),
+  makeTopic('ga-3-2', 'subj-ga', 'ga-3', 'Reading Comprehension & Critical Reasoning', 'Identifying author premise, strengthening/weakening arguments, inferences.', 2, false),
 ];
 
 export const INITIAL_SCHEDULES: Schedule[] = [
   {
     id: 'sched-today',
     Schedule_Date: new Date().toISOString().split('T')[0],
-    Schedule_Hours: 6.0,
+    Schedule_Hours: 6,
     Schedule_Subjects: ['subj-cn', 'subj-os', 'subj-algo'],
     Schedule_Tag_Filters: ['Star'],
     Subject_Allocations: {
@@ -490,15 +511,15 @@ export const INITIAL_SCHEDULES: Schedule[] = [
     },
     Allocated_Topics: [
       {
-        topic_id: 'cn-02',
+        topic_id: 'cn-1',
         subject_id: 'subj-cn',
-        topic_name: 'IPV4 Addressing',
+        topic_name: 'IPv4 Addressing & Subnetting',
         subject_name: 'Computer Networks',
         allocated_minutes: 120,
         completed: false,
       },
       {
-        topic_id: 'os-03',
+        topic_id: 'os-3',
         subject_id: 'subj-os',
         topic_name: 'Process Synchronization',
         subject_name: 'Operating Systems',
@@ -506,7 +527,7 @@ export const INITIAL_SCHEDULES: Schedule[] = [
         completed: false,
       },
       {
-        topic_id: 'algo-04',
+        topic_id: 'alg-4',
         subject_id: 'subj-algo',
         topic_name: 'Dynamic Programming',
         subject_name: 'Algorithms',
