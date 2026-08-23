@@ -10,6 +10,7 @@ export const DEFAULT_INITIAL_STATE: TopicMasterState = {
   activeScheduleId: 'sched-today',
   settings: {
     theme: 'dark',
+    themePalette: 'blue',
     enableSound: true,
     autoSaveIntervalMs: 5000,
   },

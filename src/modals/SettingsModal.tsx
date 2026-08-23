@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { BackupService } from '../services/backupService';
 import { Modal } from '../components/common/Modal';
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
+import { ThemePalette } from '../types/store';
 import {
   Settings,
   Download,
@@ -13,18 +14,32 @@ import {
   CheckCircle2,
   FileJson,
   Database,
+  Palette,
 } from 'lucide-react';
+import { clsx } from 'clsx';
 
 export interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const COLOR_PALETTES: { id: ThemePalette; name: string; color: string; glow: string }[] = [
+  { id: 'emerald', name: 'Emerald', color: '#10b981', glow: 'rgba(16, 185, 129, 0.6)' },
+  { id: 'violet', name: 'Violet', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.6)' },
+  { id: 'blue', name: 'Blue', color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.6)' },
+  { id: 'ruby', name: 'Ruby Red', color: '#ef4444', glow: 'rgba(239, 68, 68, 0.6)' },
+  { id: 'amber', name: 'Amber', color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.6)' },
+  { id: 'rose', name: 'Rose', color: '#ec4899', glow: 'rgba(236, 72, 153, 0.6)' },
+  { id: 'cyan', name: 'Cyan', color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.6)' },
+];
+
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const {
     subjects,
     topics,
     schedules,
+    settings,
+    updateSettings,
     importData,
     resetToDemoData,
     clearAllData,
@@ -48,7 +63,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         topics,
         schedules,
         activeScheduleId: null,
-        settings: { theme: 'dark' as const, enableSound: true, autoSaveIntervalMs: 5000 },
+        settings: { theme: 'dark' as const, themePalette: settings.themePalette || 'blue', enableSound: true, autoSaveIntervalMs: 5000 },
         activeTimer: { topicId: null, subjectId: null, startTime: null, elapsedSeconds: 0, isRunning: false },
       };
       BackupService.downloadBackupFile(stateToExport);
@@ -110,7 +125,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <div>
               <h3 className="text-lg font-black tracking-tight">Application Settings & Data</h3>
               <p className="text-xs text-slate-400">
-                Data persistence, JSON backup exports, imports, and maintenance
+                Custom color palettes, local persistence, JSON backup exports & maintenance
               </p>
             </div>
           </div>
@@ -118,13 +133,56 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         footer={
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-colors"
+            className="px-5 py-2.5 text-xs font-bold rounded-2xl bg-slate-800 hover:bg-slate-700 text-white transition-colors"
           >
             Close Settings
           </button>
         }
       >
         <div className="space-y-6">
+          {/* Color Palette & Theme Selection */}
+          <div className="p-5 rounded-3xl bg-slate-900/70 border border-slate-800/90 space-y-4">
+            <div>
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <Palette className="w-4 h-4 text-blue-400" />
+                <span>Color Palette & Theme</span>
+              </h4>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Select a palette to update buttons, glows, badges & background ambient mesh across the app.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {COLOR_PALETTES.map((pal) => {
+                const isSelected = (settings.themePalette || 'blue') === pal.id;
+                return (
+                  <button
+                    key={pal.id}
+                    type="button"
+                    onClick={() => updateSettings({ themePalette: pal.id })}
+                    className={clsx(
+                      'flex flex-col items-center justify-center p-3.5 rounded-2xl border transition-all duration-200 gap-2.5 select-none',
+                      isSelected
+                        ? 'bg-slate-800/90 border-blue-500 shadow-glow-sm scale-[1.03]'
+                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/60'
+                    )}
+                  >
+                    <span
+                      className="w-5 h-5 rounded-full shadow-lg transition-transform"
+                      style={{
+                        backgroundColor: pal.color,
+                        boxShadow: `0 0 12px ${pal.glow}`,
+                      }}
+                    />
+                    <span className={clsx('text-xs font-bold', isSelected ? 'text-white' : 'text-slate-300')}>
+                      {pal.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Storage Overview Stats */}
           <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-3">

@@ -3,8 +3,11 @@ import { Topic, TopicTags, TopicDifficulty, TopicStatus, StudySession } from './
 import { ContentBlock } from './contentBlock';
 import { Schedule } from './schedule';
 
+export type ThemePalette = 'emerald' | 'violet' | 'blue' | 'ruby' | 'amber' | 'rose' | 'cyan';
+
 export interface AppSettings {
   theme: 'dark' | 'light' | 'system';
+  themePalette?: ThemePalette;
   enableSound: boolean;
   autoSaveIntervalMs: number;
 }

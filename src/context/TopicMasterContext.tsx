@@ -55,6 +55,14 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
     };
   }, [state.activeTimer.isRunning]);
 
+  // Sync Theme Palette class on <html> root
+  useEffect(() => {
+    const palette = state.settings.themePalette || 'blue';
+    const allPalettes = ['theme-emerald', 'theme-violet', 'theme-blue', 'theme-ruby', 'theme-amber', 'theme-rose', 'theme-cyan'];
+    allPalettes.forEach((cls) => document.documentElement.classList.remove(cls));
+    document.documentElement.classList.add(`theme-${palette}`);
+  }, [state.settings.themePalette]);
+
   // ================= SUBJECT ACTIONS =================
 
   const addSubject = useCallback((subjectData: Omit<Subject, 'id' | 'created_at' | 'updated_at'>): Subject => {

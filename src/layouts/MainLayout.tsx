@@ -10,10 +10,15 @@ export const MainLayout: React.FC = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  // Global ⌘K / Ctrl+K keyboard shortcut
+  // Global ⌘K / Ctrl+K and Ctrl+Space keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      const isCtrlOrMeta = e.metaKey || e.ctrlKey;
+      const isSearchShortcut =
+        (isCtrlOrMeta && (e.key === 'k' || e.key === 'K')) ||
+        (isCtrlOrMeta && (e.code === 'Space' || e.key === ' '));
+
+      if (isSearchShortcut) {
         e.preventDefault();
         setSearchOpen((prev) => !prev);
       }

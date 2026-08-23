@@ -118,12 +118,12 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
             <button
               onClick={onOpenGlobalSearch}
               className="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-400 hover:text-slate-100 bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 rounded-2xl transition-all shadow-sm group"
-              title="Search topics and subjects (⌘K)"
+              title="Search topics and subjects (Ctrl+Space or ⌘K)"
             >
               <Search className="w-4 h-4 text-slate-400 group-hover:text-brand-400 transition-colors" />
               <span className="hidden sm:inline font-medium">Search...</span>
               <kbd className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono font-semibold bg-slate-850 text-slate-400 rounded-lg border border-slate-700">
-                ⌘K
+                Ctrl+Space
               </kbd>
             </button>
 
