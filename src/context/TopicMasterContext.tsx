@@ -475,22 +475,46 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
       const parentTopic = prev.topics.find((t) => t.id === topic.Parent_Id);
       const newParentId = parentTopic ? parentTopic.Parent_Id : null;
 
-      const newSiblings = prev.topics.filter(
-        (t) => t.Subject_Id === topic.Subject_Id && t.Parent_Id === newParentId && t.id !== id
-      );
+      const targetSiblings = prev.topics
+        .filter((t) => t.Subject_Id === topic.Subject_Id && t.Parent_Id === newParentId && t.id !== id)
+        .sort((a, b) => (a.Topic_Order ?? 0) - (b.Topic_Order ?? 0));
+
+      let insertionIdx = targetSiblings.length;
+      if (parentTopic) {
+        const pIdx = targetSiblings.findIndex((t) => t.id === parentTopic.id);
+        if (pIdx !== -1) {
+          insertionIdx = pIdx + 1;
+        }
+      }
+
+      const updatedTopic = {
+        ...topic,
+        Parent_Id: newParentId,
+        updated_at: new Date().toISOString(),
+      };
+
+      const reordered = [
+        ...targetSiblings.slice(0, insertionIdx),
+        updatedTopic,
+        ...targetSiblings.slice(insertionIdx),
+      ];
+
+      const orderMap = new Map<string, number>();
+      reordered.forEach((t, idx) => orderMap.set(t.id, idx));
 
       return {
         ...prev,
-        topics: prev.topics.map((t) =>
-          t.id === id
-            ? {
-                ...t,
-                Parent_Id: newParentId,
-                Topic_Order: newSiblings.length,
-                updated_at: new Date().toISOString(),
-              }
-            : t
-        ),
+        topics: prev.topics.map((t) => {
+          if (orderMap.has(t.id)) {
+            return {
+              ...t,
+              Parent_Id: newParentId,
+              Topic_Order: orderMap.get(t.id)!,
+              updated_at: new Date().toISOString(),
+            };
+          }
+          return t;
+        }),
       };
     });
   }, []);

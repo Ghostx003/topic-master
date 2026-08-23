@@ -582,6 +582,57 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
         {/* Action Controls & Dropdown Menu */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Hierarchy Promotion (Left Arrow) & Demotion (Right Arrow) Controls */}
+          <div className="flex items-center gap-0.5 bg-slate-900/90 p-0.5 rounded-2xl border border-slate-800/90 shadow-sm">
+            {/* Left Arrow: Outdent / Promote to parent level */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (canOutdentLeft) outdentTopicLeft(node.id);
+              }}
+              disabled={!canOutdentLeft}
+              className={clsx(
+                'p-1.5 sm:p-2 rounded-xl transition-all flex items-center justify-center active:scale-90',
+                canOutdentLeft
+                  ? 'text-purple-300 hover:text-white hover:bg-purple-600/30 hover:border-purple-500/40 border border-transparent cursor-pointer shadow-sm'
+                  : 'text-slate-600 cursor-not-allowed opacity-30 border border-transparent'
+              )}
+              title={
+                canOutdentLeft
+                  ? node.depth === 1
+                    ? 'Promote: Make this a Root/Parent Topic (Outdent Left)'
+                    : 'Promote: Move up one level (Outdent Left)'
+                  : 'Already at root level (cannot outdent)'
+              }
+              aria-label="Promote topic (Outdent Left)"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Right Arrow: Indent / Demote into previous sibling */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (canIndentRight) indentTopicRight(node.id);
+              }}
+              disabled={!canIndentRight}
+              className={clsx(
+                'p-1.5 sm:p-2 rounded-xl transition-all flex items-center justify-center active:scale-90',
+                canIndentRight
+                  ? 'text-cyan-300 hover:text-white hover:bg-cyan-600/30 hover:border-cyan-500/40 border border-transparent cursor-pointer shadow-sm'
+                  : 'text-slate-600 cursor-not-allowed opacity-30 border border-transparent'
+              )}
+              title={
+                canIndentRight
+                  ? `Demote: Make subtopic under "${siblings[nodeIndex - 1]?.Topic_Name}" (Indent Right)`
+                  : 'Cannot indent: Place below a sibling first'
+              }
+              aria-label="Demote topic (Indent Right)"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
           {/* Quick Add Subtopic Button */}
           <div className="w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0">
             <button
