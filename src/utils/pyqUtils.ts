@@ -86,16 +86,17 @@ const KEYWORD_PYQ_RULES: { keywords: string[]; pyq: number }[] = [
   { keywords: ['memory management', 'paging', 'ptbr'], pyq: 9 },
 
   // Algorithms
-  { keywords: ['identify function', 'algorithm trace'], pyq: 38 },
-  { keywords: ['recurrence relation', 'master theorem', 'akra-bazzi'], pyq: 36 },
-  { keywords: ['minimum spanning tree', 'kruskal', 'prim', 'mst'], pyq: 35 },
-  { keywords: ['time complexity', 'loop analysis', 'asymptotic analysis'], pyq: 31 },
-  { keywords: ['graph search', 'bfs', 'dfs', 'topological sort'], pyq: 23 },
-  { keywords: ['asymptotic', 'big-o', 'omega', 'theta'], pyq: 22 },
-  { keywords: ['sorting', 'merge sort', 'heap sort', 'counting sort'], pyq: 22 },
-  { keywords: ['quick sort', 'quicksort', 'hoare partition'], pyq: 15 },
-  { keywords: ['graph algorithm', 'dijkstra', 'bellman-ford', 'floyd'], pyq: 11 },
-  { keywords: ['dynamic programming', 'knapsack', 'lcs', 'mcm'], pyq: 10 },
+  { keywords: ['identify function & algorithm trace', 'identify function and algorithm trace'], pyq: 38 },
+  { keywords: ['recurrence relations in algorithms', 'master theorem cases'], pyq: 36 },
+  { keywords: ['minimum spanning tree (kruskal', 'minimum spanning tree'], pyq: 35 },
+  { keywords: ['time complexity & loop analysis', 'time complexity and loop analysis'], pyq: 31 },
+  { keywords: ['graph search (bfs & dfs)', 'graph search (bfs and dfs)'], pyq: 23 },
+  { keywords: ['asymptotic notations', 'asymptotic notation'], pyq: 22 },
+  { keywords: ['comparison-based sorting', 'comparison lower bound omega(n log n)'], pyq: 22 },
+  { keywords: ['quick sort (partitioning', 'quick sort'], pyq: 15 },
+  { keywords: ['shortest path algorithms', 'dijkstra shortest path o((v+e)log v)'], pyq: 11 },
+  { keywords: ['dynamic programming fundamentals', 'dynamic programming fundamentals & optimal'], pyq: 10 },
+  { keywords: ['class p, np, np-complete', 'np-completeness'], pyq: 8 },
 
   // TOC
   { keywords: ['finite automata', 'dfa', 'nfa', 'subset construction'], pyq: 43 },
