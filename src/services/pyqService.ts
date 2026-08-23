@@ -1,4 +1,4 @@
-import { PYQQuestion, PYQProgressMap, TopicPYQSummary, PYQYearFilter } from '../types/pyq';
+﻿import { PYQQuestion, PYQProgressMap, TopicPYQSummary, PYQYearFilter } from '../types/pyq';
 import rawQuestions from '../data/pyqQuestions.json';
 
 const PYQ_PROGRESS_STORAGE_KEY = 'topic_master_pyq_progress_v1';
@@ -10,6 +10,11 @@ export const ALL_PYQ_QUESTIONS: PYQQuestion[] = rawQuestions as PYQQuestion[];
 function normalize(s: string): string {
   if (!s) return '';
   return s.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function getWordTokens(s: string): Set<string> {
+  if (!s) return new Set();
+  return new Set(s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean));
 }
 
 // Extract numerical year from "GATE 2024", "1987", etc.
@@ -29,7 +34,7 @@ export function sortQuestionsNewestFirst(questions: PYQQuestion[]): PYQQuestion[
   });
 }
 
-// Custom aliases for intelligent fuzzy matching between Topic Master titles and JSON chapter names
+// Custom aliases for exact canonical name matching
 const CHAPTER_ALIASES: Record<string, string> = {
   // Digital Logic
   'ieee representation': 'floating point representation',
@@ -55,15 +60,9 @@ const CHAPTER_ALIASES: Record<string, string> = {
   'gaussian elimination': 'system of equations',
   'maxima minima': 'calculus: maxima and minima',
 
-  // General Aptitude
-  'alligation mixture': 'ratio proportion',
-  'arithmetic series': 'progressions (ap & gp)',
-  'cost market price': 'profit and loss',
-  'data interpretation': 'tabular data',
-  'factors': 'number systems & divisibility',
-  'number series': 'sequence series',
-  'speed time distance': 'speed time & distance',
+  // General Aptitude Exact Canonical Aliases
   'work time': 'time & work',
+  'speed time distance': 'speed time & distance',
 };
 
 // ================= PRE-INDEXED FAST DATA STRUCTURES =================
@@ -101,19 +100,46 @@ ALL_PYQ_QUESTIONS.forEach((q) => {
 const TOPIC_QUERY_CACHE = new Map<string, PYQQuestion[]>();
 
 /**
- * Check if a question chapter matches target topic
+ * Check if a question chapter matches target topic with strict token/equality precision
  */
-function isChapterMatch(qChapNorm: string, targetNorm: string): boolean {
-  if (qChapNorm === targetNorm) return true;
-  if (targetNorm.length >= 4 && (qChapNorm.includes(targetNorm) || targetNorm.includes(qChapNorm))) {
-    return true;
+function isChapterMatch(qChap: string, target: string): boolean {
+  const normQ = normalize(qChap);
+  const normT = normalize(target);
+
+  if (!normQ || !normT) return false;
+
+  // 1. Exact normalized match
+  if (normQ === normT) return true;
+
+  // 2. Exact word set match (e.g. "Work Time" vs "Time & Work")
+  const tokensQ = getWordTokens(qChap);
+  const tokensT = getWordTokens(target);
+  if (tokensQ.size > 0 && tokensT.size > 0) {
+    let allQInT = true;
+    for (const t of tokensQ) {
+      if (!tokensT.has(t)) {
+        allQInT = false;
+        break;
+      }
+    }
+    if (allQInT) return true;
+
+    let allTInQ = true;
+    for (const t of tokensT) {
+      if (!tokensQ.has(t)) {
+        allTInQ = false;
+        break;
+      }
+    }
+    if (allTInQ) return true;
   }
+
   return false;
 }
 
 /**
  * Retrieve questions for a specific topic (and optionally all its subtopics), always sorted newest to oldest.
- * Fully memoized for instantaneous O(1) retrieval.
+ * Strictly matches questions present in the dataset.
  */
 export function getQuestionsForTopic(
   subjectName: string,
@@ -127,21 +153,19 @@ export function getQuestionsForTopic(
   const normSubj = normalize(subjectName);
   const subjectQuestions = QUESTIONS_BY_SUBJECT_MAP.get(normSubj) || [];
 
-  const targets = [topicName, ...subtopicNames].map(normalize);
-  const targetAliases = [topicName, ...subtopicNames].map((t) =>
-    normalize(CHAPTER_ALIASES[t.toLowerCase()] || t)
-  );
+  const targets = [topicName, ...subtopicNames];
+  const targetAliases = targets.map((t) => CHAPTER_ALIASES[t.toLowerCase()] || t);
 
   const matched = subjectQuestions.filter((q) => {
-    const normQ = normalize(q.chapter);
-    const aliasQ = normalize(CHAPTER_ALIASES[q.chapter.toLowerCase()] || q.chapter);
+    const qChap = q.chapter;
+    const aliasQ = CHAPTER_ALIASES[qChap.toLowerCase()] || qChap;
 
     for (let i = 0; i < targets.length; i++) {
       const target = targets[i];
       const targetAlias = targetAliases[i];
 
-      if (isChapterMatch(normQ, target) || isChapterMatch(aliasQ, target)) return true;
-      if (isChapterMatch(normQ, targetAlias) || isChapterMatch(aliasQ, targetAlias)) return true;
+      if (isChapterMatch(qChap, target) || isChapterMatch(aliasQ, target)) return true;
+      if (isChapterMatch(qChap, targetAlias) || isChapterMatch(aliasQ, targetAlias)) return true;
     }
     return false;
   });
