@@ -52,7 +52,7 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-2xl transition-all">
-      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-12">
+      <div className="w-full px-4 sm:px-8 md:px-12 lg:px-16">
         <div className="flex items-center justify-between h-20 gap-6">
           {/* Brand Logo */}
           <div

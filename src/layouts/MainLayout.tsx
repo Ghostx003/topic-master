@@ -30,8 +30,8 @@ export const MainLayout: React.FC = () => {
         onOpenGlobalSearch={() => setSearchOpen(true)}
       />
 
-      {/* Main Content Area - Comfortable Wide Layout */}
-      <main className="flex-1 w-full max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-12 py-8 sm:py-10">
+      {/* Main Content Area - Full Screen Edge-to-Edge */}
+      <main className="flex-1 w-full px-4 sm:px-8 md:px-12 lg:px-16 py-6 sm:py-8">
         <Outlet />
       </main>
 
