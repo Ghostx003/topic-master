@@ -1,14 +1,16 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { useTopicMaster } from '../context/TopicMasterContext';
 import { TopicTagBadge } from '../components/common/TopicTagBadge';
 import { getAuthoritativeTopicPYQ } from '../utils/pyqUtils';
 import {
   ALL_PYQ_QUESTIONS,
   getQuestionsForSubject,
+  filterQuestionsByYear,
   loadPYQProgress,
 } from '../services/pyqService';
 import { Subject } from '../types/subject';
 import { Topic } from '../types/topic';
+import { PYQYearFilter } from '../types/pyq';
 import {
   BarChart3,
   Flame,
@@ -24,11 +26,30 @@ import {
   Check,
   CheckCircle2,
   CircleDot,
+  Calendar,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
+const YEAR_FILTER_OPTIONS: { id: PYQYearFilter; label: string; desc: string }[] = [
+  { id: 'all', label: 'All Years', desc: 'All historical GATE CSE questions' },
+  { id: 'last_5_years', label: 'Last 5 Years', desc: '2020 – 2026 questions' },
+  { id: 'last_10_years', label: 'Last 10 Years', desc: '2015 – 2026 questions' },
+  { id: 'last_15_years', label: 'Last 15 Years', desc: '2010 – 2026 questions' },
+  { id: '2008_2026', label: '2008 – 2026', desc: '2008 to 2026 questions' },
+  { id: 'older_than_2000', label: 'Older than 2000', desc: 'Pre-2000 legacy GATE questions' },
+];
+
 export const PYQAnalyzerPage: React.FC = () => {
-  const { subjects, topics, openTopicDetailModal, openPYQModal, startTimer, updateTopicTags } = useTopicMaster();
+  const {
+    subjects,
+    topics,
+    yearFilter,
+    setYearFilter,
+    openTopicDetailModal,
+    openPYQModal,
+    startTimer,
+    updateTopicTags,
+  } = useTopicMaster();
 
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,21 +57,22 @@ export const PYQAnalyzerPage: React.FC = () => {
 
   const subjectsMap = useMemo(() => new Map(subjects.map((s) => [s.id, s])), [subjects]);
 
-  // Precompute O(1) PYQ count maps strictly from actually attached questions
+  // Precompute O(1) PYQ count maps strictly from actually attached questions (filtered by yearFilter)
   const { topicPyqMap, subjectPyqMap } = useMemo(() => {
     const tMap = new Map<string, number>();
     const sMap = new Map<string, number>();
 
-    // 1. Calculate for subjects once (strictly count attached questions in DB)
+    // 1. Calculate for subjects once (strictly count attached questions in DB for yearFilter)
     subjects.forEach((s) => {
-      const qs = getQuestionsForSubject(s.Subject_Name);
-      sMap.set(s.id, qs.length);
+      const rawQs = getQuestionsForSubject(s.Subject_Name);
+      const filteredQs = filterQuestionsByYear(rawQs, yearFilter);
+      sMap.set(s.id, filteredQs.length);
     });
 
     // 2. Calculate for every topic once (strictly attached questions in DB or sum of subtopics)
     topics.forEach((t) => {
       const subj = subjectsMap.get(t.Subject_Id);
-      const count = getAuthoritativeTopicPYQ(t, topics, 'all', subj?.Subject_Name);
+      const count = getAuthoritativeTopicPYQ(t, topics, yearFilter, subj?.Subject_Name);
       tMap.set(t.id, count);
     });
 
@@ -58,7 +80,7 @@ export const PYQAnalyzerPage: React.FC = () => {
       topicPyqMap: tMap,
       subjectPyqMap: sMap,
     };
-  }, [topics, subjects, subjectsMap]);
+  }, [topics, subjects, subjectsMap, yearFilter]);
 
   const getTopicPYQs = (topic: Topic): number => {
     return topicPyqMap.get(topic.id) || 0;
@@ -68,24 +90,30 @@ export const PYQAnalyzerPage: React.FC = () => {
     return subjectPyqMap.get(subj.id) || 0;
   };
 
-  // Overall Statistics - STRICTLY count actually attached questions
+  // Overall Statistics - STRICTLY count actually attached questions for active yearFilter
   const totalPYQs = useMemo(() => {
     if (selectedSubjectId === 'all') {
-      return ALL_PYQ_QUESTIONS.length;
+      return filterQuestionsByYear(ALL_PYQ_QUESTIONS, yearFilter).length;
     }
     const subj = subjectsMap.get(selectedSubjectId);
     return subj ? (subjectPyqMap.get(subj.id) || 0) : 0;
-  }, [selectedSubjectId, subjectsMap, subjectPyqMap]);
+  }, [selectedSubjectId, subjectsMap, subjectPyqMap, yearFilter]);
 
   const completedPYQs = useMemo(() => {
     const progress = loadPYQProgress();
-    const targetQuestions = selectedSubjectId === 'all'
+    const baseQuestions = selectedSubjectId === 'all'
       ? ALL_PYQ_QUESTIONS
       : getQuestionsForSubject(subjectsMap.get(selectedSubjectId)?.Subject_Name || '');
+    const targetQuestions = filterQuestionsByYear(baseQuestions, yearFilter);
     return targetQuestions.filter((q) => Boolean(progress[q.id]?.completed)).length;
-  }, [selectedSubjectId, subjectsMap]);
+  }, [selectedSubjectId, subjectsMap, yearFilter]);
 
   const completedPercentage = totalPYQs > 0 ? Math.round((completedPYQs / totalPYQs) * 100) : 0;
+
+  // Total questions in DB for currently active year range across all subjects
+  const siteTotalYearPYQs = useMemo(() => {
+    return filterQuestionsByYear(ALL_PYQ_QUESTIONS, yearFilter).length;
+  }, [yearFilter]);
 
   // Sort subjects by PYQ count descending (O(1) lookups)
   const sortedSubjects = useMemo(() => {
@@ -168,10 +196,10 @@ export const PYQAnalyzerPage: React.FC = () => {
               <BarChart3 className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
+              <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3 flex-wrap">
                 <span>GATE CSE PYQ Frequency Analyzer</span>
                 <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300">
-                  Authoritative DB ({ALL_PYQ_QUESTIONS.length} PYQs)
+                  {totalPYQs} PYQs Active ({YEAR_FILTER_OPTIONS.find((o) => o.id === yearFilter)?.label})
                 </span>
               </h1>
               <p className="text-sm text-slate-400 mt-1">
@@ -256,12 +284,50 @@ export const PYQAnalyzerPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Year Range Filter Presets Bar (Synchronized Site-Wide) */}
+      <div className="p-4 rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm">
+        <div className="flex items-center gap-2">
+          <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400">
+            <Calendar className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-slate-200 tracking-wide uppercase">
+              Filter by PYQ Exam Years:
+            </span>
+            <span className="text-[11px] text-slate-400 block">
+              Recalculates topic frequencies & modal practice across the entire site
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 custom-scrollbar">
+          {YEAR_FILTER_OPTIONS.map((opt) => {
+            const isSelected = yearFilter === opt.id;
+            return (
+              <button
+                key={opt.id}
+                onClick={() => setYearFilter(opt.id)}
+                className={clsx(
+                  'px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all select-none border active:scale-95',
+                  isSelected
+                    ? 'bg-indigo-950 text-indigo-200 border-indigo-500/60 shadow-[0_0_12px_rgba(99,102,241,0.25)] ring-1 ring-indigo-400/40 font-bold'
+                    : 'bg-slate-950/80 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                )}
+                title={`Filter PYQs to ${opt.desc} (Saved site-wide)`}
+              >
+                <span>{opt.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Subject Weightage Breakdown Cards Carousel / Grid */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-brand-400" />
-            <span>Subject-Wise PYQ Distribution</span>
+            <span>Subject-Wise PYQ Distribution ({YEAR_FILTER_OPTIONS.find((o) => o.id === yearFilter)?.label})</span>
           </h3>
           <span className="text-xs text-slate-500">
             Click any subject to filter topics below
@@ -282,7 +348,7 @@ export const PYQAnalyzerPage: React.FC = () => {
             <span className="text-xs font-bold truncate">All Subjects</span>
             <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-800/60">
               <span className="text-[10px] text-slate-400 font-mono">13 Subjects</span>
-              <span className="text-xs font-black font-mono text-amber-300">{ALL_PYQ_QUESTIONS.length}</span>
+              <span className="text-xs font-black font-mono text-amber-300">{siteTotalYearPYQs}</span>
             </div>
           </button>
 
@@ -316,7 +382,7 @@ export const PYQAnalyzerPage: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-800/60">
                   <span className="text-[10px] text-slate-400 font-mono">
-                    {Math.round((pyqs / ALL_PYQ_QUESTIONS.length) * 100)}% wt
+                    {siteTotalYearPYQs > 0 ? Math.round((pyqs / siteTotalYearPYQs) * 100) : 0}% wt
                   </span>
                   <span className="text-xs font-black font-mono text-amber-300 flex items-center gap-0.5">
                     <Flame className="w-3 h-3 text-amber-400" />
