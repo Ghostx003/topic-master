@@ -244,35 +244,101 @@ export const INITIAL_TOPICS: Topic[] = [
 
   // =========================================================================
   // 4. DIGITAL LOGIC (subj-dl) - 313 Total PYQs
+  //    Organized into 5 GATE syllabus chapters with subtopics
   // =========================================================================
-  makeTopic('dl-1', 'subj-dl', null, 'Number Representation', 'Signed magnitude, 1s complement, 2s complement arithmetic, range formulas, and overflow detection (57 PYQs).', 1, true, 57),
-  makeTopic('dl-2', 'subj-dl', null, 'Circuit Output Analysis', 'Tracing outputs of combinational and sequential gate circuits, propagation delays, glitch hazards (40 PYQs).', 2, true, 40),
-  makeTopic('dl-3', 'subj-dl', null, 'Boolean Algebra', 'Boolean theorems, De Morgan laws, Consensus theorem, Duality, and Boolean function simplifications (34 PYQs).', 3, true, 34),
-  makeTopic('dl-4', 'subj-dl', null, 'Digital Counter', 'Synchronous and Asynchronous (Ripple) counters, Mod-N counters, Up/Down counters, ring & Johnson counters (18 PYQs).', 4, true, 18),
-  makeTopic('dl-5', 'subj-dl', null, 'K Map Minimization', 'Karnaugh Map grouping, Essential Prime Implicants, Prime Implicants, and Don\'t Care minimization (17 PYQs).', 5, true, 17),
-  makeTopic('dl-6', 'subj-dl', null, 'Min Sum of Products Form (SOP)', 'Minimal Sum-of-Products and Product-of-Sums expressions, standard vs canonical forms (16 PYQs).', 6, true, 16),
-  makeTopic('dl-7', 'subj-dl', null, 'IEEE Representation', 'IEEE 754 Floating Point Standard (32-bit single precision, 64-bit double precision, exponent bias, normalized values) (14 PYQs).', 7, true, 14),
-  makeTopic('dl-8', 'subj-dl', null, 'Multiplexer', 'Implementing Boolean logic functions using 2:1, 4:1, 8:1 Multiplexers and Multiplexer tree expansion (14 PYQs).', 8, true, 14),
-  makeTopic('dl-9', 'subj-dl', null, 'Canonical Normal Form', 'Minterms (m-notation) and Maxterms (M-notation), converting non-canonical expressions to canonical (10 PYQs).', 9, true, 10),
-  makeTopic('dl-10', 'subj-dl', null, 'Adder Circuits', 'Half Adder, Full Adder, Ripple Carry Adder delay, Carry Look-Ahead Adder generation and propagation logic (9 PYQs).', 10, true, 9),
-  makeTopic('dl-11', 'subj-dl', null, 'Flip-Flops & Timing', 'SR, JK, D, T Flip-Flops, race-around condition, Setup and Hold time constraints for max clock frequency (8 PYQs).', 11, false, 8),
+
+  // --- Chapter 1: Number Representation & Computer Arithmetic (71 PYQs) ---
+  makeTopic('dl-ch-num', 'subj-dl', null, 'Number Representation & Computer Arithmetic', 'Signed magnitude, 1s/2s complement, overflow, and IEEE 754 floating point standard (71 PYQs).', 1, true),
+  makeTopic('dl-1', 'subj-dl', 'dl-ch-num', 'Number Representation', 'Signed magnitude, 1s complement, 2s complement arithmetic, range formulas, and overflow detection (57 PYQs).', 1, true, 57),
+  makeTopic('dl-7', 'subj-dl', 'dl-ch-num', 'IEEE 754 Floating Point Representation', 'IEEE 754 Floating Point Standard (32-bit single precision, 64-bit double precision, exponent bias, normalized values) (14 PYQs).', 2, true, 14),
+  makeTopic('dl-sub-base', 'subj-dl', 'dl-ch-num', 'Base Conversions & Number Systems', 'Binary, octal, hexadecimal, r-base conversions, fractional conversions, and radix complements.', 3, false),
+  makeTopic('dl-sub-codes', 'subj-dl', 'dl-ch-num', 'Binary Codes & Parity', 'BCD (8421), Gray Code (reflected binary), Excess-3, self-complementing codes, and error-detecting parity.', 4, false),
+  makeTopic('dl-sub-fp-arith', 'subj-dl', 'dl-ch-num', 'Floating Point Arithmetic & Range', 'Floating point addition, subtraction, multiplication, rounding modes, underflow and overflow conditions.', 5, false),
+
+  // --- Chapter 2: Boolean Algebra & Logic Gates (74 PYQs) ---
+  makeTopic('dl-ch-bool', 'subj-dl', null, 'Boolean Algebra & Logic Gates', 'Logic gates, Boolean algebra theorems, consensus theorem, circuit delays, and glitch hazards (74 PYQs).', 2, true),
+  makeTopic('dl-2', 'subj-dl', 'dl-ch-bool', 'Circuit Output Analysis', 'Tracing outputs of combinational and sequential gate circuits, propagation delays, glitch hazards (40 PYQs).', 1, true, 40),
+  makeTopic('dl-3', 'subj-dl', 'dl-ch-bool', 'Boolean Algebra', 'Boolean theorems, De Morgan laws, Consensus theorem, Duality, and Boolean function simplifications (34 PYQs).', 2, true, 34),
+  makeTopic('dl-sub-univ', 'subj-dl', 'dl-ch-bool', 'Universal Gates & Logic Minimization', 'NAND and NOR universal gate implementation of standard functions, functional completeness proofs.', 3, false),
+  makeTopic('dl-sub-xor', 'subj-dl', 'dl-ch-bool', 'XOR / XNOR Gates & Properties', 'Odd/Even function properties of XOR/XNOR, controlled inverter operations, multi-input XOR gates.', 4, false),
+  makeTopic('dl-sub-hazards', 'subj-dl', 'dl-ch-bool', 'Hazards & Glitches in Circuits', 'Static-0, Static-1, and Dynamic hazards detection in logic circuits, hazard-free cover generation.', 5, false),
+
+  // --- Chapter 3: Combinational Logic Optimization (43 PYQs) ---
+  makeTopic('dl-ch-opt', 'subj-dl', null, 'Combinational Logic Optimization', 'K-map minimization, essential prime implicants, minimal SOP/POS forms, and canonical minterms (43 PYQs).', 3, true),
+  makeTopic('dl-5', 'subj-dl', 'dl-ch-opt', 'K-Map Minimization', 'Karnaugh Map grouping, Essential Prime Implicants, Prime Implicants, and Don\'t Care minimization (17 PYQs).', 1, true, 17),
+  makeTopic('dl-6', 'subj-dl', 'dl-ch-opt', 'Min Sum of Products Form (SOP)', 'Minimal Sum-of-Products and Product-of-Sums expressions, standard vs canonical forms (16 PYQs).', 2, true, 16),
+  makeTopic('dl-9', 'subj-dl', 'dl-ch-opt', 'Canonical Normal Form', 'Minterms (m-notation) and Maxterms (M-notation), converting non-canonical expressions to canonical (10 PYQs).', 3, true, 10),
+  makeTopic('dl-sub-quine', 'subj-dl', 'dl-ch-opt', 'Quine-McCluskey (Tabular) Method', 'Tabular minimization technique for higher variable Boolean functions, prime implicant table reduction.', 4, false),
+
+  // --- Chapter 4: Combinational Circuit Design (23 PYQs) ---
+  makeTopic('dl-ch-circ', 'subj-dl', null, 'Combinational Circuit Design', 'Multiplexers, adders, subtractors, decoders, encoders, and programmable logic devices (23 PYQs).', 4, true),
+  makeTopic('dl-8', 'subj-dl', 'dl-ch-circ', 'Multiplexer', 'Implementing Boolean logic functions using 2:1, 4:1, 8:1 Multiplexers and Multiplexer tree expansion (14 PYQs).', 1, true, 14),
+  makeTopic('dl-10', 'subj-dl', 'dl-ch-circ', 'Adder & Subtractor Circuits', 'Half Adder, Full Adder, Ripple Carry Adder delay, Carry Look-Ahead Adder generation and propagation logic (9 PYQs).', 2, true, 9),
+  makeTopic('dl-sub-dec', 'subj-dl', 'dl-ch-circ', 'Decoders, Encoders & Priority Encoders', 'Binary decoders with enable lines, 2-to-4, 3-to-8 decoder expansion, and priority encoder truth tables.', 3, false),
+  makeTopic('dl-sub-demux', 'subj-dl', 'dl-ch-circ', 'Demultiplexers & ROM/PLA/PAL', '1-to-4, 1-to-8 Demultiplexers, Programmable Logic Arrays (PLA), Programmable Array Logic (PAL), and ROMs.', 4, false),
+  makeTopic('dl-sub-comp', 'subj-dl', 'dl-ch-circ', 'Magnitude Comparators & ALU Design', '1-bit and n-bit binary magnitude comparators (A > B, A = B, A < B), cascading comparator design.', 5, false),
+
+  // --- Chapter 5: Sequential Circuits & Memory (26 PYQs) ---
+  makeTopic('dl-ch-seq', 'subj-dl', null, 'Sequential Circuits & Memory', 'Flip-flops, synchronous & ripple counters, finite state machines, and shift registers (26 PYQs).', 5, true),
+  makeTopic('dl-4', 'subj-dl', 'dl-ch-seq', 'Digital Counter', 'Synchronous and Asynchronous (Ripple) counters, Mod-N counters, Up/Down counters, ring & Johnson counters (18 PYQs).', 1, true, 18),
+  makeTopic('dl-11', 'subj-dl', 'dl-ch-seq', 'Flip-Flops & Timing', 'SR, JK, D, T Flip-Flops, race-around condition, Setup and Hold time constraints for max clock frequency (8 PYQs).', 2, true, 8),
+  makeTopic('dl-sub-fsm', 'subj-dl', 'dl-ch-seq', 'Finite State Machines (FSM)', 'Mealy vs Moore synchronous sequential machine modeling, state diagrams, state tables, and state equations.', 3, false),
+  makeTopic('dl-sub-shift', 'subj-dl', 'dl-ch-seq', 'Shift Registers', 'SISO, SIPO, PISO, PIPO shift registers, bidirectional shift registers, and universal shift register design.', 4, false),
+  makeTopic('dl-sub-reduction', 'subj-dl', 'dl-ch-seq', 'State Reduction & State Assignment', 'Equivalent state elimination using partitioning and implication tables, binary state assignment rules.', 5, false),
 
   // =========================================================================
   // 5. OPERATING SYSTEM (subj-os) - 343 Total PYQs
+  //    Organized into 6 GATE syllabus chapters with subtopics
   // =========================================================================
-  makeTopic('os-1', 'subj-os', null, 'Process Synchronization', 'Critical Section criteria (Mutual Exclusion, Progress, Bounded Waiting), Peterson Algorithm, TestAndSet, and Semaphores (52 PYQs).', 1, true, 52),
-  makeTopic('os-1-1', 'subj-os', 'os-1', 'Peterson Algorithm & Critical Section Proofs', 'Flag array and turn variable race condition validation.', 1, true, 26),
-  makeTopic('os-1-2', 'subj-os', 'os-1', 'Classical Sync: Producer-Consumer & Reader-Writer', 'Binary and Counting semaphore synchronization scenarios.', 2, true, 26),
 
-  makeTopic('os-2', 'subj-os', null, 'Process Scheduling', 'CPU Scheduling algorithms (FCFS, Non-preemptive/Preemptive SJF / SRTF, Round Robin with quantum, Priority) (49 PYQs).', 2, true, 49),
-  makeTopic('os-3', 'subj-os', null, 'Virtual Memory', 'Demand paging, Translation Lookaside Buffer (TLB), Effective Memory Access Time (EMAT) calculations, multi-level page table lookups (43 PYQs).', 3, true, 43),
-  makeTopic('os-4', 'subj-os', null, 'Page Replacement', 'FIFO, LRU, Optimal page replacement algorithms, Belady Anomaly, page fault counting on reference strings (31 PYQs).', 4, true, 31),
-  makeTopic('os-5', 'subj-os', null, 'Disk Management', 'Disk geometry, Sector/Track addressing, rotational latency, transfer rate, and Unix Inode block pointer calculations (30 PYQs).', 5, true, 30),
-  makeTopic('os-6', 'subj-os', null, 'Resource Allocation & Deadlocks', 'Deadlock necessary conditions, Resource Allocation Graphs (RAG), Banker Algorithm for safety and resource requests (27 PYQs).', 6, true, 27),
-  makeTopic('os-7', 'subj-os', null, 'Disk Scheduling', 'FCFS, SSTF, SCAN (Elevator), C-SCAN, LOOK, C-LOOK seek time track movement calculations (16 PYQs).', 7, true, 16),
-  makeTopic('os-8', 'subj-os', null, 'Semaphore', 'Counting semaphore values, concurrent P/V wait/signal operation sequences and deadlock states (11 PYQs).', 8, true, 11),
-  makeTopic('os-9', 'subj-os', null, 'Threads & Concurrency', 'User-level threads vs Kernel-level threads, thread synchronization, thread control blocks (10 PYQs).', 9, true, 10),
-  makeTopic('os-10', 'subj-os', null, 'Memory Management', 'Single-level and Multi-level paging address translation, Page Table Base Register (PTBR), internal/external fragmentation (9 PYQs).', 10, true, 9),
+  // --- Chapter 1: Processes, Threads & System Calls (10 PYQs) ---
+  makeTopic('os-ch-proc', 'subj-os', null, 'Processes, Threads & System Calls', 'Process states, PCB, user/kernel level threads, system calls fork/exec, and context switching (10 PYQs).', 1, true),
+  makeTopic('os-9', 'subj-os', 'os-ch-proc', 'Threads & Concurrency', 'User-level threads vs Kernel-level threads, thread synchronization, thread control blocks (10 PYQs).', 1, true, 10),
+  makeTopic('os-sub-lifecycle', 'subj-os', 'os-ch-proc', 'Process States & PCB', '5-state process model (New, Ready, Running, Waiting, Terminated), Process Control Block (PCB) structure.', 2, false),
+  makeTopic('os-sub-syscall', 'subj-os', 'os-ch-proc', 'System Calls & OS Architecture', 'fork() process creation tree calculations, exec(), wait(), exit(), pipe(), monolithic vs microkernel.', 3, false),
+  makeTopic('os-sub-context', 'subj-os', 'os-ch-proc', 'Context Switching & Dispatcher', 'CPU register saving, state restoration, dispatcher latency, preemptive vs non-preemptive switching.', 4, false),
+  makeTopic('os-sub-ipc', 'subj-os', 'os-ch-proc', 'Inter-Process Communication (IPC)', 'Shared memory architecture, message passing queues, socket communication, anonymous and named pipes.', 5, false),
+
+  // --- Chapter 2: CPU Scheduling (49 PYQs) ---
+  makeTopic('os-ch-sched', 'subj-os', null, 'CPU Scheduling', 'Scheduling algorithms FCFS, SJF, SRTF, Round Robin, priority scheduling, and multi-level queues (49 PYQs).', 2, true),
+  makeTopic('os-2', 'subj-os', 'os-ch-sched', 'Process Scheduling', 'CPU Scheduling algorithms (FCFS, Non-preemptive/Preemptive SJF / SRTF, Round Robin with quantum, Priority) (49 PYQs).', 1, true, 49),
+  makeTopic('os-sub-mlq', 'subj-os', 'os-ch-sched', 'Multi-Level Queue Scheduling', 'Multi-Level Queue (MLQ), Multi-Level Feedback Queue (MLFQ) with aging to prevent starvation.', 2, false),
+  makeTopic('os-sub-metrics', 'subj-os', 'os-ch-sched', 'Scheduling Performance Metrics', 'Gantt chart construction, Turnaround Time (TAT = CT - AT), Waiting Time (WT = TAT - BT), Response Time.', 3, false),
+  makeTopic('os-sub-realtime', 'subj-os', 'os-ch-sched', 'Real-Time Scheduling', 'Rate Monotonic Scheduling (RMS) static priority, Earliest Deadline First (EDF) dynamic priority bounds.', 4, false),
+
+  // --- Chapter 3: Process Synchronization (63 PYQs) ---
+  makeTopic('os-ch-sync', 'subj-os', null, 'Process Synchronization', 'Critical section problem, Peterson algorithm, counting/binary semaphores, and classical sync problems (63 PYQs).', 3, true),
+  makeTopic('os-1-1', 'subj-os', 'os-ch-sync', 'Peterson Algorithm & Critical Section', 'Critical Section criteria (Mutual Exclusion, Progress, Bounded Waiting), Peterson Algorithm race condition validation (26 PYQs).', 1, true, 26),
+  makeTopic('os-1-2', 'subj-os', 'os-ch-sync', 'Classical Synchronization Problems', 'Producer-Consumer (Bounded Buffer), Reader-Writer (Readers Preference / Writers Preference) synchronization (26 PYQs).', 2, true, 26),
+  makeTopic('os-8', 'subj-os', 'os-ch-sync', 'Semaphores & P/V Operations', 'Counting semaphore values, concurrent P/V wait/signal operation sequences and deadlock states (11 PYQs).', 3, true, 11),
+  makeTopic('os-sub-hw-sync', 'subj-os', 'os-ch-sync', 'Hardware Synchronization', 'Atomic instructions: Test-and-Set Lock (TSL), Compare-and-Swap (CAS), spinlocks and busy waiting.', 4, false),
+  makeTopic('os-sub-monitors', 'subj-os', 'os-ch-sync', 'Monitors & Condition Variables', 'High-level synchronization construct, condition variables wait() and signal(), Hoare vs Mesa semantics.', 5, false),
+  makeTopic('os-sub-dining', 'subj-os', 'os-ch-sync', 'Dining Philosophers Problem', 'Resource deadlock and starvation resolution, asymmetric philosopher solutions, Chandy-Misra approach.', 6, false),
+
+  // --- Chapter 4: Deadlocks (27 PYQs) ---
+  makeTopic('os-ch-deadlock', 'subj-os', null, 'Deadlocks', 'Necessary deadlock conditions, Resource Allocation Graphs, Banker algorithm, safety and recovery (27 PYQs).', 4, true),
+  makeTopic('os-6', 'subj-os', 'os-ch-deadlock', 'Resource Allocation & Banker Algorithm', 'Deadlock necessary conditions (Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait), Banker Algorithm (27 PYQs).', 1, true, 27),
+  makeTopic('os-sub-prevention', 'subj-os', 'os-ch-deadlock', 'Deadlock Prevention', 'Negating each of the 4 Coffman conditions: resource ordering for circular wait, spooling.', 2, false),
+  makeTopic('os-sub-avoidance', 'subj-os', 'os-ch-deadlock', 'Deadlock Avoidance & Safety State', 'Safe sequence finding, Resource Allocation Graph claim edges for single-instance resources.', 3, false),
+  makeTopic('os-sub-recovery', 'subj-os', 'os-ch-deadlock', 'Deadlock Detection & Recovery', 'Wait-For Graph (WFG) cycle detection, process termination strategies, resource preemption with rollback.', 4, false),
+
+  // --- Chapter 5: Memory Management & Virtual Memory (83 PYQs) ---
+  makeTopic('os-ch-mem', 'subj-os', null, 'Memory Management & Virtual Memory', 'Paging, multi-level page tables, TLB, EMAT, page replacement algorithms, and thrashing (83 PYQs).', 5, true),
+  makeTopic('os-3', 'subj-os', 'os-ch-mem', 'Virtual Memory, TLB & EMAT', 'Demand paging, Translation Lookaside Buffer (TLB), Effective Memory Access Time (EMAT) calculations, multi-level page tables (43 PYQs).', 1, true, 43),
+  makeTopic('os-4', 'subj-os', 'os-ch-mem', 'Page Replacement Algorithms', 'FIFO, LRU, Optimal page replacement algorithms, Belady Anomaly, page fault counting on reference strings (31 PYQs).', 2, true, 31),
+  makeTopic('os-10', 'subj-os', 'os-ch-mem', 'Paging & Address Translation', 'Single-level and Multi-level paging address translation, Page Table Base Register (PTBR), internal/external fragmentation (9 PYQs).', 3, true, 9),
+  makeTopic('os-sub-alloc', 'subj-os', 'os-ch-mem', 'Contiguous Memory Allocation', 'Fixed vs dynamic partitioning, First Fit, Best Fit, Worst Fit algorithms, external fragmentation compaction.', 4, false),
+  makeTopic('os-sub-seg', 'subj-os', 'os-ch-mem', 'Segmentation & Segment Tables', 'Segment table base and limit validation, segmentation fault checks, pure segmentation vs segmented paging.', 5, false),
+  makeTopic('os-sub-thrash', 'subj-os', 'os-ch-mem', 'Thrashing & Working Set Model', 'Page fault frequency control, Peter Denning working set model Delta-window, degree of multiprogramming.', 6, false),
+  makeTopic('os-sub-inv-pt', 'subj-os', 'os-ch-mem', 'Inverted & Hashed Page Tables', 'PID + Page number indexing, hashing table address translation, saving page table memory space.', 7, false),
+
+  // --- Chapter 6: Storage & File Systems (46 PYQs) ---
+  makeTopic('os-ch-storage', 'subj-os', null, 'Storage & File Systems', 'Disk geometry, seek times, Unix Inode pointers, and disk scheduling algorithms (46 PYQs).', 6, true),
+  makeTopic('os-5', 'subj-os', 'os-ch-storage', 'Disk Management & Unix Inodes', 'Disk geometry, Sector/Track addressing, rotational latency, transfer rate, and Unix Inode block pointer calculations (30 PYQs).', 1, true, 30),
+  makeTopic('os-7', 'subj-os', 'os-ch-storage', 'Disk Scheduling Algorithms', 'FCFS, SSTF, SCAN (Elevator), C-SCAN, LOOK, C-LOOK seek time track movement calculations (16 PYQs).', 2, true, 16),
+  makeTopic('os-sub-file-alloc', 'subj-os', 'os-ch-storage', 'File Allocation Methods', 'Contiguous allocation, Linked allocation with FAT (File Allocation Table), and Indexed allocation.', 3, false),
+  makeTopic('os-sub-free-space', 'subj-os', 'os-ch-storage', 'Free Space Management', 'Bit vector / bitmap representation, linked free space list, grouping and counting free blocks.', 4, false),
+  makeTopic('os-sub-raid', 'subj-os', 'os-ch-storage', 'RAID Levels & Performance', 'RAID 0 (striping), RAID 1 (mirroring), RAID 5 (distributed parity), RAID 6, and nested RAID 10.', 5, false),
 
   // =========================================================================
   // 6. DISCRETE MATHEMATICS (subj-dm) - 390 Total PYQs

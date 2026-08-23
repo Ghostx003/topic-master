@@ -60,7 +60,7 @@ export const StorageService = {
       const hydratedTopics: Topic[] = parsed.topics
         .filter((t: Topic) => {
           // Filter out obsolete split/merged seed topics so new ones take over
-          if (t.id === 'dm-16') return false;
+          if (t.id === 'dm-16' || t.id === 'os-1') return false;
           return true;
         })
         .map((t: Topic) => {
