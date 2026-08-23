@@ -643,17 +643,41 @@ export const INITIAL_TOPICS: Topic[] = [
 
   // =========================================================================
   // 13. THEORY OF COMPUTATION (subj-toc) - 293 Total PYQs
+  //     Organized into 4 official GATE chapters with subtopics
   // =========================================================================
-  makeTopic('toc-1', 'subj-toc', null, 'Finite Automata', 'DFA and NFA state machines, transition functions, subset construction, modulo language recognizers (43 PYQs).', 1, true, 43),
-  makeTopic('toc-2', 'subj-toc', null, 'Context Free Language (CFL)', 'Context-free grammars, Pushdown Automata, parse trees, inherently ambiguous languages (35 PYQs).', 2, true, 35),
-  makeTopic('toc-3', 'subj-toc', null, 'Regular Language', 'Properties of regular languages, closure properties, union/intersection/complement/concatenation (35 PYQs).', 3, true, 35),
-  makeTopic('toc-4', 'subj-toc', null, 'Identify Class of Language', 'Determining whether a given language L is Regular, DCFL, CFL, CSL, Recursive, or RE (31 PYQs).', 4, true, 31),
-  makeTopic('toc-5', 'subj-toc', null, 'Decidability', 'Decidable vs Undecidable problems for Regular, CFL, and Turing Machines, Halting Problem, Rice Theorem (30 PYQs).', 5, true, 30),
-  makeTopic('toc-6', 'subj-toc', null, 'Regular Expression', 'RegEx identities, Arden Theorem, converting DFAs to regular expressions, non-regular language proofs (29 PYQs).', 6, true, 29),
-  makeTopic('toc-7', 'subj-toc', null, 'Minimal State Automata', 'DFA state minimization algorithm, Myhill-Nerode equivalence theorem, minimum state bounds (25 PYQs).', 7, true, 25),
-  makeTopic('toc-8', 'subj-toc', null, 'Recursive and RE Languages', 'Turing machine acceptance (halts on yes) vs total Turing machines (halts on all), Chomsky hierarchy (16 PYQs).', 8, true, 16),
-  makeTopic('toc-9', 'subj-toc', null, 'Pushdown Automata (PDA)', 'Deterministic PDA (DCFL) vs Non-Deterministic PDA (CFL), acceptance by empty stack vs final state (15 PYQs).', 9, true, 15),
-  makeTopic('toc-10', 'subj-toc', null, 'Closure Properties in TOC', 'Comprehensive closure table under Union, Intersection, Complement, Star, Homomorphism, Inverse (10 PYQs).', 10, true, 10),
+
+  // --- Chapter 1: Regular Expressions & Finite Automata (146 PYQs) ---
+  makeTopic('toc-ch-reg', 'subj-toc', null, 'Regular Expressions & Finite Automata', 'DFA/NFA, minimization, regular expressions, Arden theorem, non-determinism, regular grammars, and pumping lemma.', 1, true),
+  makeTopic('toc-1', 'subj-toc', 'toc-ch-reg', 'Finite Automata', 'DFA and NFA state machines, transition functions, subset construction, modulo language recognizers (43 PYQs).', 1, true, 43),
+  makeTopic('toc-3', 'subj-toc', 'toc-ch-reg', 'Regular Language', 'Properties of regular languages, closure properties, union/intersection/complement/concatenation (35 PYQs).', 2, true, 35),
+  makeTopic('toc-6', 'subj-toc', 'toc-ch-reg', 'Regular Expression', 'RegEx identities, Arden Theorem, converting DFAs to regular expressions, non-regular language proofs (29 PYQs).', 3, true, 29),
+  makeTopic('toc-7', 'subj-toc', 'toc-ch-reg', 'Minimal State Automata', 'DFA state minimization algorithm, Myhill-Nerode equivalence theorem, minimum state bounds (25 PYQs).', 4, true, 25),
+  makeTopic('toc-sub-nondet', 'subj-toc', 'toc-ch-reg', 'Non Determinism', 'NFA with epsilon transitions, subset construction power set 2^Q, non-deterministic power (6 PYQs).', 5, true, 6),
+  makeTopic('toc-sub-reg-gram', 'subj-toc', 'toc-ch-reg', 'Regular Grammar', 'Right-linear and left-linear regular grammars, grammar to finite automaton conversions (3 PYQs).', 6, true, 3),
+  makeTopic('toc-sub-num-states', 'subj-toc', 'toc-ch-reg', 'Number of States', 'Minimum number of states required in DFA for string matching and divisible-by-k languages (2 PYQs).', 7, true, 2),
+  makeTopic('toc-sub-pumping', 'subj-toc', 'toc-ch-reg', 'Pumping Lemma', 'Pumping Lemma for regular languages w = xyz, pumping length, proving non-regularity (2 PYQs).', 8, true, 2),
+  makeTopic('toc-sub-fsm', 'subj-toc', 'toc-ch-reg', 'Finite State Machines', 'Mealy and Moore machine output models, state table to state transition diagram conversions (1 PYQ).', 9, true, 1),
+
+  // --- Chapter 2: Context-Free Languages & Pushdown Automata (53 PYQs) ---
+  makeTopic('toc-ch-cfl', 'subj-toc', null, 'Context-Free Languages & Pushdown Automata', 'Context-free grammars, pushdown automata, DPDA vs NPDA, ambiguity, and parse trees.', 2, true),
+  makeTopic('toc-2', 'subj-toc', 'toc-ch-cfl', 'Context Free Language', 'Context-free grammars, Pushdown Automata, parse trees, inherently ambiguous languages (35 PYQs).', 1, true, 35),
+  makeTopic('toc-9', 'subj-toc', 'toc-ch-cfl', 'Pushdown Automata', 'Deterministic PDA (DCFL) vs Non-Deterministic PDA (CFL), acceptance by empty stack vs final state (15 PYQs).', 2, true, 15),
+  makeTopic('toc-sub-cfg', 'subj-toc', 'toc-ch-cfl', 'Context Free Grammar', 'CFG production rules, Chomsky Normal Form (CNF), Greibach Normal Form (GNF), derivation ambiguity (2 PYQs).', 3, true, 2),
+  makeTopic('toc-sub-dpda', 'subj-toc', 'toc-ch-cfl', 'Dpda', 'Deterministic Pushdown Automata (DPDA), language power DCFL subset of CFL, complementation of DCFL (1 PYQ).', 4, true, 1),
+
+  // --- Chapter 3: Language Hierarchy & Closure Properties (45 PYQs) ---
+  makeTopic('toc-ch-class', 'subj-toc', null, 'Language Hierarchy & Closure Properties', 'Chomsky hierarchy, language classification (Regular, DCFL, CFL, CSL, Recursive, RE), and closure tables.', 3, true),
+  makeTopic('toc-4', 'subj-toc', 'toc-ch-class', 'Identify Class Language', 'Determining whether a given language L is Regular, DCFL, CFL, CSL, Recursive, or RE (31 PYQs).', 1, true, 31),
+  makeTopic('toc-10', 'subj-toc', 'toc-ch-class', 'Closure Property', 'Comprehensive closure table under Union, Intersection, Complement, Star, Homomorphism, Inverse (10 PYQs).', 2, true, 10),
+  makeTopic('toc-sub-countable', 'subj-toc', 'toc-ch-class', 'Countable Uncountable Set', 'Countable languages, Cantor diagonalization, set of all languages 2^(Sigma*) is uncountable (3 PYQs).', 3, true, 3),
+  makeTopic('toc-sub-medium', 'subj-toc', 'toc-ch-class', 'Medium', 'Medium language complexity recognizers, multi-stack automaton language classes (1 PYQ).', 4, true, 1),
+
+  // --- Chapter 4: Turing Machines, Decidability & Reducibility (49 PYQs) ---
+  makeTopic('toc-ch-dec', 'subj-toc', null, 'Turing Machines, Decidability & Reducibility', 'Turing machines, halting problem, decidability/undecidability, Rice theorem, and reductions.', 4, true),
+  makeTopic('toc-5', 'subj-toc', 'toc-ch-dec', 'Decidability', 'Decidable vs Undecidable problems for Regular, CFL, and Turing Machines, Halting Problem, Rice Theorem (30 PYQs).', 1, true, 30),
+  makeTopic('toc-8', 'subj-toc', 'toc-ch-dec', 'Recursive and Recursively Enumerable Languages', 'Turing machine acceptance (halts on yes) vs total Turing machines (halts on all), Chomsky hierarchy (16 PYQs).', 2, true, 16),
+  makeTopic('toc-sub-reduction', 'subj-toc', 'toc-ch-dec', 'Reduction', 'Mapping reduction A <=m B, proving undecidability and non-RE properties using reductions (2 PYQs).', 3, true, 2),
+  makeTopic('toc-sub-tm', 'subj-toc', 'toc-ch-dec', 'Turing Machine', 'Single-tape and multi-tape Turing Machines, transition function delta, configuration transitions (1 PYQ).', 4, true, 1),
 ];
 
 export const INITIAL_SCHEDULES: Schedule[] = [
