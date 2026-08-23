@@ -69,11 +69,22 @@ export const StorageService = {
         };
       });
 
+      // ── DATA MIGRATION ──────────────────────────────────────────────────
+      // Automatically inject any seed topics that are missing from saved data.
+      // This fires every time new topics are added to INITIAL_TOPICS (e.g. new
+      // GA parent categories or subtopics) without wiping user customizations.
+      const savedTopicIds = new Set(hydratedTopics.map((t: Topic) => t.id));
+      const missingTopics = INITIAL_TOPICS.filter((t) => !savedTopicIds.has(t.id));
+      const mergedTopics = missingTopics.length > 0
+        ? [...hydratedTopics, ...missingTopics]
+        : hydratedTopics;
+      // ────────────────────────────────────────────────────────────────────
+
       const finalState: TopicMasterState = {
         ...DEFAULT_INITIAL_STATE,
         ...parsed,
         subjects: hydratedSubjects,
-        topics: hydratedTopics,
+        topics: mergedTopics,
         activeTimer: parsed.activeTimer
           ? { ...parsed.activeTimer, isRunning: false }
           : DEFAULT_INITIAL_STATE.activeTimer,
