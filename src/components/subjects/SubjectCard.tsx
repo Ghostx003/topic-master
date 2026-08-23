@@ -33,20 +33,20 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onEdit, onDel
   return (
     <div
       onClick={handleCardClick}
-      className="group relative flex flex-col justify-between p-8 rounded-3xl bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950/95 border border-slate-800/90 hover:border-slate-700/90 shadow-card-glow hover:shadow-card-hover backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer overflow-hidden card-highlight"
+      className="group relative flex flex-col justify-between p-8 rounded-3xl bg-gradient-to-b from-[#0e1627]/90 via-[#0a1020]/85 to-[#070b16]/95 border border-slate-800/80 hover:border-brand-500/45 shadow-[0_10px_35px_rgba(0,0,0,0.6)] hover:shadow-glow-sm backdrop-blur-2xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer overflow-hidden"
     >
-      {/* Top illuminated gradient neon bar */}
+      {/* Top illuminated gradient neon bar with soft pulse */}
       <div
-        className="absolute top-0 left-0 right-0 h-1.5 opacity-90 transition-all duration-300 group-hover:h-2"
+        className="absolute top-0 left-0 right-0 h-1.5 transition-all duration-300 group-hover:h-2"
         style={{
-          background: `linear-gradient(90deg, ${accentColor}, #6366f1, #06b6d4)`,
-          boxShadow: `0 0 20px 2px ${accentColor}80`,
+          background: `linear-gradient(90deg, ${accentColor}, rgb(var(--brand-500-rgb, 59 130 246)), #06b6d4)`,
+          boxShadow: `0 0 16px 1px ${accentColor}70`,
         }}
       />
 
-      {/* Ambient background glow */}
+      {/* Subtle ambient corner radial glow */}
       <div
-        className="absolute -top-20 -right-20 w-56 h-56 rounded-full opacity-15 blur-3xl pointer-events-none group-hover:opacity-30 transition-opacity duration-500"
+        className="absolute -top-24 -right-24 w-60 h-60 rounded-full opacity-10 blur-3xl pointer-events-none group-hover:opacity-25 transition-opacity duration-500"
         style={{ backgroundColor: accentColor }}
       />
 
@@ -54,9 +54,9 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onEdit, onDel
       <div className="relative z-10">
         <div className="flex items-start justify-between gap-4 mb-3.5">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2.5 mb-1.5">
               <span
-                className="w-2.5 h-2.5 rounded-full shadow-[0_0_8px_currentColor] shrink-0"
+                className="w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor] shrink-0"
                 style={{ backgroundColor: accentColor, color: accentColor }}
               />
               <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight group-hover:text-brand-300 transition-colors truncate">
@@ -83,13 +83,13 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onEdit, onDel
             {menuOpen && (
               <>
                 <div className="fixed inset-0 z-20" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 top-10 z-30 w-44 rounded-2xl bg-slate-900/95 border border-slate-700 shadow-2xl p-1.5 animate-slide-up text-xs space-y-0.5 backdrop-blur-xl">
+                <div className="absolute right-0 top-10 z-30 w-44 rounded-2xl bg-[#090e1a] border-2 border-slate-700 shadow-2xl p-1.5 animate-slide-up text-xs space-y-0.5 opacity-100">
                   <button
                     onClick={() => {
                       setMenuOpen(false);
                       onEdit(subject);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-colors font-semibold"
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-slate-200 hover:bg-slate-800 hover:text-white transition-colors font-semibold"
                   >
                     <Edit3 className="w-4 h-4 text-brand-400" />
                     <span>Edit Subject</span>
@@ -133,12 +133,12 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onEdit, onDel
             </span>
           </div>
 
-          <div className="w-full h-3 rounded-full bg-slate-950/80 overflow-hidden p-0.5 border border-slate-800 shadow-inner">
+          <div className="w-full h-3 rounded-full bg-[#050812] overflow-hidden p-0.5 border border-slate-800/90 shadow-inner">
             <div
               className="h-full rounded-full bg-gradient-to-r from-brand-500 via-indigo-500 to-cyan-400 transition-all duration-700 shadow-glow-sm relative"
               style={{ width: `${Math.max(stats.percentage, 3)}%` }}
             >
-              <span className="absolute right-0 top-0 bottom-0 w-2 bg-white/60 rounded-full blur-[1px]" />
+              <span className="absolute right-0 top-0 bottom-0 w-2 bg-white/70 rounded-full blur-[1px]" />
             </div>
           </div>
         </div>
@@ -147,7 +147,7 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onEdit, onDel
         <div className="flex items-center justify-between pt-4 border-t border-slate-800/80 text-xs">
           {/* Left: Study Time */}
           <div
-            className="flex items-center gap-2 text-slate-300 font-semibold font-mono bg-slate-950/60 px-3 py-1.5 rounded-xl border border-slate-800/80"
+            className="flex items-center gap-2 text-slate-300 font-semibold font-mono bg-[#060a14] px-3.5 py-1.5 rounded-xl border border-slate-800/80"
             title="Total Focus Time"
           >
             <Clock className="w-3.5 h-3.5 text-cyan-400" />
@@ -156,7 +156,7 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onEdit, onDel
 
           {/* REQUIRED BY SPEC: Topic count toward bottom-right */}
           <div
-            className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700/70 text-slate-100 font-bold group-hover:border-brand-500/60 group-hover:bg-slate-800 transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-[#0b101e] border border-slate-700/70 text-slate-100 font-bold group-hover:border-brand-500/60 group-hover:bg-[#0e1628] transition-all shadow-sm"
             title={`${stats.completed} of ${stats.total} topics completed`}
           >
             <BookOpen className="w-3.5 h-3.5 text-brand-400" />

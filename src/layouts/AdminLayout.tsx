@@ -26,7 +26,7 @@ export const AdminLayout: React.FC = () => {
   const selectedSubject = subjects.find((s) => s.id === selectedSubjectId) || null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#070b12] text-slate-100 selection:bg-brand-500/30 selection:text-brand-200">
+    <div className="min-h-screen flex flex-col bg-transparent text-slate-100 selection:bg-brand-500/30 selection:text-brand-200">
       {/* REQUIRED BY SPEC (Section 19): Dedicated Admin Navbar (Main Navbar is hidden) */}
       <AdminNavbar
         sidebarOpen={sidebarOpen}

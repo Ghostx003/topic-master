@@ -28,7 +28,7 @@ export const MainLayout: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#060911] text-slate-100 selection:bg-brand-500/30 selection:text-brand-200">
+    <div className="min-h-screen flex flex-col bg-transparent text-slate-100 selection:bg-brand-500/30 selection:text-brand-200">
       {/* Primary 4-Tab Main Navbar */}
       <MainNavbar
         onOpenSettings={() => setSettingsOpen(true)}

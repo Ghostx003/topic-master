@@ -33,6 +33,27 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
   const { topics, reparentTopic } = useTopicMaster();
   const [searchFilter, setSearchFilter] = useState('');
   const [isRootDropOver, setIsRootDropOver] = useState(false);
+  const [activeMenuTopicId, setActiveMenuTopicId] = useState<string | null>(null);
+
+  // Global listener to close context menus whenever clicking or right-clicking anywhere outside
+  React.useEffect(() => {
+    if (!activeMenuTopicId) return;
+
+    const handleGlobalDismiss = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('[data-topic-context-menu]')) {
+        return;
+      }
+      setActiveMenuTopicId(null);
+    };
+
+    window.addEventListener('click', handleGlobalDismiss, true);
+    window.addEventListener('contextmenu', handleGlobalDismiss, true);
+    return () => {
+      window.removeEventListener('click', handleGlobalDismiss, true);
+      window.removeEventListener('contextmenu', handleGlobalDismiss, true);
+    };
+  }, [activeMenuTopicId]);
 
   // Build recursive tree for this subject
   const treeNodes = useMemo(() => {
@@ -190,6 +211,8 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
               onAddSubtopic={onAddSubtopic}
               onDeleteTopic={onDeleteTopic}
               searchFilter={searchFilter}
+              activeMenuTopicId={activeMenuTopicId}
+              setActiveMenuTopicId={setActiveMenuTopicId}
             />
           ))
         )}

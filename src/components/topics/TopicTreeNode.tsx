@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { TopicTreeNodeType, TopicTags } from '../../types/topic';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { TopicTagBadge } from '../common/TopicTagBadge';
@@ -33,6 +33,8 @@ export interface TopicTreeNodeProps {
   onAddSubtopic: (parentId: string) => void;
   onDeleteTopic: (topicId: string, topicName: string) => void;
   searchFilter?: string;
+  activeMenuTopicId?: string | null;
+  setActiveMenuTopicId?: (id: string | null) => void;
 }
 
 export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
@@ -41,11 +43,12 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   onAddSubtopic,
   onDeleteTopic,
   searchFilter = '',
+  activeMenuTopicId = null,
+  setActiveMenuTopicId,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(node.Topic_Name);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // Swipe / Slide Gesture State
   const [dragOffset, setDragOffset] = useState(0);
@@ -70,6 +73,11 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     openTopicDetailModal,
     topics,
   } = useTopicMaster();
+
+  const isMenuOpen = activeMenuTopicId === node.id;
+  const descendantIds = useMemo(() => getAllDescendantIds(topics, node.id), [topics, node.id]);
+  const isChildMenuOpen = activeMenuTopicId !== null && descendantIds.includes(activeMenuTopicId);
+  const shouldElevateZ = isMenuOpen || isChildMenuOpen;
 
   const hasChildren = node.children && node.children.length > 0;
   const isDone = Boolean(node.Topic_Tags?.Done);
@@ -220,11 +228,20 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     dragStartX.current = null;
   };
 
-  // Right-click context menu handler (toggle open/close)
+  // Right-click context menu handler (opens this node, closes all others)
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setMenuOpen((prev) => !prev);
+    if (setActiveMenuTopicId) {
+      setActiveMenuTopicId(isMenuOpen ? null : node.id);
+    }
+  };
+
+  const handleToggleMenu = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (setActiveMenuTopicId) {
+      setActiveMenuTopicId(isMenuOpen ? null : node.id);
+    }
   };
 
   // Find candidate parents for demote menu
@@ -236,7 +253,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     <div
       className={clsx(
         'relative select-none transition-all',
-        menuOpen ? 'z-50' : 'z-0',
+        shouldElevateZ ? 'z-[999]' : 'z-0',
         isRoot ? 'my-5 sm:my-6' : 'my-2.5 sm:my-3'
       )}
     >
@@ -282,17 +299,17 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         onTouchEnd={handleTouchEnd}
         className={clsx(
           'group relative flex items-center justify-between gap-5 sm:gap-6 rounded-3xl border backdrop-blur-2xl card-highlight transition-all duration-150',
-          menuOpen ? 'z-50' : 'z-0',
+          isMenuOpen ? 'z-[999] border-brand-500/60 shadow-glow-sm' : 'z-0',
           isHtml5Dragging && 'opacity-40 border-brand-500/60 shadow-none',
           dropPosition === 'inside'
             ? 'ring-2 ring-brand-400 bg-brand-500/20 border-brand-400 shadow-glow-lg'
             : isRoot
             ? isDone
               ? 'px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-emerald-950/25 via-slate-900/80 to-slate-950/90 border-emerald-500/30 text-slate-300 shadow-md'
-              : 'px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-slate-900/95 via-slate-900/85 to-slate-950/95 border-slate-800/90 hover:border-brand-500/50 text-slate-100 shadow-card-glow hover:shadow-card-hover'
+              : 'px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-[#0d1424]/95 via-[#0a0f1d]/85 to-[#070c18]/95 border-slate-800/90 hover:border-brand-500/50 text-slate-100 shadow-card-glow hover:shadow-card-hover'
             : isDone
             ? 'px-5 sm:px-7 py-4 sm:py-4.5 bg-slate-950/70 border-emerald-500/20 text-slate-400'
-            : 'px-5 sm:px-7 py-4 sm:py-4.5 bg-slate-950/90 hover:bg-slate-900/90 border-slate-800/90 hover:border-slate-700 text-slate-200 shadow-sm'
+            : 'px-5 sm:px-7 py-4 sm:py-4.5 bg-[#0b101d]/90 hover:bg-[#0e1526]/90 border-slate-800/90 hover:border-slate-700 text-slate-200 shadow-sm'
         )}
         style={{
           marginLeft: isRoot ? '0px' : `${node.depth * 38}px`,
@@ -495,164 +512,156 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
             </button>
           </div>
 
-          {/* Hierarchy & Move Context Menu */}
-          <div
-            className={clsx(
-              'w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0 relative',
-              menuOpen && 'z-[100]'
-            )}
-          >
+          {/* Hierarchy & Move Context Menu Button & Anchor */}
+          <div className="w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0 relative">
             <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
+              onClick={handleToggleMenu}
+              className={clsx(
+                'p-2 sm:p-2.5 rounded-2xl transition-all active:scale-95',
+                isMenuOpen
+                  ? 'text-white bg-slate-800 border-slate-600'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700'
+              )}
               aria-label="More actions"
             >
               <MoreHorizontal className="w-4 h-4" />
             </button>
 
-            {menuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-[90] bg-transparent cursor-default"
-                  onClick={() => setMenuOpen(false)}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setMenuOpen(false);
+            {isMenuOpen && (
+              <div
+                data-topic-context-menu="true"
+                className="absolute right-0 top-12 z-[9999] w-64 rounded-3xl bg-[#090e1a] border-2 border-slate-700 shadow-[0_25px_80px_rgba(0,0,0,0.98)] p-2.5 text-xs text-slate-200 animate-slide-up space-y-1 ring-1 ring-white/15 opacity-100"
+              >
+                {/* Rename */}
+                <button
+                  onClick={() => {
+                    setActiveMenuTopicId?.(null);
+                    setIsEditingName(true);
                   }}
-                />
-                <div className="absolute right-0 top-12 z-[100] w-64 rounded-3xl bg-[#090d16] border-2 border-slate-700 shadow-[0_25px_70px_rgba(0,0,0,0.98)] p-2.5 text-xs text-slate-200 animate-slide-up space-y-1 ring-1 ring-white/15 opacity-100">
-                  {/* Rename */}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-800 transition-colors font-medium"
+                >
+                  <Edit2 className="w-4 h-4 text-brand-400" />
+                  <span>Rename Topic</span>
+                </button>
+
+                {/* Add Subtopic */}
+                <button
+                  onClick={() => {
+                    setActiveMenuTopicId?.(null);
+                    onAddSubtopic(node.id);
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-800 transition-colors font-medium"
+                >
+                  <Plus className="w-4 h-4 text-emerald-400" />
+                  <span>Add Child Subtopic</span>
+                </button>
+
+                <div className="h-px bg-slate-800 my-1.5" />
+
+                {/* Indent Right */}
+                {canIndentRight && (
                   <button
                     onClick={() => {
-                      setMenuOpen(false);
-                      setIsEditingName(true);
+                      setActiveMenuTopicId?.(null);
+                      indentTopicRight(node.id);
                     }}
-                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-800 transition-colors font-medium"
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-cyan-950/50 text-cyan-300 transition-colors font-medium"
                   >
-                    <Edit2 className="w-4 h-4 text-brand-400" />
-                    <span>Rename Topic</span>
+                    <ArrowRight className="w-4 h-4" />
+                    <span>Indent under previous topic</span>
                   </button>
+                )}
 
-                  {/* Add Subtopic */}
+                {/* Outdent Left */}
+                {canOutdentLeft && (
                   <button
                     onClick={() => {
-                      setMenuOpen(false);
-                      onAddSubtopic(node.id);
+                      setActiveMenuTopicId?.(null);
+                      outdentTopicLeft(node.id);
                     }}
-                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-800 transition-colors font-medium"
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-purple-950/50 text-purple-300 transition-colors font-medium"
                   >
-                    <Plus className="w-4 h-4 text-emerald-400" />
-                    <span>Add Child Subtopic</span>
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Outdent to parent level</span>
                   </button>
+                )}
 
-                  <div className="h-px bg-slate-800 my-1.5" />
+                {/* Move Up */}
+                <button
+                  onClick={() => {
+                    setActiveMenuTopicId?.(null);
+                    moveTopic(node.id, 'up');
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-800 transition-colors font-medium"
+                >
+                  <ArrowUp className="w-4 h-4 text-slate-400" />
+                  <span>Move Up</span>
+                </button>
 
-                  {/* Indent Right */}
-                  {canIndentRight && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        indentTopicRight(node.id);
-                      }}
-                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-cyan-950/50 text-cyan-300 transition-colors font-medium"
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                      <span>Indent under previous topic</span>
-                    </button>
-                  )}
+                {/* Move Down */}
+                <button
+                  onClick={() => {
+                    setActiveMenuTopicId?.(null);
+                    moveTopic(node.id, 'down');
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-800 transition-colors font-medium"
+                >
+                  <ArrowDown className="w-4 h-4 text-slate-400" />
+                  <span>Move Down</span>
+                </button>
 
-                  {/* Outdent Left */}
-                  {canOutdentLeft && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        outdentTopicLeft(node.id);
-                      }}
-                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-purple-950/50 text-purple-300 transition-colors font-medium"
-                    >
-                      <ArrowLeft className="w-4 h-4" />
-                      <span>Outdent to parent level</span>
-                    </button>
-                  )}
-
-                  {/* Move Up */}
+                {/* Promote (if it has a parent) */}
+                {node.Parent_Id && (
                   <button
                     onClick={() => {
-                      setMenuOpen(false);
-                      moveTopic(node.id, 'up');
+                      setActiveMenuTopicId?.(null);
+                      promoteTopic(node.id);
                     }}
-                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-800 transition-colors font-medium"
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-indigo-950/50 text-indigo-300 transition-colors font-medium"
                   >
-                    <ArrowUp className="w-4 h-4 text-slate-400" />
-                    <span>Move Up</span>
+                    <CornerLeftUp className="w-4 h-4" />
+                    <span>Promote to Root Topic</span>
                   </button>
+                )}
 
-                  {/* Move Down */}
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      moveTopic(node.id, 'down');
-                    }}
-                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-slate-800 transition-colors font-medium"
-                  >
-                    <ArrowDown className="w-4 h-4 text-slate-400" />
-                    <span>Move Down</span>
-                  </button>
-
-                  {/* Promote (if it has a parent) */}
-                  {node.Parent_Id && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        promoteTopic(node.id);
-                      }}
-                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-indigo-950/50 text-indigo-300 transition-colors font-medium"
-                    >
-                      <CornerLeftUp className="w-4 h-4" />
-                      <span>Promote to Root Topic</span>
-                    </button>
-                  )}
-
-                  {/* Demote under sibling */}
-                  {candidateParents.length > 0 && (
-                    <div className="pt-1">
-                      <div className="px-3.5 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                        Demote under specific parent
-                      </div>
-                      <div className="max-h-36 overflow-y-auto custom-scrollbar bg-[#050811] rounded-2xl p-1 border border-slate-800">
-                        {candidateParents.slice(0, 5).map((cand) => (
-                          <button
-                            key={cand.id}
-                            onClick={() => {
-                              setMenuOpen(false);
-                              demoteTopic(node.id, cand.id);
-                            }}
-                            className="w-full flex items-center gap-2.5 px-3 py-2 text-left rounded-xl text-slate-300 hover:bg-slate-800 text-xs truncate"
-                          >
-                            <CornerRightDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            <span className="truncate">{cand.Topic_Name}</span>
-                          </button>
-                        ))}
-                      </div>
+                {/* Demote under sibling */}
+                {candidateParents.length > 0 && (
+                  <div className="pt-1">
+                    <div className="px-3.5 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      Demote under specific parent
                     </div>
-                  )}
+                    <div className="max-h-36 overflow-y-auto custom-scrollbar bg-[#050811] rounded-2xl p-1 border border-slate-800">
+                      {candidateParents.slice(0, 5).map((cand) => (
+                        <button
+                          key={cand.id}
+                          onClick={() => {
+                            setActiveMenuTopicId?.(null);
+                            demoteTopic(node.id, cand.id);
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-left rounded-xl text-slate-300 hover:bg-slate-800 text-xs truncate"
+                        >
+                          <CornerRightDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span className="truncate">{cand.Topic_Name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-                  <div className="h-px bg-slate-800 my-1.5" />
+                <div className="h-px bg-slate-800 my-1.5" />
 
-                  {/* Delete */}
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      onDeleteTopic(node.id, node.Topic_Name);
-                    }}
-                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-rose-950/50 text-rose-400 transition-colors font-semibold"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span>Delete Topic</span>
-                  </button>
-                </div>
-              </>
+                {/* Delete */}
+                <button
+                  onClick={() => {
+                    setActiveMenuTopicId?.(null);
+                    onDeleteTopic(node.id, node.Topic_Name);
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl hover:bg-rose-950/50 text-rose-400 transition-colors font-semibold"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete Topic</span>
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -686,6 +695,8 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
               onAddSubtopic={onAddSubtopic}
               onDeleteTopic={onDeleteTopic}
               searchFilter={searchFilter}
+              activeMenuTopicId={activeMenuTopicId}
+              setActiveMenuTopicId={setActiveMenuTopicId}
             />
           ))}
         </div>
