@@ -541,77 +541,122 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic('ga-36', 'subj-ga', 'ga-spatial', 'Mirror Image', 'Lateral inversion reflections along horizontal and vertical axes (1 PYQ).', 8, true, 1),
 
   // =========================================================================
-  // 9. ALGORITHMS (subj-algo) - 251 Total PYQs
-  //    Organized into 7 GATE syllabus chapters with subtopics
+  // 9. ALGORITHMS (subj-algo)
+  //    Organized into 6 official GATE syllabus chapters with subtopics
   // =========================================================================
 
-  // --- Chapter 1: Asymptotic Analysis & Recurrences (127 PYQs) ---
-  makeTopic('alg-ch-asymp', 'subj-algo', null, 'Asymptotic Analysis & Recurrences', 'Asymptotic notations, time complexity analysis of loops, master theorem, and recurrence relations (127 PYQs).', 1, true),
-  makeTopic('alg-1', 'subj-algo', 'alg-ch-asymp', 'Identify Function & Algorithm Trace', 'Tracing pseudocode, determining returned values and mathematical functions implemented (38 PYQs).', 1, true, 38),
-  makeTopic('alg-2', 'subj-algo', 'alg-ch-asymp', 'Recurrence Relations', 'Master Theorem cases T(n) = aT(n/b) + f(n), Akra-Bazzi method, recursion tree analysis (36 PYQs).', 2, true, 36),
-  makeTopic('alg-4', 'subj-algo', 'alg-ch-asymp', 'Time Complexity & Loop Analysis', 'Analyzing nested loops, logarithmic steps, best/worst/average case time complexities (31 PYQs).', 3, true, 31),
+  // --- Chapter 1: Asymptotic Analysis & Recurrences (151 PYQs) ---
+  makeTopic('alg-ch-asymp', 'subj-algo', null, 'Asymptotic Analysis & Recurrences', 'Asymptotic notations, time and space complexity analysis of loops, master theorem, recursion tree analysis, and algorithmic tracing.', 1, true),
+  makeTopic('alg-1', 'subj-algo', 'alg-ch-asymp', 'Identify Function', 'Tracing pseudocode, determining returned values and mathematical functions implemented (38 PYQs).', 1, true, 38),
+  makeTopic('alg-2', 'subj-algo', 'alg-ch-asymp', 'Recurrence Relation', 'Master Theorem cases T(n) = aT(n/b) + f(n), Akra-Bazzi method, recursion tree analysis (36 PYQs).', 2, true, 36),
+  makeTopic('alg-4', 'subj-algo', 'alg-ch-asymp', 'Time Complexity', 'Analyzing nested loops, logarithmic steps, best/worst/average case time complexities (31 PYQs).', 3, true, 31),
   makeTopic('alg-6', 'subj-algo', 'alg-ch-asymp', 'Asymptotic Notations', 'Big-O, Omega, Theta, Little-o, Little-omega formal definitions and limit comparisons (22 PYQs).', 4, true, 22),
-  makeTopic('alg-sub-space', 'subj-algo', 'alg-ch-asymp', 'Space Complexity Analysis', 'Auxiliary space, recursion stack depth analysis, in-place vs extra memory space bounds.', 5, false),
+  makeTopic('alg-sub-des-tech', 'subj-algo', 'alg-ch-asymp', 'Algorithm Design Techniques', 'Greedy vs dynamic vs divide and conquer paradigms, optimal choice heuristics (9 PYQs).', 5, true, 9),
+  makeTopic('alg-sub-alg-des', 'subj-algo', 'alg-ch-asymp', 'Algorithm Design', 'Correctness proofs, loop invariants, state representations, problem reductions (8 PYQs).', 6, true, 8),
+  makeTopic('alg-sub-recur', 'subj-algo', 'alg-ch-asymp', 'Recursion', 'Recursion call stack depth, base termination conditions, recursion tree traces (5 PYQs).', 7, true, 5),
+  makeTopic('alg-sub-space', 'subj-algo', 'alg-ch-asymp', 'Space Complexity', 'Auxiliary space, recursion stack depth analysis, in-place vs extra memory bounds (1 PYQ).', 8, true, 1),
+  makeTopic('alg-sub-cs', 'subj-algo', 'alg-ch-asymp', 'Computer Science', 'Core computer science fundamentals, state models, computational limits (1 PYQ).', 9, true, 1),
 
-  // --- Chapter 2: Divide and Conquer (15 PYQs) ---
-  makeTopic('alg-ch-dc', 'subj-algo', null, 'Divide and Conquer', 'Divide and conquer paradigm, partitioning algorithms, order statistics, and matrix multiplication (15 PYQs).', 2, true),
-  makeTopic('alg-8', 'subj-algo', 'alg-ch-dc', 'Quick Sort', 'Lomuto vs Hoare partitioning, worst case O(n^2) conditions, randomized pivot selection (15 PYQs).', 1, true, 15),
-  makeTopic('alg-sub-merge', 'subj-algo', 'alg-ch-dc', 'Merge Sort & Inversions', 'Merge sort divide-and-conquer, counting inversions in an array in O(n log n) time.', 2, false),
-  makeTopic('alg-sub-binsearch', 'subj-algo', 'alg-ch-dc', 'Binary Search & Variations', 'Binary search on sorted arrays, search in rotated sorted array, finding peak elements.', 3, false),
-  makeTopic('alg-sub-median', 'subj-algo', 'alg-ch-dc', 'Median & Order Statistics', 'Quickselect algorithm for k-th smallest element, median of medians linear-time selection.', 4, false),
-  makeTopic('alg-sub-matrix', 'subj-algo', 'alg-ch-dc', 'Strassen Matrix Multiplication', 'Strassen 7-multiplication divide-and-conquer recurrence T(n) = 7T(n/2) + O(n^2), O(n^2.81).', 5, false),
+  // --- Chapter 2: Divide and Conquer, Searching & Sorting (66 PYQs) ---
+  makeTopic('alg-ch-sort', 'subj-algo', null, 'Divide and Conquer, Searching & Sorting', 'Comparison sorting lower bounds, divide-and-conquer sorts, binary search, inversions, and stability.', 2, true),
+  makeTopic('alg-7', 'subj-algo', 'alg-ch-sort', 'Sorting', 'Comparison lower bound Omega(n log n), sorting classifications, adaptive sorting, stability properties (22 PYQs).', 1, true, 22),
+  makeTopic('alg-8', 'subj-algo', 'alg-ch-sort', 'Quick Sort', 'Lomuto vs Hoare partitioning, worst case O(n^2) conditions, randomized pivot selection (15 PYQs).', 2, true, 15),
+  makeTopic('alg-sub-search', 'subj-algo', 'alg-ch-sort', 'Searching', 'Linear search, binary search variations, search in rotated sorted array, peak finding (8 PYQs).', 3, true, 8),
+  makeTopic('alg-sub-merge', 'subj-algo', 'alg-ch-sort', 'Merge Sort', 'Merge sort divide-and-conquer, recurrence T(n) = 2T(n/2) + O(n), auxiliary O(n) space (4 PYQs).', 4, true, 4),
+  makeTopic('alg-sub-binsearch', 'subj-algo', 'alg-ch-sort', 'Binary Search', 'Binary search interval halving, logarithmic time complexity O(log n), search boundaries (4 PYQs).', 5, true, 4),
+  makeTopic('alg-sub-heap-sort', 'subj-algo', 'alg-ch-sort', 'Heap Sort', 'Heap Sort algorithm, in-place O(n log n) worst-case time, Build-Heap initialization (2 PYQs).', 6, true, 2),
+  makeTopic('alg-sub-ins-sort', 'subj-algo', 'alg-ch-sort', 'Insertion Sort', 'Insertion sort adaptive algorithm, O(n) best-case for nearly sorted lists, O(n^2) worst case (2 PYQs).', 7, true, 2),
+  makeTopic('alg-sub-sel-sort', 'subj-algo', 'alg-ch-sort', 'Selection Sort', 'Selection sort minimum swaps O(n), comparisons O(n^2), non-adaptive behavior (2 PYQs).', 8, true, 2),
+  makeTopic('alg-sub-inv', 'subj-algo', 'alg-ch-sort', 'Inversion', 'Counting inversions in an array, relation to bubble sort swaps, modified merge sort O(n log n) (2 PYQs).', 9, true, 2),
+  makeTopic('alg-sub-merging', 'subj-algo', 'alg-ch-sort', 'Merging', 'Merging two sorted arrays of size m and n with m + n - 1 comparisons (2 PYQs).', 10, true, 2),
+  makeTopic('alg-sub-bubble', 'subj-algo', 'alg-ch-sort', 'Bubble Sort', 'Bubble sort adjacent element swaps, number of passes, best-case optimization flag (1 PYQ).', 11, true, 1),
+  makeTopic('alg-sub-swap', 'subj-algo', 'alg-ch-sort', 'Number of Swap', 'Minimum number of swaps required to sort an array or convert between permutations (1 PYQ).', 12, true, 1),
+  makeTopic('alg-sub-maxmin', 'subj-algo', 'alg-ch-sort', 'Maximum Minimum', 'Simultaneous maximum and minimum element finding with 3n/2 - 2 comparisons (1 PYQ).', 13, true, 1),
 
-  // --- Chapter 3: Greedy Techniques (35 PYQs) ---
-  makeTopic('alg-ch-greedy', 'subj-algo', null, 'Greedy Techniques', 'Greedy choice property, optimal substructure, minimum spanning trees, and scheduling (35 PYQs).', 3, true),
+  // --- Chapter 3: Graph Algorithms & Traversals (48 PYQs) ---
+  makeTopic('alg-ch-graph', 'subj-algo', null, 'Graph Algorithms & Traversals', 'Graph traversals, single-source and all-pairs shortest paths, DAG topological ordering, SCCs.', 3, true),
+  makeTopic('alg-5', 'subj-algo', 'alg-ch-graph', 'Graph Search', 'Breadth-First Search (BFS), Depth-First Search (DFS), edge classification (tree/back/forward/cross) (23 PYQs).', 1, true, 23),
+  makeTopic('alg-sub-graph-alg', 'subj-algo', 'alg-ch-graph', 'Graph Algorithms', 'Graph representation (adjacency matrix vs list), bipartite matching, cut vertices (11 PYQs).', 2, true, 11),
+  makeTopic('alg-sub-topo', 'subj-algo', 'alg-ch-graph', 'Topological Sort', 'Kahn in-degree algorithm, DFS-based topological ordering, detecting cycles in directed graphs (4 PYQs).', 3, true, 4),
+  makeTopic('alg-sub-bfs', 'subj-algo', 'alg-ch-graph', 'Breadth First Search', 'BFS queue-based layer exploration, shortest path in unweighted graphs (3 PYQs).', 4, true, 3),
+  makeTopic('alg-sub-scc', 'subj-algo', 'alg-ch-graph', 'Strongly Connected Components', 'Kosaraju two-pass DFS algorithm, Tarjan low-link SCC algorithm in directed graphs (3 PYQs).', 5, true, 3),
+  makeTopic('alg-sub-dfs', 'subj-algo', 'alg-ch-graph', 'Depth First Search', 'DFS recursion stack, discovery and finishing timestamps, parenthesis theorem (2 PYQs).', 6, true, 2),
+  makeTopic('alg-sub-dag', 'subj-algo', 'alg-ch-graph', 'Directed Acyclic Graph', 'DAG properties, task dependency scheduling, longest path in DAG using DP (2 PYQs).', 7, true, 2),
+
+  // --- Chapter 4: Greedy Algorithms & Shortest Paths (63 PYQs) ---
+  makeTopic('alg-ch-greedy', 'subj-algo', null, 'Greedy Algorithms & Shortest Paths', 'Greedy choice property, optimal substructure, minimum spanning trees, Huffman codes, and shortest paths.', 4, true),
   makeTopic('alg-3', 'subj-algo', 'alg-ch-greedy', 'Minimum Spanning Tree', 'Kruskal algorithm with Union-Find O(E log E), Prim algorithm O(E log V), Cut and Cycle properties (35 PYQs).', 1, true, 35),
-  makeTopic('alg-sub-huffman', 'subj-algo', 'alg-ch-greedy', 'Huffman Coding', 'Prefix-free codes, optimal merge patterns, constructing Huffman trees, average code length.', 2, false),
-  makeTopic('alg-sub-frac-knap', 'subj-algo', 'alg-ch-greedy', 'Fractional Knapsack', 'Greedy value-per-weight sorting, fractional item division, O(n log n) greedy choice.', 3, false),
-  makeTopic('alg-sub-interval', 'subj-algo', 'alg-ch-greedy', 'Activity Selection & Scheduling', 'Interval scheduling by earliest finish time, interval partitioning, minimum rooms.', 4, false),
-  makeTopic('alg-sub-job', 'subj-algo', 'alg-ch-greedy', 'Job Sequencing with Deadlines', 'Maximizing profit under unit-time deadlines, Disjoint Set optimization.', 5, false),
+  makeTopic('alg-9', 'subj-algo', 'alg-ch-greedy', 'Shortest Path', 'Single-source shortest paths, all-pairs shortest paths, relaxation property (8 PYQs).', 2, true, 8),
+  makeTopic('alg-sub-huffman', 'subj-algo', 'alg-ch-greedy', 'Huffman Code', 'Prefix-free codes, optimal merge patterns, constructing Huffman trees, average code length (6 PYQs).', 3, true, 6),
+  makeTopic('alg-sub-dijkstra', 'subj-algo', 'alg-ch-greedy', 'Dijkstras Algorithm', 'Dijkstra shortest path O((V+E)log V), min-priority queue, non-negative edge weight rule (5 PYQs).', 4, true, 5),
+  makeTopic('alg-sub-greedy-tech', 'subj-algo', 'alg-ch-greedy', 'Greedy Algorithms', 'Activity selection, interval scheduling, fractional knapsack greedy choice (5 PYQs).', 5, true, 5),
+  makeTopic('alg-sub-bellman', 'subj-algo', 'alg-ch-greedy', 'Bellman Ford', 'Bellman-Ford negative edge weights, negative cycle detection in O(VE) time (2 PYQs).', 6, true, 2),
+  makeTopic('alg-sub-prims', 'subj-algo', 'alg-ch-greedy', 'Prims Algorithm', 'Prim algorithm growing tree strategy, key value updates in priority queue (2 PYQs).', 7, true, 2),
 
-  // --- Chapter 4: Graph Algorithms (34 PYQs) ---
-  makeTopic('alg-ch-graph', 'subj-algo', null, 'Graph Algorithms', 'Graph traversals, single-source and all-pairs shortest paths, DAG topological ordering (34 PYQs).', 4, true),
-  makeTopic('alg-5', 'subj-algo', 'alg-ch-graph', 'Graph Search (BFS & DFS)', 'Breadth-First Search (BFS), Depth-First Search (DFS), edge classification (tree/back/forward/cross) (23 PYQs).', 1, true, 23),
-  makeTopic('alg-9', 'subj-algo', 'alg-ch-graph', 'Shortest Path Algorithms', 'Dijkstra shortest path O((V+E)log V), Bellman-Ford negative cycles O(VE), Floyd-Warshall O(V^3) (11 PYQs).', 2, true, 11),
-  makeTopic('alg-sub-topo', 'subj-algo', 'alg-ch-graph', 'Topological Sorting & DAGs', 'Kahn in-degree algorithm, DFS-based topological ordering, detecting cycles in directed graphs.', 3, false),
-  makeTopic('alg-sub-scc', 'subj-algo', 'alg-ch-graph', 'Strongly Connected Components', 'Kosaraju two-pass DFS algorithm, Tarjan low-link SCC algorithm in directed graphs.', 4, false),
-  makeTopic('alg-sub-art', 'subj-algo', 'alg-ch-graph', 'Articulation Points & Bridges', 'DFS discovery and low values, cut vertices and cut edges in connected graphs.', 5, false),
+  // --- Chapter 5: Dynamic Programming (13 PYQs) ---
+  makeTopic('alg-ch-dp', 'subj-algo', null, 'Dynamic Programming', 'Overlapping subproblems, memoization vs tabulation, knapsack, LCS, and matrix chain multiplication.', 5, true),
+  makeTopic('alg-10', 'subj-algo', 'alg-ch-dp', 'Dynamic Programming', '0/1 Knapsack, Longest Common Subsequence (LCS), optimal substructure, memoization tables (10 PYQs).', 1, true, 10),
+  makeTopic('alg-sub-mcm', 'subj-algo', 'alg-ch-dp', 'Matrix Chain Ordering', 'Parenthesization of matrix products, minimum scalar multiplications, O(n^3) DP (3 PYQs).', 2, true, 3),
 
-  // --- Chapter 5: Dynamic Programming (10 PYQs) ---
-  makeTopic('alg-ch-dp', 'subj-algo', null, 'Dynamic Programming', 'Overlapping subproblems, memoization vs tabulation, knapsack, LCS, and matrix chain multiplication (10 PYQs).', 5, true),
-  makeTopic('alg-10', 'subj-algo', 'alg-ch-dp', 'Dynamic Programming Fundamentals', '0/1 Knapsack, Longest Common Subsequence (LCS), Matrix Chain Multiplication (MCM), optimal substructure (10 PYQs).', 1, true, 10),
-  makeTopic('alg-sub-01knap', 'subj-algo', 'alg-ch-dp', '0/1 Knapsack Problem', 'DP table construction, state transition DP[i][w] = max(DP[i-1][w], DP[i-1][w-wt[i]] + val[i]), pseudo-polynomial time.', 2, false),
-  makeTopic('alg-sub-lcs', 'subj-algo', 'alg-ch-dp', 'Longest Common Subsequence (LCS)', '2D DP grid matching, reconstruct optimal string, edit distance and string alignment.', 3, false),
-  makeTopic('alg-sub-mcm', 'subj-algo', 'alg-ch-dp', 'Matrix Chain Multiplication (MCM)', 'Parenthesization of matrix products, minimum scalar multiplications, O(n^3) DP.', 4, false),
-  makeTopic('alg-sub-obst', 'subj-algo', 'alg-ch-dp', 'Optimal Binary Search Tree (OBST)', 'Minimizing expected search cost for known key access probabilities, O(n^3) DP.', 5, false),
-  makeTopic('alg-sub-lis', 'subj-algo', 'alg-ch-dp', 'Longest Increasing Subsequence', 'O(n^2) DP recurrence and O(n log n) patience sorting with binary search.', 6, false),
-
-  // --- Chapter 6: Searching & Sorting (22 PYQs) ---
-  makeTopic('alg-ch-sort', 'subj-algo', null, 'Searching & Sorting', 'Comparison sorting lower bounds, heap sort, non-comparison linear-time sorts (22 PYQs).', 6, true),
-  makeTopic('alg-7', 'subj-algo', 'alg-ch-sort', 'Comparison-Based Sorting', 'Comparison lower bound Omega(n log n), Heap Sort, Selection Sort, Insertion Sort, stability (22 PYQs).', 1, true, 22),
-  makeTopic('alg-sub-linear-sort', 'subj-algo', 'alg-ch-sort', 'Linear-Time Sorting', 'Counting Sort O(n+k), Radix Sort O(d*(n+k)), Bucket Sort average O(n).', 2, false),
-  makeTopic('alg-sub-heap', 'subj-algo', 'alg-ch-sort', 'Binary Heap & Priority Queues', 'Build-Heap in O(n), Heapify in O(log n), Extract-Min/Max, Decrease-Key operations.', 3, false),
-  makeTopic('alg-sub-lower-bound', 'subj-algo', 'alg-ch-sort', 'Lower Bounds for Sorting', 'Decision tree model, binary decision tree height ceil(log2(n!)) = Omega(n log n).', 4, false),
-
-  // --- Chapter 7: NP-Completeness & Complexity (8 PYQs) ---
-  makeTopic('alg-ch-np', 'subj-algo', null, 'NP-Completeness & Complexity', 'Deterministic and non-deterministic polynomial time, reductions, standard NP-complete problems (8 PYQs).', 7, true),
-  makeTopic('alg-11', 'subj-algo', 'alg-ch-np', 'NP-Completeness', 'P, NP, NP-Complete, NP-Hard classes, 3-SAT, Vertex Cover, Clique, polynomial reductions (8 PYQs).', 1, true, 8),
-  makeTopic('alg-sub-poly-red', 'subj-algo', 'alg-ch-np', 'Polynomial-Time Reductions', 'Proving NP-Completeness via reduction A <=p B, transitivity of polynomial reductions.', 2, false),
-  makeTopic('alg-sub-npc-problems', 'subj-algo', 'alg-ch-np', 'Classic NP-Complete Problems', 'Cook-Levin Theorem (SAT), 3-SAT, Independent Set, Hamiltonian Cycle, TSP, Subset Sum.', 3, false),
+  // --- Chapter 6: Hashing & Tree Structures (17 PYQs) ---
+  makeTopic('alg-ch-hash', 'subj-algo', null, 'Hashing & Tree Structures', 'Hash functions, collision resolution (chaining, open addressing), binary search trees, and binary heaps.', 6, true),
+  makeTopic('alg-sub-hashing', 'subj-algo', 'alg-ch-hash', 'Hashing', 'Hash functions, division & multiplication methods, collision frequency and search costs (6 PYQs).', 1, true, 6),
+  makeTopic('alg-sub-bst', 'subj-algo', 'alg-ch-hash', 'Binary Search Tree', 'BST search, insertion, deletion, inorder successor in algorithmic analysis (3 PYQs).', 2, true, 3),
+  makeTopic('alg-sub-double-hash', 'subj-algo', 'alg-ch-hash', 'Double Hashing', 'Double hashing probing sequence h(k, i) = (h1(k) + i*h2(k)) mod m (2 PYQs).', 3, true, 2),
+  makeTopic('alg-sub-lin-probe', 'subj-algo', 'alg-ch-hash', 'Linear Probing', 'Linear probing collision resolution, primary clustering effects (2 PYQs).', 4, true, 2),
+  makeTopic('alg-sub-bin-heap', 'subj-algo', 'alg-ch-hash', 'Binary Heap', 'Min-Heap and Max-Heap array representations, Build-Heap O(n), Extract-Min O(log n) (1 PYQ).', 5, true, 1),
+  makeTopic('alg-sub-bin-tree', 'subj-algo', 'alg-ch-hash', 'Binary Tree', 'Binary tree structural properties, height, internal vs leaf node relations (1 PYQ).', 6, true, 1),
+  makeTopic('alg-sub-tree-trav', 'subj-algo', 'alg-ch-hash', 'Tree Traversal', 'Inorder, preorder, postorder, level order tree traversals in algorithms (1 PYQ).', 7, true, 1),
+  makeTopic('alg-sub-unif-hash', 'subj-algo', 'alg-ch-hash', 'Uniform Hashing', 'Simple Uniform Hashing Assumption (SUHA), expected chain length and probe counts (1 PYQ).', 8, true, 1),
 
   // =========================================================================
   // 10. COMPILER DESIGN (subj-cd) - 242 Total PYQs
+  //     Organized into 5 official GATE syllabus chapters with subtopics
   // =========================================================================
-  makeTopic('cd-1', 'subj-cd', null, 'Grammar Analysis', 'Context-free grammar rules, ambiguity proofs, left recursion elimination, and left factoring (47 PYQs).', 1, true, 47),
-  makeTopic('cd-2', 'subj-cd', null, 'Parsing Techniques', 'LL(1) parsing table construction, FIRST and FOLLOW set algorithms, parser conflict resolution (22 PYQs).', 2, true, 22),
-  makeTopic('cd-3', 'subj-cd', null, 'Runtime Environment', 'Activation records on the stack, static/dynamic scoping, local variable allocations (22 PYQs).', 3, true, 22),
-  makeTopic('cd-4', 'subj-cd', null, 'LR Parser', 'LR(0), SLR(1), LALR(1), CLR(1) item collections, Shift-Reduce and Reduce-Reduce conflicts, state counts (20 PYQs).', 4, true, 20),
-  makeTopic('cd-5', 'subj-cd', null, 'Syntax Directed Translation', 'S-attributed (synthesized only) vs L-attributed definitions, dependency graphs, bottom-up action execution (19 PYQs).', 5, true, 19),
-  makeTopic('cd-6', 'subj-cd', null, 'Parameter Passing', 'Pass by value, pass by reference, pass by copy-restore, and pass by name evaluation (14 PYQs).', 6, true, 14),
-  makeTopic('cd-7', 'subj-cd', null, 'Compilation Phases', 'Lexical, Syntax, Semantic, Intermediate Code, Optimization, and Target Code generation roles (13 PYQs).', 7, true, 13),
-  makeTopic('cd-8', 'subj-cd', null, 'Intermediate Code', 'Three-Address Code (TAC), Quadruples, Triples, Basic Blocks, Control Flow Graph leaders (11 PYQs).', 8, true, 11),
-  makeTopic('cd-9', 'subj-cd', null, 'Assembler & Macros', 'Two-pass assembler design, symbol table generation, macro processors and loaders (9 PYQs).', 9, true, 9),
-  makeTopic('cd-10', 'subj-cd', null, 'Operator Precedence Grammar', 'Operator grammars, precedence matrix relations, bottom-up shift-reduce operator parsing (9 PYQs).', 10, true, 9),
+
+  // --- Chapter 1: Lexical Analysis & System Software (37 PYQs) ---
+  makeTopic('cd-ch-lex', 'subj-cd', null, 'Lexical Analysis & System Software', 'Lexical tokenization, DFA generation, compilation phases, assemblers, linkers, macros, and symbol tables.', 1, true),
+  makeTopic('cd-7', 'subj-cd', 'cd-ch-lex', 'Compilation Phases', 'Lexical, Syntax, Semantic, Intermediate Code, Optimization, and Target Code generation roles (13 PYQs).', 1, true, 13),
+  makeTopic('cd-9', 'subj-cd', 'cd-ch-lex', 'Assembler', 'Two-pass assembler design, symbol table generation, pass-1 and pass-2 processing (9 PYQs).', 2, true, 9),
+  makeTopic('cd-sub-lex', 'subj-cd', 'cd-ch-lex', 'Lexical Analysis', 'Regular definitions, tokens, patterns, lexemes, DFA-based token recognizers (6 PYQs).', 3, true, 6),
+  makeTopic('cd-sub-macros', 'subj-cd', 'cd-ch-lex', 'Macros', 'Macro processors, macro definitions, macro call expansions, nested macros (4 PYQs).', 4, true, 4),
+  makeTopic('cd-sub-linker', 'subj-cd', 'cd-ch-lex', 'Linker', 'Linker relocation, symbol resolution, static vs dynamic linking, loaders (3 PYQs).', 5, true, 3),
+  makeTopic('cd-sub-symtab', 'subj-cd', 'cd-ch-lex', 'Symbol Table', 'Symbol table operations, hash table lookup, attribute storage, scope management (1 PYQ).', 6, true, 1),
+  makeTopic('cd-sub-tok', 'subj-cd', 'cd-ch-lex', 'Compiler tokenization', 'Counting total tokens in C code snippets, string literal and operator rules (1 PYQ).', 7, true, 1),
+
+  // --- Chapter 2: Parsing & Syntax Analysis (109 PYQs) ---
+  makeTopic('cd-ch-parse', 'subj-cd', null, 'Parsing & Syntax Analysis', 'Context-free grammars, LL(1) parsers, FIRST & FOLLOW sets, LR parsers (LR(0), SLR, LALR, CLR), and operator precedence.', 2, true),
+  makeTopic('cd-1', 'subj-cd', 'cd-ch-parse', 'Grammar', 'Context-free grammar rules, ambiguity proofs, left recursion elimination, and left factoring (47 PYQs).', 1, true, 47),
+  makeTopic('cd-2', 'subj-cd', 'cd-ch-parse', 'Parsing', 'Top-down and bottom-up parsing techniques, parser conflict resolution (22 PYQs).', 2, true, 22),
+  makeTopic('cd-4', 'subj-cd', 'cd-ch-parse', 'LR Parser', 'LR(0), SLR(1), LALR(1), CLR(1) item collections, Shift-Reduce and Reduce-Reduce conflicts, state counts (20 PYQs).', 3, true, 20),
+  makeTopic('cd-10', 'subj-cd', 'cd-ch-parse', 'Operator Precedence', 'Operator grammars, precedence matrix relations, bottom-up shift-reduce operator parsing (9 PYQs).', 4, true, 9),
+  makeTopic('cd-sub-ff', 'subj-cd', 'cd-ch-parse', 'First and Follow', 'FIRST and FOLLOW set calculation algorithms, epsilon production rules (6 PYQs).', 5, true, 6),
+  makeTopic('cd-sub-ambig', 'subj-cd', 'cd-ch-parse', 'Ambiguous Grammar', 'Identifying grammar ambiguity, multiple leftmost derivations and multiple parse trees (2 PYQs).', 6, true, 2),
+  makeTopic('cd-sub-ll', 'subj-cd', 'cd-ch-parse', 'LL Parser', 'LL(1) parsing table construction, non-LL(1) grammar proofs, predictive parsing (2 PYQs).', 7, true, 2),
+  makeTopic('cd-sub-viable', 'subj-cd', 'cd-ch-parse', 'Viable Prefix', 'Viable prefix definitions, valid LR items, stack contents during shift-reduce parsing (1 PYQ).', 8, true, 1),
+
+  // --- Chapter 3: Syntax-Directed Translation & Intermediate Code Generation (36 PYQs) ---
+  makeTopic('cd-ch-sdt', 'subj-cd', null, 'Syntax-Directed Translation & Intermediate Code Generation', 'Syntax-directed translation (SDT), S-attributed & L-attributed definitions, three-address code, DAGs, ASTs, and backpatching.', 3, true),
+  makeTopic('cd-5', 'subj-cd', 'cd-ch-sdt', 'Syntax Directed Translation', 'S-attributed (synthesized only) vs L-attributed definitions, dependency graphs, bottom-up action execution (19 PYQs).', 1, true, 19),
+  makeTopic('cd-8', 'subj-cd', 'cd-ch-sdt', 'Intermediate Code', 'Three-Address Code (TAC), Quadruples, Triples, Indirect Triples (11 PYQs).', 2, true, 11),
+  makeTopic('cd-sub-dag', 'subj-cd', 'cd-ch-sdt', 'Directed Acyclic Graph', 'DAG representation of basic blocks, common subexpression identification in DAGs (2 PYQs).', 3, true, 2),
+  makeTopic('cd-sub-expr', 'subj-cd', 'cd-ch-sdt', 'Expression Evaluation', 'SDT semantic actions for arithmetic expression evaluation and type checking (2 PYQs).', 4, true, 2),
+  makeTopic('cd-sub-ast', 'subj-cd', 'cd-ch-sdt', 'Abstract Syntax Tree', 'Constructing Abstract Syntax Trees (AST) from parse trees, operator node representations (1 PYQ).', 5, true, 1),
+  makeTopic('cd-sub-backpatch', 'subj-cd', 'cd-ch-sdt', 'Backpatching', 'Backpatching jump targets for boolean expressions and control flow statements (1 PYQ).', 6, true, 1),
+
+  // --- Chapter 4: Runtime Environments & Storage Management (38 PYQs) ---
+  makeTopic('cd-ch-runtime', 'subj-cd', null, 'Runtime Environments & Storage Management', 'Activation records on stack, parameter passing mechanisms, static and dynamic scoping rules.', 4, true),
+  makeTopic('cd-3', 'subj-cd', 'cd-ch-runtime', 'Runtime Environment', 'Activation records on the stack, static/dynamic scoping, local variable allocations (22 PYQs).', 1, true, 22),
+  makeTopic('cd-6', 'subj-cd', 'cd-ch-runtime', 'Parameter Passing', 'Pass by value, pass by reference, pass by copy-restore, and pass by name evaluation (14 PYQs).', 2, true, 14),
+  makeTopic('cd-sub-scope', 'subj-cd', 'cd-ch-runtime', 'Variable Scope', 'Static lexical scoping vs dynamic scoping execution traces and symbol resolution (2 PYQs).', 3, true, 2),
+
+  // --- Chapter 5: Code Optimization & Code Generation (22 PYQs) ---
+  makeTopic('cd-ch-opt', 'subj-cd', null, 'Code Optimization & Code Generation', 'Basic blocks, flow graphs, loop optimizations, data-flow analysis, SSA form, and register allocation.', 5, true),
+  makeTopic('cd-sub-opt', 'subj-cd', 'cd-ch-opt', 'Code Optimization', 'Loop invariants, induction variables, strength reduction, dead code elimination (8 PYQs).', 1, true, 8),
+  makeTopic('cd-sub-reg', 'subj-cd', 'cd-ch-opt', 'Register Allocation', 'Register allocation via graph coloring, Sethi-Ullman minimum register algorithm (6 PYQs).', 2, true, 6),
+  makeTopic('cd-sub-live', 'subj-cd', 'cd-ch-opt', 'Live Variable Analysis', 'Liveness analysis data-flow equations In[B] = Use[B] U (Out[B] - Def[B]) (3 PYQs).', 3, true, 3),
+  makeTopic('cd-sub-ssa', 'subj-cd', 'cd-ch-opt', 'Static Single Assignment', 'Static Single Assignment (SSA) form, phi-nodes, dominance frontiers (3 PYQs).', 4, true, 3),
+  makeTopic('cd-sub-bb', 'subj-cd', 'cd-ch-opt', 'Basic Blocks', 'Identifying basic block leaders, partitioning Three-Address Code into basic blocks (2 PYQs).', 5, true, 2),
 
   // =========================================================================
   // 11. DATA STRUCTURES (subj-ds) - 238 Total PYQs
