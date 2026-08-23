@@ -57,22 +57,30 @@ export const StorageService = {
         };
       });
 
-      const hydratedTopics: Topic[] = parsed.topics.map((t: Topic) => {
-        const init = initialTopicMap.get(t.id);
-        return {
-          ...t,
-          Topic_PYQ_Count: t.Topic_PYQ_Count || init?.Topic_PYQ_Count,
-          Topic_Tags: {
-            ...t.Topic_Tags,
-            Star: init ? init.Topic_Tags.Star : Boolean(t.Topic_Tags?.Star),
-          },
-        };
-      });
+      const hydratedTopics: Topic[] = parsed.topics
+        .filter((t: Topic) => {
+          // Filter out obsolete split/merged seed topics so new ones take over
+          if (t.id === 'dm-16') return false;
+          return true;
+        })
+        .map((t: Topic) => {
+          const init = initialTopicMap.get(t.id);
+          return {
+            ...t,
+            Topic_Name: init ? init.Topic_Name : t.Topic_Name,
+            Parent_Id: init !== undefined ? init.Parent_Id : t.Parent_Id,
+            Topic_PYQ_Count: init?.Topic_PYQ_Count ?? t.Topic_PYQ_Count,
+            Topic_Tags: {
+              ...t.Topic_Tags,
+              Star: init ? init.Topic_Tags.Star : Boolean(t.Topic_Tags?.Star),
+            },
+          };
+        });
 
       // ── DATA MIGRATION ──────────────────────────────────────────────────
       // Automatically inject any seed topics that are missing from saved data.
       // This fires every time new topics are added to INITIAL_TOPICS (e.g. new
-      // GA parent categories or subtopics) without wiping user customizations.
+      // DM/GA parent categories or subtopics) without wiping user customizations.
       const savedTopicIds = new Set(hydratedTopics.map((t: Topic) => t.id));
       const missingTopics = INITIAL_TOPICS.filter((t) => !savedTopicIds.has(t.id));
       const mergedTopics = missingTopics.length > 0

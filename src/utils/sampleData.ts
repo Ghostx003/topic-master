@@ -276,43 +276,50 @@ export const INITIAL_TOPICS: Topic[] = [
 
   // =========================================================================
   // 6. DISCRETE MATHEMATICS (subj-dm) - 390 Total PYQs
+  //    Organized into 4 parent categories with subtopics
   // =========================================================================
-  // --- Combinatorics (51 PYQs) ---
-  makeTopic('dm-1', 'subj-dm', null, 'Combinatory & Counting', 'Permutations & Combinations, Binomial theorem, inclusion-exclusion principle, and counting techniques (18 PYQs).', 1, true, 18),
-  makeTopic('dm-2', 'subj-dm', null, 'Recurrence Relation', 'Solving linear homogeneous and non-homogeneous recurrence relations, characteristic roots (7 PYQs).', 2, true, 7),
-  makeTopic('dm-3', 'subj-dm', null, 'Balls In Bins & Stars and Bars', 'Distributing distinct/identical objects into distinct/identical bins, formulas C(n+k-1, k-1) (6 PYQs).', 3, true, 6),
-  makeTopic('dm-4', 'subj-dm', null, 'Counting Principles', 'Rule of sum, rule of product, pigeonhole principle applications (6 PYQs).', 4, true, 6),
-  makeTopic('dm-5', 'subj-dm', null, 'Generating Functions', 'Ordinary and exponential generating functions, closed forms for sequence generation (6 PYQs).', 5, true, 6),
-  makeTopic('dm-6', 'subj-dm', null, 'Summation & Series', 'Sum of powers of integers, geometric and arithmetic-geometric series formulas (4 PYQs).', 6, true, 4),
-  makeTopic('dm-7', 'subj-dm', null, 'Modular Arithmetic in Combinatorics', 'Fermat Little Theorem, modular inverses, Chinese Remainder Theorem basics (2 PYQs).', 7, true, 2),
-  makeTopic('dm-8', 'subj-dm', null, 'Pigeonhole Principle', 'Generalized pigeonhole principle ceil(N/k), minimum elements to guarantee duplicates (2 PYQs).', 8, true, 2),
 
-  // --- Graph Theory (88 PYQs) ---
-  makeTopic('dm-9', 'subj-dm', null, 'Graph Connectivity', 'Connected components, cut vertices, cut edges, bridges, Eulerian paths/circuits, Hamiltonian cycles (40 PYQs).', 9, true, 40),
-  makeTopic('dm-10', 'subj-dm', null, 'Degree of Graph', 'Handshaking Lemma (Sum of degrees = 2|E|), degree sequences, Havel-Hakimi theorem (13 PYQs).', 10, true, 13),
-  makeTopic('dm-11', 'subj-dm', null, 'Graph Planarity', 'Planar graphs, Euler formula V - E + F = 2, maximal planar graph edges E <= 3V - 6 (13 PYQs).', 11, true, 13),
-  makeTopic('dm-12', 'subj-dm', null, 'Graph Coloring', 'Vertex chromatic number chi(G), edge chromatic index, four-color theorem bounds, bipartite coloring (11 PYQs).', 12, true, 11),
-  makeTopic('dm-13', 'subj-dm', null, 'Graph Isomorphism', 'Graph invariant checks: vertex counts, degree multisets, adjacency matrix isomorphism (4 PYQs).', 13, true, 4),
-  makeTopic('dm-14', 'subj-dm', null, 'Counting in Graphs', 'Number of simple graphs on n vertices 2^C(n,2), labeled trees Cayley formula n^(n-2) (3 PYQs).', 14, true, 3),
-  makeTopic('dm-15', 'subj-dm', null, 'Graph Matching', 'Maximal vs maximum matchings, Hall Marriage Theorem for bipartite graphs (2 PYQs).', 15, true, 2),
-  makeTopic('dm-16', 'subj-dm', null, 'Graph Algorithms & Jaccard', 'Graph search connectivity tests and similarity metrics like Jaccard coefficient (2 PYQs).', 16, true, 2),
+  // --- Parent: Combinatory (51 PYQs) ---
+  makeTopic('dm-comb', 'subj-dm', null, 'Combinatory', 'Permutations, combinations, recurrence relations, generating functions, and counting techniques (51 PYQs).', 1, true, 51),
+  makeTopic('dm-1', 'subj-dm', 'dm-comb', 'Combinatory', 'Permutations & Combinations, Binomial theorem, inclusion-exclusion principle (18 PYQs).', 1, true, 18),
+  makeTopic('dm-2', 'subj-dm', 'dm-comb', 'Recurrence Relation', 'Solving linear homogeneous and non-homogeneous recurrence relations, characteristic roots (7 PYQs).', 2, true, 7),
+  makeTopic('dm-3', 'subj-dm', 'dm-comb', 'Balls In Bins', 'Distributing distinct/identical objects into distinct/identical bins, stars and bars (6 PYQs).', 3, true, 6),
+  makeTopic('dm-4', 'subj-dm', 'dm-comb', 'Counting', 'Rule of sum, rule of product, combinatorial counting principles (6 PYQs).', 4, true, 6),
+  makeTopic('dm-5', 'subj-dm', 'dm-comb', 'Generating Functions', 'Ordinary and exponential generating functions, closed forms for sequence generation (6 PYQs).', 5, true, 6),
+  makeTopic('dm-6', 'subj-dm', 'dm-comb', 'Summation', 'Sum of powers of integers, geometric and arithmetic-geometric series formulas (4 PYQs).', 6, true, 4),
+  makeTopic('dm-7', 'subj-dm', 'dm-comb', 'Modular Arithmetic', 'Fermat Little Theorem, modular inverses, Chinese Remainder Theorem basics (2 PYQs).', 7, true, 2),
+  makeTopic('dm-8', 'subj-dm', 'dm-comb', 'Pigeonhole Principle', 'Generalized pigeonhole principle ceil(N/k), minimum elements to guarantee duplicates (2 PYQs).', 8, true, 2),
 
-  // --- Mathematical Logic (78 PYQs) ---
-  makeTopic('dm-17', 'subj-dm', null, 'Propositional Logic', 'Truth tables, logical equivalences, Tautology/Contradiction, CNF/DNF, inference rules (40 PYQs).', 17, true, 40),
-  makeTopic('dm-18', 'subj-dm', null, 'First Order Logic', 'Predicate quantifiers (Forall, Exists), quantifier negation, scope, validity and satisfiability of formulas (35 PYQs).', 18, true, 35),
-  makeTopic('dm-19', 'subj-dm', null, 'Logical Reasoning in Math', 'Translating complex English statements to predicate calculus (3 PYQs).', 19, true, 3),
+  // --- Parent: Graph Theory (88 PYQs) ---
+  makeTopic('dm-graph', 'subj-dm', null, 'Graph Theory', 'Connectivity, degree sequences, planarity, coloring, isomorphism, and matching (88 PYQs).', 2, true, 88),
+  makeTopic('dm-9', 'subj-dm', 'dm-graph', 'Graph Connectivity', 'Connected components, cut vertices, cut edges, bridges, Eulerian paths/circuits, Hamiltonian cycles (40 PYQs).', 1, true, 40),
+  makeTopic('dm-10', 'subj-dm', 'dm-graph', 'Degree of Graph', 'Handshaking Lemma (Sum of degrees = 2|E|), degree sequences, Havel-Hakimi theorem (13 PYQs).', 2, true, 13),
+  makeTopic('dm-11', 'subj-dm', 'dm-graph', 'Graph Planarity', 'Planar graphs, Euler formula V - E + F = 2, maximal planar graph edges E <= 3V - 6 (13 PYQs).', 3, true, 13),
+  makeTopic('dm-12', 'subj-dm', 'dm-graph', 'Graph Coloring', 'Vertex chromatic number chi(G), edge chromatic index, four-color theorem bounds, bipartite coloring (11 PYQs).', 4, true, 11),
+  makeTopic('dm-13', 'subj-dm', 'dm-graph', 'Graph Isomorphism', 'Graph invariant checks: vertex counts, degree multisets, adjacency matrix isomorphism (4 PYQs).', 5, true, 4),
+  makeTopic('dm-14', 'subj-dm', 'dm-graph', 'Counting', 'Number of simple graphs on n vertices 2^C(n,2), labeled trees Cayley formula n^(n-2) (3 PYQs).', 6, true, 3),
+  makeTopic('dm-15', 'subj-dm', 'dm-graph', 'Graph Matching', 'Maximal vs maximum matchings, Hall Marriage Theorem for bipartite graphs (2 PYQs).', 7, true, 2),
+  makeTopic('dm-16a', 'subj-dm', 'dm-graph', 'Graph Algorithms', 'Graph traversal connectivity algorithms and path tests (1 PYQ).', 8, true, 1),
+  makeTopic('dm-16b', 'subj-dm', 'dm-graph', 'Jaccard Coefficient', 'Graph vertex neighborhood similarity metric and link prediction (1 PYQ).', 9, true, 1),
 
-  // --- Set Theory & Algebra (173 PYQs) ---
-  makeTopic('dm-20', 'subj-dm', null, 'Relations in Discrete Math', 'Reflexive, Symmetric, Anti-symmetric, Transitive properties, Equivalence classes, and closures (38 PYQs).', 20, true, 38),
-  makeTopic('dm-21', 'subj-dm', null, 'Group Theory', 'Groups, Abelian Groups, Subgroups, Cyclic groups, Order of elements, Lagrange Theorem (33 PYQs).', 21, true, 33),
-  makeTopic('dm-22', 'subj-dm', null, 'Functions in Discrete Math', 'Injective (One-to-One), Surjective (Onto), Bijective functions, number of onto functions formulas (30 PYQs).', 22, true, 30),
-  makeTopic('dm-23', 'subj-dm', null, 'Set Theory', 'Power sets, Cartesian products, set algebra laws, cardinality of sets, De Morgan laws (27 PYQs).', 23, true, 27),
-  makeTopic('dm-24', 'subj-dm', null, 'Lattice & Boolean Algebra', 'Partially ordered sets as Lattices, Meet (GLB), Join (LUB), Distributive and Complemented Lattices (10 PYQs).', 24, true, 10),
-  makeTopic('dm-25', 'subj-dm', null, 'Partial Order & Posets', 'Posets, Hasse diagrams, Maximal/Minimal vs Greatest/Least elements, Topological sorting of Posets (10 PYQs).', 25, true, 10),
-  makeTopic('dm-26', 'subj-dm', null, 'Binary Operation', 'Properties of binary operations: associativity, commutativity, identity, inverse elements (8 PYQs).', 26, true, 8),
-  makeTopic('dm-27', 'subj-dm', null, 'Number Theory in DM', 'GCD, Euclidean algorithm, prime numbers, Euler Totient function phi(n) (7 PYQs).', 27, true, 7),
-  makeTopic('dm-28', 'subj-dm', null, 'Polynomials in Algebra', 'Polynomial roots, irreducible polynomials in finite fields (4 PYQs).', 28, true, 4),
-  makeTopic('dm-29', 'subj-dm', null, 'Countable & Uncountable Sets', 'Countably infinite sets (Integers, Rationals) vs Uncountable sets (Reals, Power set of Naturals) (2 PYQs).', 29, true, 2),
+  // --- Parent: Mathematical Logic (78 PYQs) ---
+  makeTopic('dm-logic', 'subj-dm', null, 'Mathematical Logic', 'Propositional logic, first-order predicate calculus, inference rules, and logical deductions (78 PYQs).', 3, true, 78),
+  makeTopic('dm-17', 'subj-dm', 'dm-logic', 'Propositional Logic', 'Truth tables, logical equivalences, Tautology/Contradiction, CNF/DNF, inference rules (40 PYQs).', 1, true, 40),
+  makeTopic('dm-18', 'subj-dm', 'dm-logic', 'First Order Logic', 'Predicate quantifiers (Forall, Exists), quantifier negation, scope, validity and satisfiability of formulas (35 PYQs).', 2, true, 35),
+  makeTopic('dm-19', 'subj-dm', 'dm-logic', 'Logical Reasoning', 'Translating complex English statements to predicate calculus and logic deductions (3 PYQs).', 3, true, 3),
+
+  // --- Parent: Set Theory & Algebra (173 PYQs) ---
+  makeTopic('dm-set-algebra', 'subj-dm', null, 'Set Theory & Algebra', 'Relations, group theory, functions, posets, lattices, and algebraic structures (173 PYQs).', 4, true, 173),
+  makeTopic('dm-20', 'subj-dm', 'dm-set-algebra', 'Relations', 'Reflexive, Symmetric, Anti-symmetric, Transitive properties, Equivalence classes, and closures (38 PYQs).', 1, true, 38),
+  makeTopic('dm-21', 'subj-dm', 'dm-set-algebra', 'Group Theory', 'Groups, Abelian Groups, Subgroups, Cyclic groups, Order of elements, Lagrange Theorem (33 PYQs).', 2, true, 33),
+  makeTopic('dm-22', 'subj-dm', 'dm-set-algebra', 'Functions', 'Injective (One-to-One), Surjective (Onto), Bijective functions, number of onto functions formulas (30 PYQs).', 3, true, 30),
+  makeTopic('dm-23', 'subj-dm', 'dm-set-algebra', 'Set Theory', 'Power sets, Cartesian products, set algebra laws, cardinality of sets, De Morgan laws (27 PYQs).', 4, true, 27),
+  makeTopic('dm-24', 'subj-dm', 'dm-set-algebra', 'Lattice & Boolean Algebra', 'Partially ordered sets as Lattices, Meet (GLB), Join (LUB), Distributive and Complemented Lattices (10 PYQs).', 5, true, 10),
+  makeTopic('dm-25', 'subj-dm', 'dm-set-algebra', 'Partial Order & Posets', 'Posets, Hasse diagrams, Maximal/Minimal vs Greatest/Least elements, Topological sorting of Posets (10 PYQs).', 6, true, 10),
+  makeTopic('dm-26', 'subj-dm', 'dm-set-algebra', 'Binary Operation', 'Properties of binary operations: associativity, commutativity, identity, inverse elements (8 PYQs).', 7, true, 8),
+  makeTopic('dm-27', 'subj-dm', 'dm-set-algebra', 'Number Theory', 'GCD, Euclidean algorithm, prime numbers, Euler Totient function phi(n) (7 PYQs).', 8, true, 7),
+  makeTopic('dm-28', 'subj-dm', 'dm-set-algebra', 'Polynomials', 'Polynomial roots, irreducible polynomials in finite fields (4 PYQs).', 9, true, 4),
+  makeTopic('dm-29', 'subj-dm', 'dm-set-algebra', 'Countable & Uncountable Sets', 'Countably infinite sets (Integers, Rationals) vs Uncountable sets (Reals, Power set of Naturals) (2 PYQs).', 10, true, 2),
 
   // =========================================================================
   // 7. ENGINEERING MATHEMATICS (subj-em) - 306 Total PYQs
