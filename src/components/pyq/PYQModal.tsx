@@ -1,10 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { PYQProgressMap, PYQDifficultyStatus } from '../../types/pyq';
+import { PYQProgressMap, PYQDifficultyStatus, PYQYearFilter } from '../../types/pyq';
 import {
   getQuestionsForTopic,
   loadPYQProgress,
   savePYQProgress,
   calculateTopicPYQStats,
+  loadPYQYearFilter,
+  savePYQYearFilter,
+  filterQuestionsByYear,
+  extractYearNumber,
 } from '../../services/pyqService';
 import { PYQCard } from './PYQCard';
 import {
@@ -20,6 +24,8 @@ import {
   List,
   Award,
   Layers,
+  Calendar,
+  ArrowUpDown,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -34,6 +40,15 @@ export interface PYQModalProps {
 
 export type PYQFilterTab = 'all' | 'active' | 'completed' | 'doubts' | 'easy' | 'medium' | 'hard' | 'skip';
 
+const YEAR_FILTER_OPTIONS: { id: PYQYearFilter; label: string; desc: string }[] = [
+  { id: 'all', label: 'All Years', desc: '1987 - 2026' },
+  { id: 'last_5_years', label: 'Last 5 Years', desc: '2020 - 2026' },
+  { id: 'last_10_years', label: 'Last 10 Years', desc: '2015 - 2026' },
+  { id: 'last_15_years', label: 'Last 15 Years', desc: '2010 - 2026' },
+  { id: '2008_2026', label: '2008 - 2026', desc: 'Online Era' },
+  { id: 'older_than_2000', label: 'Older than 2000', desc: '< 2000' },
+];
+
 export const PYQModal: React.FC<PYQModalProps> = ({
   isOpen,
   onClose,
@@ -42,6 +57,8 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   subtopicNames = [],
 }) => {
   const [progress, setProgress] = useState<PYQProgressMap>(() => loadPYQProgress());
+  const [yearFilter, setYearFilter] = useState<PYQYearFilter>(() => loadPYQYearFilter());
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [activeTab, setActiveTab] = useState<PYQFilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isCompletedSectionOpen, setIsCompletedSectionOpen] = useState(true);
@@ -59,16 +76,40 @@ export const PYQModal: React.FC<PYQModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Load questions for this topic and subtopics
-  const questions = useMemo(() => {
+  // Handle year filter change with site-wide persistence
+  const handleYearFilterChange = (filter: PYQYearFilter) => {
+    setYearFilter(filter);
+    savePYQYearFilter(filter);
+  };
+
+  // Load all raw questions for this topic and subtopics (already sorted newest first)
+  const rawTopicQuestions = useMemo(() => {
     if (!isOpen) return [];
     return getQuestionsForTopic(subjectName, topicName, subtopicNames);
   }, [isOpen, subjectName, topicName, subtopicNames]);
 
-  // Compute live statistics
+  // Apply Year Range Filter
+  const yearFilteredQuestions = useMemo(() => {
+    return filterQuestionsByYear(rawTopicQuestions, yearFilter);
+  }, [rawTopicQuestions, yearFilter]);
+
+  // Apply Sorting (Newest to Oldest or Oldest to Newest)
+  const sortedQuestions = useMemo(() => {
+    const sorted = [...yearFilteredQuestions].sort((a, b) => {
+      const yA = extractYearNumber(a.year);
+      const yB = extractYearNumber(b.year);
+      if (yA !== yB) {
+        return sortOrder === 'newest' ? yB - yA : yA - yB;
+      }
+      return a.questionNumber - b.questionNumber;
+    });
+    return sorted;
+  }, [yearFilteredQuestions, sortOrder]);
+
+  // Compute live statistics for current filtered set
   const stats = useMemo(() => {
-    return calculateTopicPYQStats(questions, progress);
-  }, [questions, progress]);
+    return calculateTopicPYQStats(sortedQuestions, progress);
+  }, [sortedQuestions, progress]);
 
   // Update progress helper
   const updateProgressState = (updater: (prev: PYQProgressMap) => PYQProgressMap) => {
@@ -124,7 +165,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   const handleMarkAllCompleted = () => {
     updateProgressState((prev) => {
       const next = { ...prev };
-      questions.forEach((q) => {
+      sortedQuestions.forEach((q) => {
         next[q.id] = {
           ...(next[q.id] || {}),
           completed: true,
@@ -139,7 +180,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
     if (window.confirm('Reset all progress and doubt statuses for this topic?')) {
       updateProgressState((prev) => {
         const next = { ...prev };
-        questions.forEach((q) => {
+        sortedQuestions.forEach((q) => {
           delete next[q.id];
         });
         return next;
@@ -151,7 +192,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   const filteredQuestions = useMemo(() => {
     const qTrim = searchQuery.trim().toLowerCase();
 
-    return questions.filter((q) => {
+    return sortedQuestions.filter((q) => {
       const p = progress[q.id];
       const isDone = Boolean(p?.completed);
       const isDoubt = Boolean(p?.isDoubt);
@@ -176,7 +217,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
 
       return true;
     });
-  }, [questions, progress, activeTab, searchQuery]);
+  }, [sortedQuestions, progress, activeTab, searchQuery]);
 
   // Separate active vs completed if in 'all' tab
   const activeQuestions = useMemo(() => {
@@ -203,9 +244,9 @@ export const PYQModal: React.FC<PYQModalProps> = ({
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-black text-amber-300 bg-amber-950/50 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
               <Flame className="w-3.5 h-3.5 text-amber-400" />
-              <span>{questions.length} GATE PYQs</span>
+              <span>{rawTopicQuestions.length} Total PYQs</span>
             </span>
-            {stats.percentage === 100 && questions.length > 0 && (
+            {stats.percentage === 100 && sortedQuestions.length > 0 && (
               <span className="flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-500/40 animate-pulse">
                 <Award className="w-3.5 h-3.5 text-emerald-400" />
                 <span>100% Mastered</span>
@@ -249,13 +290,13 @@ export const PYQModal: React.FC<PYQModalProps> = ({
         </div>
       </header>
 
-      {/* Toolbar: Filter Tabs, Search & Layout Switcher */}
-      <div className="px-6 sm:px-10 lg:px-12 py-4 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-xl shrink-0 flex flex-col xl:flex-row xl:items-center justify-between gap-4 z-10">
-        {/* Filter Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 xl:pb-0 custom-scrollbar">
+      {/* Toolbar: Filter Tabs & Year Range Presets */}
+      <div className="px-6 sm:px-10 lg:px-12 py-3.5 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-xl shrink-0 space-y-3 z-10">
+        {/* Row 1: Status Filter Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
           {[
-            { id: 'all', label: 'All Questions', count: questions.length },
-            { id: 'active', label: 'Pending', count: questions.length - stats.completed },
+            { id: 'all', label: 'All Questions', count: sortedQuestions.length },
+            { id: 'active', label: 'Pending', count: sortedQuestions.length - stats.completed },
             { id: 'completed', label: 'Done', count: stats.completed },
             { id: 'doubts', label: 'Doubts ⭐', count: stats.doubts },
             { id: 'easy', label: 'Easy', count: stats.easy },
@@ -267,7 +308,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
               key={tab.id}
               onClick={() => setActiveTab(tab.id as PYQFilterTab)}
               className={clsx(
-                'flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all select-none',
+                'flex items-center gap-2 px-3.5 py-1.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all select-none',
                 activeTab === tab.id
                   ? 'bg-brand-500/20 text-brand-300 border border-brand-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/80 border border-transparent'
@@ -288,85 +329,130 @@ export const PYQModal: React.FC<PYQModalProps> = ({
           ))}
         </div>
 
-        {/* Right Section: Search & Actions */}
-        <div className="flex items-center gap-3 shrink-0 flex-wrap">
-          {/* Search Box */}
-          <div className="relative flex-1 sm:w-64">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search year (e.g. 2023) or #..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-9 py-2 text-xs rounded-2xl bg-slate-900/90 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition-all shadow-inner"
-            />
-            {searchQuery && (
+        {/* Row 2: Year Filters, Sort, Search & Controls */}
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pt-1 border-t border-slate-900">
+          {/* Year Range Presets (Saved Site-Wide) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 xl:pb-0 custom-scrollbar">
+            <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1 shrink-0">
+              <Calendar className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Years:</span>
+            </div>
+            {YEAR_FILTER_OPTIONS.map((opt) => {
+              const isSelected = yearFilter === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => handleYearFilterChange(opt.id)}
+                  className={clsx(
+                    'px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition-all select-none border',
+                    isSelected
+                      ? 'bg-indigo-950 text-indigo-200 border-indigo-500/60 shadow-sm ring-1 ring-indigo-400/30 font-bold'
+                      : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                  )}
+                  title={`Show questions from ${opt.desc} (Saved site-wide)`}
+                >
+                  <span>{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right Section: Sort Toggle, Search, View Mode & Batch Actions */}
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap justify-between xl:justify-end">
+            {/* Sort Toggle (Newest vs Oldest) */}
+            <button
+              onClick={() => setSortOrder((prev) => (prev === 'newest' ? 'oldest' : 'newest'))}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-800 transition-all select-none"
+              title="Toggle sort order"
+            >
+              <ArrowUpDown className="w-3.5 h-3.5 text-brand-400" />
+              <span>{sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}</span>
+            </button>
+
+            {/* Search Box */}
+            <div className="relative flex-1 sm:w-56">
+              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search year or #..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-8 py-1.5 text-xs rounded-xl bg-slate-900/90 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition-all shadow-inner"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            {/* View Mode: Grid vs List */}
+            <div className="flex items-center bg-slate-900/90 p-0.5 rounded-xl border border-slate-800">
               <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                onClick={() => setViewMode('grid')}
+                className={clsx(
+                  'p-1.5 rounded-lg text-xs transition-all',
+                  viewMode === 'grid'
+                    ? 'bg-slate-800 text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-300'
+                )}
+                title="Grid View"
               >
-                <X className="w-3.5 h-3.5" />
+                <LayoutGrid className="w-3.5 h-3.5" />
               </button>
-            )}
-          </div>
+              <button
+                onClick={() => setViewMode('list')}
+                className={clsx(
+                  'p-1.5 rounded-lg text-xs transition-all',
+                  viewMode === 'list'
+                    ? 'bg-slate-800 text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-300'
+                )}
+                title="List View"
+              >
+                <List className="w-3.5 h-3.5" />
+              </button>
+            </div>
 
-          {/* View Mode Toggle: Grid vs List */}
-          <div className="flex items-center bg-slate-900/90 p-1 rounded-2xl border border-slate-800">
+            {/* Mark All Solved */}
             <button
-              onClick={() => setViewMode('grid')}
-              className={clsx(
-                'p-2 rounded-xl text-xs font-bold transition-all',
-                viewMode === 'grid'
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-300'
-              )}
-              title="Grid View"
+              onClick={handleMarkAllCompleted}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-emerald-950/60 text-slate-300 hover:text-emerald-300 border border-slate-800 hover:border-emerald-500/40 transition-all shrink-0 active:scale-95"
+              title="Mark all filtered questions in this topic as solved"
             >
-              <LayoutGrid className="w-4 h-4" />
+              Mark All Done
             </button>
+
+            {/* Reset Progress */}
             <button
-              onClick={() => setViewMode('list')}
-              className={clsx(
-                'p-2 rounded-xl text-xs font-bold transition-all',
-                viewMode === 'list'
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-300'
-              )}
-              title="List View"
+              onClick={handleResetTopicProgress}
+              className="p-2 rounded-xl bg-slate-900 hover:bg-rose-950/60 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-500/40 transition-all shrink-0 active:scale-95"
+              title="Reset progress for this topic"
             >
-              <List className="w-4 h-4" />
+              <RotateCcw className="w-3.5 h-3.5" />
             </button>
           </div>
-
-          {/* Mark All Done */}
-          <button
-            onClick={handleMarkAllCompleted}
-            className="px-4 py-2 rounded-2xl text-xs font-bold bg-slate-900 hover:bg-emerald-950/60 text-slate-300 hover:text-emerald-300 border border-slate-800 hover:border-emerald-500/40 transition-all shrink-0 active:scale-95"
-            title="Mark all questions in this topic as solved"
-          >
-            Mark All Solved
-          </button>
-
-          {/* Reset Topic Progress */}
-          <button
-            onClick={handleResetTopicProgress}
-            className="p-2.5 rounded-2xl bg-slate-900 hover:bg-rose-950/60 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-500/40 transition-all shrink-0 active:scale-95"
-            title="Reset progress for this topic"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
       {/* Main Full-Screen Workspace Body */}
       <main className="flex-1 overflow-y-auto px-6 sm:px-10 lg:px-12 py-8 custom-scrollbar">
-        {questions.length === 0 ? (
+        {sortedQuestions.length === 0 ? (
           <div className="max-w-md mx-auto py-24 text-center">
             <BookOpen className="w-16 h-16 mx-auto text-slate-700 mb-4 stroke-1" />
-            <h3 className="text-xl font-bold text-slate-200">No PYQ questions linked yet</h3>
+            <h3 className="text-xl font-bold text-slate-200">No questions found in this year range</h3>
             <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-              Questions for this topic will appear as they are indexed from the question database.
+              Try selecting <strong>All Years</strong> or changing your year filter.
             </p>
+            <button
+              onClick={() => handleYearFilterChange('all')}
+              className="mt-4 px-5 py-2 rounded-2xl bg-indigo-950 text-indigo-300 text-xs font-bold border border-indigo-500/40 hover:bg-indigo-900/60 transition-all"
+            >
+              Show All Years
+            </button>
           </div>
         ) : filteredQuestions.length === 0 ? (
           <div className="max-w-md mx-auto py-20 text-center">
@@ -378,7 +464,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
               }}
               className="mt-4 px-5 py-2 rounded-2xl bg-slate-900 text-xs font-bold text-brand-300 border border-slate-800 hover:border-brand-500 transition-all"
             >
-              Clear All Filters
+              Clear Filters
             </button>
           </div>
         ) : activeTab === 'all' ? (
@@ -392,7 +478,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
                     <span>Active Questions ({activeQuestions.length})</span>
                   </h2>
                   <span className="text-xs text-slate-500 font-mono">
-                    Click any card to open on GateOverflow
+                    Sorted by {sortOrder === 'newest' ? 'Newest to Oldest' : 'Oldest to Newest'}
                   </span>
                 </div>
 
@@ -412,6 +498,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
                       onToggleCompleted={handleToggleCompleted}
                       onSetDifficulty={handleSetDifficulty}
                       onToggleDoubt={handleToggleDoubt}
+                      layout={viewMode}
                     />
                   ))}
                 </div>
@@ -450,6 +537,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
                         onToggleCompleted={handleToggleCompleted}
                         onSetDifficulty={handleSetDifficulty}
                         onToggleDoubt={handleToggleDoubt}
+                        layout={viewMode}
                       />
                     ))}
                   </div>
@@ -475,6 +563,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
                   onToggleCompleted={handleToggleCompleted}
                   onSetDifficulty={handleSetDifficulty}
                   onToggleDoubt={handleToggleDoubt}
+                  layout={viewMode}
                 />
               ))}
             </div>
@@ -483,15 +572,19 @@ export const PYQModal: React.FC<PYQModalProps> = ({
       </main>
 
       {/* Fullscreen Footer / Status Bar */}
-      <footer className="px-6 sm:px-10 lg:px-12 py-3.5 border-t border-slate-800/80 bg-slate-950/90 text-xs text-slate-400 flex items-center justify-between shrink-0">
+      <footer className="px-6 sm:px-10 lg:px-12 py-3 border-t border-slate-800/80 bg-slate-950/90 text-xs text-slate-400 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4 flex-wrap">
           <span>
             Showing <strong className="text-white">{filteredQuestions.length}</strong> of{' '}
-            <strong className="text-white">{questions.length}</strong> questions
+            <strong className="text-white">{rawTopicQuestions.length}</strong> total questions
           </span>
           <span className="hidden sm:inline text-slate-600">•</span>
           <span className="hidden sm:inline">
-            Press <kbd className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-300 font-mono text-[11px]">Esc</kbd> to exit fullscreen
+            Year filter: <strong className="text-indigo-300">{YEAR_FILTER_OPTIONS.find((o) => o.id === yearFilter)?.label}</strong> (Saved Site-Wide)
+          </span>
+          <span className="hidden sm:inline text-slate-600">•</span>
+          <span className="hidden sm:inline">
+            Press <kbd className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-300 font-mono text-[11px]">Esc</kbd> to exit
           </span>
         </div>
 

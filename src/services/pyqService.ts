@@ -1,13 +1,31 @@
-import { PYQQuestion, PYQProgressMap, TopicPYQSummary } from '../types/pyq';
+﻿import { PYQQuestion, PYQProgressMap, TopicPYQSummary, PYQYearFilter } from '../types/pyq';
 import rawQuestions from '../data/pyqQuestions.json';
 
 const PYQ_PROGRESS_STORAGE_KEY = 'topic_master_pyq_progress_v1';
+const PYQ_YEAR_FILTER_STORAGE_KEY = 'topic_master_pyq_year_filter_v1';
 
 export const ALL_PYQ_QUESTIONS: PYQQuestion[] = rawQuestions as PYQQuestion[];
 
 // Normalized lookup helpers
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// Extract numerical year from "GATE 2024", "1987", etc.
+export function extractYearNumber(yearStr: string): number {
+  if (!yearStr) return 0;
+  const match = yearStr.match(/\d{4}/);
+  return match ? parseInt(match[0], 10) : 0;
+}
+
+// Sort questions newest first (e.g. 2024 -> 1987)
+export function sortQuestionsNewestFirst(questions: PYQQuestion[]): PYQQuestion[] {
+  return [...questions].sort((a, b) => {
+    const yearA = extractYearNumber(a.year);
+    const yearB = extractYearNumber(b.year);
+    if (yearB !== yearA) return yearB - yearA; // Newest first
+    return a.questionNumber - b.questionNumber;
+  });
 }
 
 // Custom aliases for intelligent fuzzy matching between Topic Master titles and JSON chapter names
@@ -84,24 +102,86 @@ export function matchQuestionToTopic(
 }
 
 /**
- * Retrieve questions for a specific topic (and optionally all its subtopics)
+ * Retrieve questions for a specific topic (and optionally all its subtopics), always sorted newest to oldest
  */
 export function getQuestionsForTopic(
   subjectName: string,
   topicName: string,
   subtopicNames: string[] = []
 ): PYQQuestion[] {
-  return ALL_PYQ_QUESTIONS.filter((q) =>
+  const matched = ALL_PYQ_QUESTIONS.filter((q) =>
     matchQuestionToTopic(q, subjectName, topicName, subtopicNames)
   );
+  return sortQuestionsNewestFirst(matched);
 }
 
 /**
- * Retrieve all questions for a subject
+ * Retrieve all questions for a subject, sorted newest to oldest
  */
 export function getQuestionsForSubject(subjectName: string): PYQQuestion[] {
   const normSubj = normalize(subjectName);
-  return ALL_PYQ_QUESTIONS.filter((q) => normalize(q.subject) === normSubj);
+  const matched = ALL_PYQ_QUESTIONS.filter((q) => normalize(q.subject) === normSubj);
+  return sortQuestionsNewestFirst(matched);
+}
+
+/**
+ * Filter questions based on year range filter
+ */
+export function filterQuestionsByYear(
+  questions: PYQQuestion[],
+  filter: PYQYearFilter
+): PYQQuestion[] {
+  if (filter === 'all') return questions;
+
+  return questions.filter((q) => {
+    const y = extractYearNumber(q.year);
+    if (!y) return true;
+    switch (filter) {
+      case 'last_5_years':
+        return y >= 2020;
+      case 'last_10_years':
+        return y >= 2015;
+      case 'last_15_years':
+        return y >= 2010;
+      case '2008_2026':
+        return y >= 2008 && y <= 2026;
+      case 'older_than_2000':
+        return y < 2000;
+      default:
+        return true;
+    }
+  });
+}
+
+/**
+ * Load PYQ year filter from localStorage (remembered site-wide)
+ */
+export function loadPYQYearFilter(): PYQYearFilter {
+  try {
+    const saved = localStorage.getItem(PYQ_YEAR_FILTER_STORAGE_KEY) as PYQYearFilter;
+    if (
+      saved &&
+      ['all', 'last_5_years', 'last_10_years', 'last_15_years', '2008_2026', 'older_than_2000'].includes(
+        saved
+      )
+    ) {
+      return saved;
+    }
+  } catch (err) {
+    console.error('Failed to load PYQ year filter from storage:', err);
+  }
+  return 'all';
+}
+
+/**
+ * Save PYQ year filter to localStorage
+ */
+export function savePYQYearFilter(filter: PYQYearFilter): void {
+  try {
+    localStorage.setItem(PYQ_YEAR_FILTER_STORAGE_KEY, filter);
+  } catch (err) {
+    console.error('Failed to save PYQ year filter to storage:', err);
+  }
 }
 
 /**

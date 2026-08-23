@@ -1,4 +1,12 @@
-﻿export type PYQDifficultyStatus = 'none' | 'easy' | 'medium' | 'hard' | 'skip';
+export type PYQDifficultyStatus = 'none' | 'easy' | 'medium' | 'hard' | 'skip';
+
+export type PYQYearFilter =
+  | 'all'
+  | 'last_5_years'
+  | 'last_10_years'
+  | 'last_15_years'
+  | '2008_2026'
+  | 'older_than_2000';
 
 export interface PYQQuestion {
   id: string; // GateOverflow question ID (e.g. "80194")
