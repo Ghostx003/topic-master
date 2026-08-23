@@ -291,54 +291,56 @@ export const INITIAL_TOPICS: Topic[] = [
   //    Organized into 6 GATE syllabus chapters with subtopics
   // =========================================================================
 
-  // --- Chapter 1: Processes, Threads & System Calls (10 PYQs) ---
-  makeTopic('os-ch-proc', 'subj-os', null, 'Processes, Threads & System Calls', 'Process states, PCB, user/kernel level threads, system calls fork/exec, and context switching (10 PYQs).', 1, true),
-  makeTopic('os-9', 'subj-os', 'os-ch-proc', 'Threads & Concurrency', 'User-level threads vs Kernel-level threads, thread synchronization, thread control blocks (10 PYQs).', 1, true, 10),
-  makeTopic('os-sub-lifecycle', 'subj-os', 'os-ch-proc', 'Process States & PCB', '5-state process model (New, Ready, Running, Waiting, Terminated), Process Control Block (PCB) structure.', 2, false),
-  makeTopic('os-sub-syscall', 'subj-os', 'os-ch-proc', 'System Calls & OS Architecture', 'fork() process creation tree calculations, exec(), wait(), exit(), pipe(), monolithic vs microkernel.', 3, false),
-  makeTopic('os-sub-context', 'subj-os', 'os-ch-proc', 'Context Switching & Dispatcher', 'CPU register saving, state restoration, dispatcher latency, preemptive vs non-preemptive switching.', 4, false),
-  makeTopic('os-sub-ipc', 'subj-os', 'os-ch-proc', 'Inter-Process Communication (IPC)', 'Shared memory architecture, message passing queues, socket communication, anonymous and named pipes.', 5, false),
+  // --- Chapter 1: Processes, Threads & System Calls (32 PYQs) ---
+  makeTopic('os-ch-proc', 'subj-os', null, 'Processes, Threads & System Calls', 'Process states, PCB, user/kernel threads, fork/exec system calls, context switching, and IPC (32 PYQs).', 1, true),
+  makeTopic('os-9', 'subj-os', 'os-ch-proc', 'Threads', 'User-level threads vs Kernel-level threads, multithreading models, thread control blocks (10 PYQs).', 1, true, 10),
+  makeTopic('os-sub-fork', 'subj-os', 'os-ch-proc', 'Fork System Call', 'fork() process creation tree calculations, return value 0/PID, parent-child processes (8 PYQs).', 2, true, 8),
+  makeTopic('os-sub-proc', 'subj-os', 'os-ch-proc', 'Process', '5-state process model (New, Ready, Running, Waiting, Terminated), Process Control Block (PCB) (5 PYQs).', 3, true, 5),
+  makeTopic('os-sub-context', 'subj-os', 'os-ch-proc', 'Context Switch', 'CPU register saving, state restoration, dispatcher latency, preemptive vs non-preemptive switching (4 PYQs).', 4, true, 4),
+  makeTopic('os-sub-protect', 'subj-os', 'os-ch-proc', 'OS Protection', 'User mode vs Kernel mode, privileged instructions, dual-mode operation, memory protection (3 PYQs).', 5, true, 3),
+  makeTopic('os-sub-ipc', 'subj-os', 'os-ch-proc', 'Inter Process Communication', 'Shared memory architecture, message passing queues, socket communication, pipes (1 PYQ).', 6, true, 1),
+  makeTopic('os-sub-syscall', 'subj-os', 'os-ch-proc', 'System Calls', 'System call interface, trap instructions, standard system calls exec(), wait(), exit() (1 PYQ).', 7, true, 1),
 
-  // --- Chapter 2: CPU Scheduling (49 PYQs) ---
-  makeTopic('os-ch-sched', 'subj-os', null, 'CPU Scheduling', 'Scheduling algorithms FCFS, SJF, SRTF, Round Robin, priority scheduling, and multi-level queues (49 PYQs).', 2, true),
-  makeTopic('os-2', 'subj-os', 'os-ch-sched', 'Process Scheduling', 'CPU Scheduling algorithms (FCFS, Non-preemptive/Preemptive SJF / SRTF, Round Robin with quantum, Priority) (49 PYQs).', 1, true, 49),
-  makeTopic('os-sub-mlq', 'subj-os', 'os-ch-sched', 'Multi-Level Queue Scheduling', 'Multi-Level Queue (MLQ), Multi-Level Feedback Queue (MLFQ) with aging to prevent starvation.', 2, false),
-  makeTopic('os-sub-metrics', 'subj-os', 'os-ch-sched', 'Scheduling Performance Metrics', 'Gantt chart construction, Turnaround Time (TAT = CT - AT), Waiting Time (WT = TAT - BT), Response Time.', 3, false),
-  makeTopic('os-sub-realtime', 'subj-os', 'os-ch-sched', 'Real-Time Scheduling', 'Rate Monotonic Scheduling (RMS) static priority, Earliest Deadline First (EDF) dynamic priority bounds.', 4, false),
+  // --- Chapter 2: CPU Scheduling (51 PYQs) ---
+  makeTopic('os-ch-sched', 'subj-os', null, 'CPU Scheduling', 'Scheduling algorithms FCFS, SJF, SRTF, Round Robin, priority scheduling, and multi-level queues (51 PYQs).', 2, true),
+  makeTopic('os-2', 'subj-os', 'os-ch-sched', 'Process Scheduling', 'CPU Scheduling algorithms (FCFS, Non-preemptive/Preemptive SJF, Priority Scheduling, Gantt charts) (49 PYQs).', 1, true, 49),
+  makeTopic('os-sub-rr', 'subj-os', 'os-ch-sched', 'Round Robin Scheduling', 'Time quantum sizing, context switch overhead, queue management, turnaround and waiting time (1 PYQ).', 2, true, 1),
+  makeTopic('os-sub-srtf', 'subj-os', 'os-ch-sched', 'SRTF', 'Shortest Remaining Time First preemptive scheduling, remaining burst time evaluations (1 PYQ).', 3, true, 1),
 
-  // --- Chapter 3: Process Synchronization (63 PYQs) ---
-  makeTopic('os-ch-sync', 'subj-os', null, 'Process Synchronization', 'Critical section problem, Peterson algorithm, counting/binary semaphores, and classical sync problems (63 PYQs).', 3, true),
-  makeTopic('os-1-1', 'subj-os', 'os-ch-sync', 'Peterson Algorithm & Critical Section', 'Critical Section criteria (Mutual Exclusion, Progress, Bounded Waiting), Peterson Algorithm race condition validation (26 PYQs).', 1, true, 26),
-  makeTopic('os-1-2', 'subj-os', 'os-ch-sync', 'Classical Synchronization Problems', 'Producer-Consumer (Bounded Buffer), Reader-Writer (Readers Preference / Writers Preference) synchronization (26 PYQs).', 2, true, 26),
-  makeTopic('os-8', 'subj-os', 'os-ch-sync', 'Semaphores & P/V Operations', 'Counting semaphore values, concurrent P/V wait/signal operation sequences and deadlock states (11 PYQs).', 3, true, 11),
-  makeTopic('os-sub-hw-sync', 'subj-os', 'os-ch-sync', 'Hardware Synchronization', 'Atomic instructions: Test-and-Set Lock (TSL), Compare-and-Swap (CAS), spinlocks and busy waiting.', 4, false),
-  makeTopic('os-sub-monitors', 'subj-os', 'os-ch-sync', 'Monitors & Condition Variables', 'High-level synchronization construct, condition variables wait() and signal(), Hoare vs Mesa semantics.', 5, false),
-  makeTopic('os-sub-dining', 'subj-os', 'os-ch-sync', 'Dining Philosophers Problem', 'Resource deadlock and starvation resolution, asymmetric philosopher solutions, Chandy-Misra approach.', 6, false),
+  // --- Chapter 3: Process Synchronization (66 PYQs) ---
+  makeTopic('os-ch-sync', 'subj-os', null, 'Process Synchronization', 'Critical section problem, Peterson algorithm, classical sync, semaphores, and precedence graphs (66 PYQs).', 3, true),
+  makeTopic('os-1', 'subj-os', 'os-ch-sync', 'Process Synchronization', 'Critical Section criteria (Mutual Exclusion, Progress, Bounded Waiting), Peterson Algorithm, Producer-Consumer (52 PYQs).', 1, true, 52),
+  makeTopic('os-8', 'subj-os', 'os-ch-sync', 'Semaphore', 'Counting and binary semaphore values, concurrent P/V wait/signal operation sequences and deadlock states (11 PYQs).', 2, true, 11),
+  makeTopic('os-sub-prec', 'subj-os', 'os-ch-sync', 'Precedence Graph', 'Task precedence graphs, synchronizing concurrent statements S1-Sn using semaphores (3 PYQs).', 3, true, 3),
 
-  // --- Chapter 4: Deadlocks (27 PYQs) ---
-  makeTopic('os-ch-deadlock', 'subj-os', null, 'Deadlocks', 'Necessary deadlock conditions, Resource Allocation Graphs, Banker algorithm, safety and recovery (27 PYQs).', 4, true),
-  makeTopic('os-6', 'subj-os', 'os-ch-deadlock', 'Resource Allocation & Banker Algorithm', 'Deadlock necessary conditions (Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait), Banker Algorithm (27 PYQs).', 1, true, 27),
-  makeTopic('os-sub-prevention', 'subj-os', 'os-ch-deadlock', 'Deadlock Prevention', 'Negating each of the 4 Coffman conditions: resource ordering for circular wait, spooling.', 2, false),
-  makeTopic('os-sub-avoidance', 'subj-os', 'os-ch-deadlock', 'Deadlock Avoidance & Safety State', 'Safe sequence finding, Resource Allocation Graph claim edges for single-instance resources.', 3, false),
-  makeTopic('os-sub-recovery', 'subj-os', 'os-ch-deadlock', 'Deadlock Detection & Recovery', 'Wait-For Graph (WFG) cycle detection, process termination strategies, resource preemption with rollback.', 4, false),
+  // --- Chapter 4: Deadlocks & Resource Allocation (34 PYQs) ---
+  makeTopic('os-ch-deadlock', 'subj-os', null, 'Deadlocks & Resource Allocation', 'Necessary deadlock conditions, Resource Allocation Graphs, Banker algorithm, safety and recovery (34 PYQs).', 4, true),
+  makeTopic('os-6', 'subj-os', 'os-ch-deadlock', 'Resource Allocation', 'Deadlock necessary conditions (Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait), Banker Algorithm (27 PYQs).', 1, true, 27),
+  makeTopic('os-sub-deadlock-pad', 'subj-os', 'os-ch-deadlock', 'Deadlock Prevention Avoidance Detection', 'Negating Coffman conditions, safe state sequence testing, wait-for graphs and recovery (4 PYQs).', 2, true, 4),
+  makeTopic('os-sub-banker', 'subj-os', 'os-ch-deadlock', 'Bankers Algorithm', 'Allocation matrix, Max matrix, Need matrix (Need = Max - Allocation), Available vector safety algorithm (2 PYQs).', 3, true, 2),
+  makeTopic('os-sub-rag', 'subj-os', 'os-ch-deadlock', 'Resource Allocation Graph', 'Resource Allocation Graph (RAG) cycle detection, single vs multiple instance resource deadlock (1 PYQ).', 4, true, 1),
 
-  // --- Chapter 5: Memory Management & Virtual Memory (83 PYQs) ---
-  makeTopic('os-ch-mem', 'subj-os', null, 'Memory Management & Virtual Memory', 'Paging, multi-level page tables, TLB, EMAT, page replacement algorithms, and thrashing (83 PYQs).', 5, true),
-  makeTopic('os-3', 'subj-os', 'os-ch-mem', 'Virtual Memory, TLB & EMAT', 'Demand paging, Translation Lookaside Buffer (TLB), Effective Memory Access Time (EMAT) calculations, multi-level page tables (43 PYQs).', 1, true, 43),
-  makeTopic('os-4', 'subj-os', 'os-ch-mem', 'Page Replacement Algorithms', 'FIFO, LRU, Optimal page replacement algorithms, Belady Anomaly, page fault counting on reference strings (31 PYQs).', 2, true, 31),
-  makeTopic('os-10', 'subj-os', 'os-ch-mem', 'Paging & Address Translation', 'Single-level and Multi-level paging address translation, Page Table Base Register (PTBR), internal/external fragmentation (9 PYQs).', 3, true, 9),
-  makeTopic('os-sub-alloc', 'subj-os', 'os-ch-mem', 'Contiguous Memory Allocation', 'Fixed vs dynamic partitioning, First Fit, Best Fit, Worst Fit algorithms, external fragmentation compaction.', 4, false),
-  makeTopic('os-sub-seg', 'subj-os', 'os-ch-mem', 'Segmentation & Segment Tables', 'Segment table base and limit validation, segmentation fault checks, pure segmentation vs segmented paging.', 5, false),
-  makeTopic('os-sub-thrash', 'subj-os', 'os-ch-mem', 'Thrashing & Working Set Model', 'Page fault frequency control, Peter Denning working set model Delta-window, degree of multiprogramming.', 6, false),
-  makeTopic('os-sub-inv-pt', 'subj-os', 'os-ch-mem', 'Inverted & Hashed Page Tables', 'PID + Page number indexing, hashing table address translation, saving page table memory space.', 7, false),
+  // --- Chapter 5: Memory Management & Virtual Memory (91 PYQs) ---
+  makeTopic('os-ch-mem', 'subj-os', null, 'Memory Management & Virtual Memory', 'Paging, multi-level page tables, TLB, EMAT, page replacement algorithms, and allocation policies (91 PYQs).', 5, true),
+  makeTopic('os-3', 'subj-os', 'os-ch-mem', 'Virtual Memory', 'Demand paging, Translation Lookaside Buffer (TLB), Effective Memory Access Time (EMAT) calculations, page table lookups (43 PYQs).', 1, true, 43),
+  makeTopic('os-4', 'subj-os', 'os-ch-mem', 'Page Replacement', 'FIFO, LRU, Optimal page replacement algorithms, Belady Anomaly, page fault counting on reference strings (31 PYQs).', 2, true, 31),
+  makeTopic('os-10', 'subj-os', 'os-ch-mem', 'Memory Management', 'Single-level and Multi-level paging address translation, Page Table Base Register (PTBR), fragmentation (9 PYQs).', 3, true, 9),
+  makeTopic('os-sub-demand', 'subj-os', 'os-ch-mem', 'Demand Paging', 'Pure demand paging, page fault service routine, page fault overhead and effective memory access time (3 PYQs).', 4, true, 3),
+  makeTopic('os-sub-tlb', 'subj-os', 'os-ch-mem', 'Translation Lookaside Buffer', 'TLB hit ratio, TLB miss penalty, multi-level paging EMAT = Hit*(TLB+RAM) + Miss*(TLB+(k+1)*RAM) (2 PYQs).', 5, true, 2),
+  makeTopic('os-sub-ml-page', 'subj-os', 'os-ch-mem', 'Multilevel Paging', 'Hierarchical paging, outer page table, inner page table, page directory index calculations (1 PYQ).', 6, true, 1),
+  makeTopic('os-sub-lru', 'subj-os', 'os-ch-mem', 'Least Recently Used', 'LRU stack and counter implementations, stack algorithm property, comparing LRU vs FIFO vs Optimal (1 PYQ).', 7, true, 1),
+  makeTopic('os-sub-bestfit', 'subj-os', 'os-ch-mem', 'Best Fit', 'Contiguous memory allocation policies: Best Fit, First Fit, Worst Fit, Next Fit comparisons (1 PYQ).', 8, true, 1),
 
-  // --- Chapter 6: Storage & File Systems (46 PYQs) ---
-  makeTopic('os-ch-storage', 'subj-os', null, 'Storage & File Systems', 'Disk geometry, seek times, Unix Inode pointers, and disk scheduling algorithms (46 PYQs).', 6, true),
-  makeTopic('os-5', 'subj-os', 'os-ch-storage', 'Disk Management & Unix Inodes', 'Disk geometry, Sector/Track addressing, rotational latency, transfer rate, and Unix Inode block pointer calculations (30 PYQs).', 1, true, 30),
-  makeTopic('os-7', 'subj-os', 'os-ch-storage', 'Disk Scheduling Algorithms', 'FCFS, SSTF, SCAN (Elevator), C-SCAN, LOOK, C-LOOK seek time track movement calculations (16 PYQs).', 2, true, 16),
-  makeTopic('os-sub-file-alloc', 'subj-os', 'os-ch-storage', 'File Allocation Methods', 'Contiguous allocation, Linked allocation with FAT (File Allocation Table), and Indexed allocation.', 3, false),
-  makeTopic('os-sub-free-space', 'subj-os', 'os-ch-storage', 'Free Space Management', 'Bit vector / bitmap representation, linked free space list, grouping and counting free blocks.', 4, false),
-  makeTopic('os-sub-raid', 'subj-os', 'os-ch-storage', 'RAID Levels & Performance', 'RAID 0 (striping), RAID 1 (mirroring), RAID 5 (distributed parity), RAID 6, and nested RAID 10.', 5, false),
+  // --- Chapter 6: Storage, File Systems & I/O (69 PYQs) ---
+  makeTopic('os-ch-storage', 'subj-os', null, 'Storage, File Systems & I/O', 'Disk geometry, seek times, Unix Inode pointers, disk scheduling algorithms, and I/O handling (69 PYQs).', 6, true),
+  makeTopic('os-5', 'subj-os', 'os-ch-storage', 'Disk', 'Disk geometry, Sector/Track addressing, rotational latency, transfer rate, and Unix Inode block pointer calculations (30 PYQs).', 1, true, 30),
+  makeTopic('os-7', 'subj-os', 'os-ch-storage', 'Disk Scheduling', 'FCFS, SSTF, SCAN (Elevator), C-SCAN, LOOK, C-LOOK seek time track movement calculations (16 PYQs).', 2, true, 16),
+  makeTopic('os-sub-fs', 'subj-os', 'os-ch-storage', 'File System', 'Directory structures, file control blocks, file access methods, file attributes and mounting (7 PYQs).', 3, true, 7),
+  makeTopic('os-sub-io', 'subj-os', 'os-ch-storage', 'IO Handling', 'Programmed I/O, Interrupt-Driven I/O, I/O subsystem kernel services, device drivers and controllers (7 PYQs).', 4, true, 7),
+  makeTopic('os-sub-intr', 'subj-os', 'os-ch-storage', 'Interrupts', 'Hardware vs software interrupts, interrupt service routines (ISR), interrupt vector table, priority masking (6 PYQs).', 5, true, 6),
+  makeTopic('os-sub-dma', 'subj-os', 'os-ch-storage', 'DMA', 'Direct Memory Access controller architecture, bus master, cycle stealing vs burst transfer modes (1 PYQ).', 6, true, 1),
+  makeTopic('os-sub-linked', 'subj-os', 'os-ch-storage', 'Linked Allocation', 'Linked list allocation of disk blocks, File Allocation Table (FAT), pointer overhead and sequential access (1 PYQ).', 7, true, 1),
+  makeTopic('os-sub-io-op', 'subj-os', 'os-ch-storage', 'Input Output', 'Memory-mapped I/O vs Port-mapped (isolated) I/O, synchronous vs asynchronous I/O operations (1 PYQ).', 8, true, 1),
 
   // =========================================================================
   // 6. DISCRETE MATHEMATICS (subj-dm) - 390 Total PYQs

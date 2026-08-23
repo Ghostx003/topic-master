@@ -66,8 +66,12 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
   }, [activeMenuTopicId]);
 
   const subjectPYQs = useMemo(() => {
-    return subject.Subject_PYQ_Count || INITIAL_SUBJECTS.find((s) => s.id === subject.id)?.Subject_PYQ_Count || 0;
-  }, [subject]);
+    const rootTopics = topics.filter((t) => t.Subject_Id === subject.id && !t.Parent_Id);
+    const liveSum = rootTopics.length > 0
+      ? rootTopics.reduce((acc, t) => acc + getAuthoritativeTopicPYQ(t, topics), 0)
+      : 0;
+    return liveSum > 0 ? liveSum : (subject.Subject_PYQ_Count || INITIAL_SUBJECTS.find((s) => s.id === subject.id)?.Subject_PYQ_Count || 0);
+  }, [topics, subject]);
 
   const getNodePYQ = (node: TopicTreeNodeType): number => {
     return getAuthoritativeTopicPYQ(node, topics);

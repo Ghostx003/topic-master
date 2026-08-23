@@ -1,6 +1,7 @@
 import React from 'react';
 import { Subject } from '../../types/subject';
 import { INITIAL_SUBJECTS } from '../../utils/sampleData';
+import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
 import { SubjectImportancePill } from '../common/SubjectImportancePill';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { calculateTopicProgress } from '../../utils/hierarchyUtils';
@@ -119,7 +120,11 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onEdit, onDel
             size="md"
           />
           {(() => {
-            const pyqCount = subject.Subject_PYQ_Count || INITIAL_SUBJECTS.find((s) => s.id === subject.id)?.Subject_PYQ_Count;
+            const rootTopics = topics.filter((t) => t.Subject_Id === subject.id && !t.Parent_Id);
+            const liveSum = rootTopics.length > 0
+              ? rootTopics.reduce((acc, t) => acc + getAuthoritativeTopicPYQ(t, topics), 0)
+              : 0;
+            const pyqCount = liveSum > 0 ? liveSum : (subject.Subject_PYQ_Count || INITIAL_SUBJECTS.find((s) => s.id === subject.id)?.Subject_PYQ_Count);
             if (!pyqCount) return null;
             return (
               <span
