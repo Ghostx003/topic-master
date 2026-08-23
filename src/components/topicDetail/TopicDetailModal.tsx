@@ -25,7 +25,6 @@ export const TopicDetailModal: React.FC = () => {
     topics,
     updateTopic,
     deleteTopic,
-    addTopic,
   } = useTopicMaster();
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -60,18 +59,6 @@ export const TopicDetailModal: React.FC = () => {
     e.preventDefault();
     updateTopic(selectedTopicForModal.id, { Topic_Description: editedDesc.trim() });
     setIsEditingDesc(false);
-  };
-
-  const handleAddChildSubtopic = (parentId: string) => {
-    const defaultName = prompt('Enter Subtopic Name:');
-    if (defaultName && defaultName.trim()) {
-      const newChild = addTopic({
-        Subject_Id: selectedTopicForModal.Subject_Id,
-        Parent_Id: parentId,
-        Topic_Name: defaultName.trim(),
-      });
-      openTopicDetailModal(newChild.id);
-    }
   };
 
   return (
@@ -208,7 +195,6 @@ export const TopicDetailModal: React.FC = () => {
           <SubtopicsList
             topic={selectedTopicForModal}
             onSelectSubtopic={(childId) => openTopicDetailModal(childId)}
-            onAddSubtopic={handleAddChildSubtopic}
           />
 
           {/* Topic Tags Bar (10 Tags System) */}
