@@ -17,7 +17,7 @@ import {
   Flame,
 } from 'lucide-react';
 import { formatHours } from '../../utils/timeUtils';
-import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
+import { getAuthoritativeTopicPYQ, getPyqBadgeStyle } from '../../utils/pyqUtils';
 import { clsx } from 'clsx';
 
 export interface SubtopicsListProps {
@@ -216,13 +216,14 @@ export const SubtopicsList: React.FC<SubtopicsListProps> = ({
                     {(() => {
                       const pyqCount = getAuthoritativeTopicPYQ(child, topics);
                       if (!pyqCount || pyqCount <= 0) return null;
+                      const badge = getPyqBadgeStyle(pyqCount);
                       return (
                         <span
-                          className="flex items-center gap-1 text-[10px] font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded-lg shadow-sm"
+                          className={`flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border ${badge.wrapper}`}
                           title={`${pyqCount} Historical PYQs in GATE CSE`}
                         >
-                          <Flame className="w-3 h-3 text-amber-400" />
-                          <span>{pyqCount} PYQs</span>
+                          <Flame className={`w-3 h-3 ${badge.icon}`} />
+                          <span className={badge.label}>{pyqCount} PYQs</span>
                         </span>
                       );
                     })()}

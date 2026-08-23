@@ -245,3 +245,39 @@ export function getAuthoritativeTopicPYQ(
   // 6. Unknown / custom-created topic → return 0, never fabricate counts
   return 0;
 }
+
+/**
+ * Returns Tailwind class strings for color-coded PYQ badge.
+ * 🔴 30+   Ultra High Yield  → red
+ * 🟡 15-29 High Yield        → amber/yellow
+ * 🟢 1-14  Core Concepts     → emerald/green
+ */
+export function getPyqBadgeStyle(pyqCount: number): {
+  wrapper: string;
+  icon: string;
+  label: string;
+} {
+  if (pyqCount >= 30) {
+    return {
+      wrapper:
+        'bg-rose-950/70 border-rose-500/50 shadow-[0_0_12px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/20',
+      icon: 'text-rose-400',
+      label: 'text-rose-200',
+    };
+  }
+  if (pyqCount >= 15) {
+    return {
+      wrapper:
+        'bg-amber-950/70 border-amber-500/50 shadow-[0_0_12px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/20',
+      icon: 'text-amber-400',
+      label: 'text-amber-200',
+    };
+  }
+  // 1–14: green
+  return {
+    wrapper:
+      'bg-emerald-950/70 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)] ring-1 ring-emerald-500/20',
+    icon: 'text-emerald-400',
+    label: 'text-emerald-200',
+  };
+}

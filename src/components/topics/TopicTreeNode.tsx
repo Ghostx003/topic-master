@@ -3,7 +3,7 @@ import { TopicTreeNodeType, TopicTags } from '../../types/topic';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { TopicTagBadge } from '../common/TopicTagBadge';
 import { getAllDescendantIds } from '../../utils/hierarchyUtils';
-import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
+import { getAuthoritativeTopicPYQ, getPyqBadgeStyle } from '../../utils/pyqUtils';
 import {
   ChevronRight,
   ChevronDown,
@@ -523,13 +523,14 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                 {(() => {
                   const pyqCount = getAuthoritativeTopicPYQ(node, topics);
                   if (!pyqCount || pyqCount <= 0) return null;
+                  const badge = getPyqBadgeStyle(pyqCount);
                   return (
                     <span
-                      className="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-500/30 px-2.5 py-0.5 rounded-xl shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.15)]"
+                      className={`flex items-center gap-1 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-xl shrink-0 border ${badge.wrapper}`}
                       title={`${pyqCount} Previous Year Questions in GATE CSE`}
                     >
-                      <Flame className="w-3 h-3 text-amber-400" />
-                      <span>{pyqCount} PYQs</span>
+                      <Flame className={`w-3 h-3 ${badge.icon}`} />
+                      <span className={badge.label}>{pyqCount} PYQs</span>
                     </span>
                   );
                 })()}

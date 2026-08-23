@@ -8,7 +8,7 @@ import { ContentBlockList } from './ContentBlockList';
 import { TopicTagBadge } from '../common/TopicTagBadge';
 import { getTopicPath, getDirectChildren } from '../../utils/hierarchyUtils';
 import { formatHours } from '../../utils/timeUtils';
-import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
+import { getAuthoritativeTopicPYQ, getPyqBadgeStyle } from '../../utils/pyqUtils';
 import {
   BookOpen,
   ChevronRight,
@@ -179,13 +179,14 @@ export const TopicDetailModal: React.FC = () => {
                 {(() => {
                   const pyqCount = getAuthoritativeTopicPYQ(selectedTopicForModal, topics);
                   if (!pyqCount || pyqCount <= 0) return null;
+                  const badge = getPyqBadgeStyle(pyqCount);
                   return (
                     <span
-                      className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-500/40 px-3 py-1 rounded-xl shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+                      className={`flex items-center gap-1.5 text-xs font-mono font-bold px-3 py-1 rounded-xl border ${badge.wrapper}`}
                       title={`${pyqCount} Historical Previous Year Questions in GATE CSE`}
                     >
-                      <Flame className="w-3.5 h-3.5 text-amber-400 fill-current" />
-                      <span>{pyqCount} PYQs</span>
+                      <Flame className={`w-3.5 h-3.5 ${badge.icon} fill-current`} />
+                      <span className={badge.label}>{pyqCount} PYQs</span>
                     </span>
                   );
                 })()}

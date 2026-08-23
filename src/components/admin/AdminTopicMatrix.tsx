@@ -11,7 +11,7 @@ import { Subject } from '../../types/subject';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { formatDate } from '../../utils/timeUtils';
 import { INITIAL_TOPICS } from '../../utils/sampleData';
-import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
+import { getAuthoritativeTopicPYQ, getPyqBadgeStyle } from '../../utils/pyqUtils';
 import {
   Check,
   Star,
@@ -515,12 +515,15 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
                               Subtopic
                             </span>
                           )}
-                          {pyqs > 0 && (
-                            <span className="flex items-center gap-0.5 text-[9px] font-mono font-bold text-amber-300 bg-amber-950/40 border border-amber-500/30 px-1.5 rounded">
-                              <Flame className="w-2.5 h-2.5 text-amber-400" />
-                              <span>{pyqs} PYQs</span>
-                            </span>
-                          )}
+                          {pyqs > 0 && (() => {
+                            const badge = getPyqBadgeStyle(pyqs);
+                            return (
+                              <span className={`flex items-center gap-0.5 text-[9px] font-mono font-bold px-1.5 rounded border ${badge.wrapper}`}>
+                                <Flame className={`w-2.5 h-2.5 ${badge.icon}`} />
+                                <span className={badge.label}>{pyqs} PYQs</span>
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
                     </td>
