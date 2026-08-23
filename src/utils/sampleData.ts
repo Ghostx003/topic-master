@@ -346,7 +346,7 @@ export const INITIAL_TOPICS: Topic[] = [
   // =========================================================================
 
   // --- Parent: Combinatory (51 PYQs) ---
-  makeTopic('dm-comb', 'subj-dm', null, 'Combinatory', 'Permutations, combinations, recurrence relations, generating functions, and counting techniques (51 PYQs).', 1, true, 51),
+  makeTopic('dm-comb', 'subj-dm', null, 'Combinatory', 'Permutations, combinations, recurrence relations, generating functions, and counting techniques (51 PYQs).', 1, true),
   makeTopic('dm-1', 'subj-dm', 'dm-comb', 'Combinatory', 'Permutations & Combinations, Binomial theorem, inclusion-exclusion principle (18 PYQs).', 1, true, 18),
   makeTopic('dm-2', 'subj-dm', 'dm-comb', 'Recurrence Relation', 'Solving linear homogeneous and non-homogeneous recurrence relations, characteristic roots (7 PYQs).', 2, true, 7),
   makeTopic('dm-3', 'subj-dm', 'dm-comb', 'Balls In Bins', 'Distributing distinct/identical objects into distinct/identical bins, stars and bars (6 PYQs).', 3, true, 6),
@@ -357,7 +357,7 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic('dm-8', 'subj-dm', 'dm-comb', 'Pigeonhole Principle', 'Generalized pigeonhole principle ceil(N/k), minimum elements to guarantee duplicates (2 PYQs).', 8, true, 2),
 
   // --- Parent: Graph Theory (88 PYQs) ---
-  makeTopic('dm-graph', 'subj-dm', null, 'Graph Theory', 'Connectivity, degree sequences, planarity, coloring, isomorphism, and matching (88 PYQs).', 2, true, 88),
+  makeTopic('dm-graph', 'subj-dm', null, 'Graph Theory', 'Connectivity, degree sequences, planarity, coloring, isomorphism, and matching (88 PYQs).', 2, true),
   makeTopic('dm-9', 'subj-dm', 'dm-graph', 'Graph Connectivity', 'Connected components, cut vertices, cut edges, bridges, Eulerian paths/circuits, Hamiltonian cycles (40 PYQs).', 1, true, 40),
   makeTopic('dm-10', 'subj-dm', 'dm-graph', 'Degree of Graph', 'Handshaking Lemma (Sum of degrees = 2|E|), degree sequences, Havel-Hakimi theorem (13 PYQs).', 2, true, 13),
   makeTopic('dm-11', 'subj-dm', 'dm-graph', 'Graph Planarity', 'Planar graphs, Euler formula V - E + F = 2, maximal planar graph edges E <= 3V - 6 (13 PYQs).', 3, true, 13),
@@ -369,13 +369,13 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic('dm-16b', 'subj-dm', 'dm-graph', 'Jaccard Coefficient', 'Graph vertex neighborhood similarity metric and link prediction (1 PYQ).', 9, true, 1),
 
   // --- Parent: Mathematical Logic (78 PYQs) ---
-  makeTopic('dm-logic', 'subj-dm', null, 'Mathematical Logic', 'Propositional logic, first-order predicate calculus, inference rules, and logical deductions (78 PYQs).', 3, true, 78),
+  makeTopic('dm-logic', 'subj-dm', null, 'Mathematical Logic', 'Propositional logic, first-order predicate calculus, inference rules, and logical deductions (78 PYQs).', 3, true),
   makeTopic('dm-17', 'subj-dm', 'dm-logic', 'Propositional Logic', 'Truth tables, logical equivalences, Tautology/Contradiction, CNF/DNF, inference rules (40 PYQs).', 1, true, 40),
   makeTopic('dm-18', 'subj-dm', 'dm-logic', 'First Order Logic', 'Predicate quantifiers (Forall, Exists), quantifier negation, scope, validity and satisfiability of formulas (35 PYQs).', 2, true, 35),
   makeTopic('dm-19', 'subj-dm', 'dm-logic', 'Logical Reasoning', 'Translating complex English statements to predicate calculus and logic deductions (3 PYQs).', 3, true, 3),
 
   // --- Parent: Set Theory & Algebra (173 PYQs) ---
-  makeTopic('dm-set-algebra', 'subj-dm', null, 'Set Theory & Algebra', 'Relations, group theory, functions, posets, lattices, and algebraic structures (173 PYQs).', 4, true, 173),
+  makeTopic('dm-set-algebra', 'subj-dm', null, 'Set Theory & Algebra', 'Relations, group theory, functions, posets, lattices, and algebraic structures (173 PYQs).', 4, true),
   makeTopic('dm-20', 'subj-dm', 'dm-set-algebra', 'Relations', 'Reflexive, Symmetric, Anti-symmetric, Transitive properties, Equivalence classes, and closures (38 PYQs).', 1, true, 38),
   makeTopic('dm-21', 'subj-dm', 'dm-set-algebra', 'Group Theory', 'Groups, Abelian Groups, Subgroups, Cyclic groups, Order of elements, Lagrange Theorem (33 PYQs).', 2, true, 33),
   makeTopic('dm-22', 'subj-dm', 'dm-set-algebra', 'Functions', 'Injective (One-to-One), Surjective (Onto), Bijective functions, number of onto functions formulas (30 PYQs).', 3, true, 30),
@@ -393,7 +393,7 @@ export const INITIAL_TOPICS: Topic[] = [
   // =========================================================================
 
   // --- Parent: Linear Algebra (112 PYQs) ---
-  makeTopic('em-la', 'subj-em', null, 'Linear Algebra', 'Eigenvalues, eigenvectors, matrix operations, determinants, rank, vector spaces, and linear systems (112 PYQs).', 1, true, 112),
+  makeTopic('em-la', 'subj-em', null, 'Linear Algebra', 'Eigenvalues, eigenvectors, matrix operations, determinants, rank, vector spaces, and linear systems (112 PYQs).', 1, true),
   makeTopic('em-1', 'subj-em', 'em-la', 'Eigen Value', 'Characteristic equation |A - lambda*I| = 0, properties of eigenvalues (trace, det), Cayley-Hamilton Theorem (33 PYQs).', 1, true, 33),
   makeTopic('em-2', 'subj-em', 'em-la', 'Matrix', 'Matrix multiplication, Transpose, Symmetric, Skew-Symmetric, Orthogonal, Unitary, and Nilpotent matrices (24 PYQs).', 2, true, 24),
   makeTopic('em-3', 'subj-em', 'em-la', 'System of Equations', 'Matrix equation AX = B, augmented matrix [A|B], consistency test (Rank(A) vs Rank(A|B)), unique/infinite/no solution (17 PYQs).', 3, true, 17),
@@ -406,7 +406,7 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic('em-10', 'subj-em', 'em-la', 'Cartesian Coordinates', 'Dot product, cross product, vector magnitude and geometric representations (1 PYQ).', 10, true, 1),
 
   // --- Parent: Probability (125 PYQs) ---
-  makeTopic('em-prob', 'subj-em', null, 'Probability', 'Axioms of probability, Bayes theorem, discrete & continuous random variables, and distributions (125 PYQs).', 2, true, 125),
+  makeTopic('em-prob', 'subj-em', null, 'Probability', 'Axioms of probability, Bayes theorem, discrete & continuous random variables, and distributions (125 PYQs).', 2, true),
   makeTopic('em-11', 'subj-em', 'em-prob', 'Probability', 'Axioms of probability, sample spaces, mutually exclusive events, addition rule (31 PYQs).', 1, true, 31),
   makeTopic('em-12', 'subj-em', 'em-prob', 'Expectation', 'Expected value E[X], Variance Var(X) = E[X^2] - (E[X])^2, linearity of expectation (15 PYQs).', 2, true, 15),
   makeTopic('em-13', 'subj-em', 'em-prob', 'Conditional Probability', 'P(A|B) = P(A cap B) / P(B), Total Probability Theorem, Bayes Rule for posterior probability (14 PYQs).', 3, true, 14),
@@ -419,7 +419,7 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic('em-20', 'subj-em', 'em-prob', 'Normal Distribution', 'Gaussian bell curve, standard normal distribution Z = (X - mu) / sigma, symmetry properties (4 PYQs).', 10, true, 4),
 
   // --- Parent: Calculus (69 PYQs) ---
-  makeTopic('em-calc', 'subj-em', null, 'Calculus', 'Limits, continuity, differentiability, maxima/minima, partial derivatives, and integrals (69 PYQs).', 3, true, 69),
+  makeTopic('em-calc', 'subj-em', null, 'Calculus', 'Limits, continuity, differentiability, maxima/minima, partial derivatives, and integrals (69 PYQs).', 3, true),
   makeTopic('em-21', 'subj-em', 'em-calc', 'Limits', 'Evaluation of limits, L\'Hopital Rule for 0/0 and inf/inf indeterminate forms (15 PYQs).', 1, true, 15),
   makeTopic('em-22', 'subj-em', 'em-calc', 'Maxima Minima', 'First derivative test, Second derivative test, multivariable extrema using Hessian matrix (14 PYQs).', 2, true, 14),
   makeTopic('em-23', 'subj-em', 'em-calc', 'Continuity', 'Left-hand limit = Right-hand limit = Function value at point, intermediate value theorem (11 PYQs).', 3, true, 11),
@@ -433,7 +433,7 @@ export const INITIAL_TOPICS: Topic[] = [
   // =========================================================================
 
   // --- Parent: Quantitative Aptitude (197 PYQs) ---
-  makeTopic('ga-quant', 'subj-ga', null, 'Quantitative Aptitude', 'Arithmetic, algebra, data interpretation, probability, and quantitative reasoning (197 PYQs).', 1, true, 197),
+  makeTopic('ga-quant', 'subj-ga', null, 'Quantitative Aptitude', 'Arithmetic, algebra, data interpretation, probability, and quantitative reasoning (197 PYQs).', 1, true),
   makeTopic('ga-1', 'subj-ga', 'ga-quant', 'Probability', 'Permutations, combinations, coin/dice/card probability word problems (17 PYQs).', 1, true, 17),
   makeTopic('ga-2', 'subj-ga', 'ga-quant', 'Numerical Computation', 'Arithmetic fractions, decimals, powers, roots, simplification (9 PYQs).', 2, true, 9),
   makeTopic('ga-3', 'subj-ga', 'ga-quant', 'Ratio Proportion', 'Direct/inverse proportion, mixture problems, partnerships, ages (9 PYQs).', 3, true, 9),
@@ -446,7 +446,7 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic('ga-10', 'subj-ga', 'ga-quant', 'Absolute Value', 'Modulus equations |x - a| <= b, solving linear inequalities (5 PYQs).', 10, true, 5),
 
   // --- Parent: Verbal Aptitude (165 PYQs) ---
-  makeTopic('ga-verbal', 'subj-ga', null, 'Verbal Aptitude', 'English vocabulary, reading comprehension, grammar, and verbal reasoning (165 PYQs).', 2, true, 165),
+  makeTopic('ga-verbal', 'subj-ga', null, 'Verbal Aptitude', 'English vocabulary, reading comprehension, grammar, and verbal reasoning (165 PYQs).', 2, true),
   makeTopic('ga-11', 'subj-ga', 'ga-verbal', 'Most Appropriate Word', 'Contextual vocabulary fill-in-the-blanks, collocations, cloze tests (47 PYQs).', 1, true, 47),
   makeTopic('ga-12', 'subj-ga', 'ga-verbal', 'Passage Reading', 'Reading comprehension passages, author tone, main idea inference (23 PYQs).', 2, true, 23),
   makeTopic('ga-13', 'subj-ga', 'ga-verbal', 'Verbal Reasoning', 'Critical reasoning, strengthening and weakening arguments, logical assumptions (15 PYQs).', 3, true, 15),
@@ -459,7 +459,7 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic('ga-20', 'subj-ga', 'ga-verbal', 'Incorrect Sentence Part', 'Sentence correction, identifying faulty grammatical fragments (5 PYQs).', 10, true, 5),
 
   // --- Parent: Analytical Aptitude (48 PYQs) ---
-  makeTopic('ga-analytical', 'subj-ga', null, 'Analytical Aptitude', 'Logical deduction, coding-decoding, direction sense, and analytical puzzles (48 PYQs).', 3, true, 48),
+  makeTopic('ga-analytical', 'subj-ga', null, 'Analytical Aptitude', 'Logical deduction, coding-decoding, direction sense, and analytical puzzles (48 PYQs).', 3, true),
   makeTopic('ga-21', 'subj-ga', 'ga-analytical', 'Logical Reasoning', 'Deductive reasoning, arrangements, blood relations, puzzles (18 PYQs).', 1, true, 18),
   makeTopic('ga-22', 'subj-ga', 'ga-analytical', 'Statements Follow', 'Logical conclusions from statements, Venn diagram validations (7 PYQs).', 2, true, 7),
   makeTopic('ga-23', 'subj-ga', 'ga-analytical', 'Direction Sense', 'Compass navigation problems, displacement distance calculations (5 PYQs).', 3, true, 5),
@@ -472,7 +472,7 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic('ga-28c', 'subj-ga', 'ga-analytical', 'Coding Decoding', 'Decoding encrypted messages using letter-position patterns (1 PYQ).', 10, true, 1),
 
   // --- Parent: Spatial Aptitude (19 PYQs) ---
-  makeTopic('ga-spatial', 'subj-ga', null, 'Spatial Aptitude', 'Visual and spatial reasoning: folding, rotation, 3D structures, mirror images (19 PYQs).', 4, true, 19),
+  makeTopic('ga-spatial', 'subj-ga', null, 'Spatial Aptitude', 'Visual and spatial reasoning: folding, rotation, 3D structures, mirror images (19 PYQs).', 4, true),
   makeTopic('ga-29', 'subj-ga', 'ga-spatial', 'Paper Folding', 'Visualizing crease patterns and holes upon unfolding paper (5 PYQs).', 1, true, 5),
   makeTopic('ga-30', 'subj-ga', 'ga-spatial', 'Patterns In Two Dimensions', '2D geometric transformations, pattern completion, tessellations (4 PYQs).', 2, true, 4),
   makeTopic('ga-31', 'subj-ga', 'ga-spatial', 'Image Rotation', 'Clockwise and counter-clockwise 2D/3D angular rotations (3 PYQs).', 3, true, 3),

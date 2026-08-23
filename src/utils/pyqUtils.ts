@@ -209,25 +209,24 @@ export function getAuthoritativeTopicPYQ(
   topicOrNode: Topic | TopicTreeNodeType,
   allTopics: Topic[] = []
 ): number {
-  // 1. If this is a tree node with children, ALWAYS sum children first.
-  //    Parent badges must reflect live additions/removals of subtopics.
+  // 1. If this is a tree node with children, it is a parent topic.
+  //    Parent PYQ count is STRICTLY and ALWAYS equal to the sum of all its subtopics.
   if ('children' in topicOrNode && Array.isArray((topicOrNode as any).children) && (topicOrNode as any).children.length > 0) {
-    const childrenSum = (topicOrNode as any).children.reduce(
+    return (topicOrNode as any).children.reduce(
       (acc: number, c: any) => acc + getAuthoritativeTopicPYQ(c, allTopics),
       0
     );
-    if (childrenSum > 0) return childrenSum;
   }
 
-  // 2. If it's a flat Topic (not yet tree-expanded), check children in allTopics.
+  // 2. If it has children in allTopics, it is a parent topic.
+  //    Parent PYQ count is STRICTLY and ALWAYS equal to the sum of all its subtopics.
   if (allTopics.length > 0) {
     const children = allTopics.filter((t) => t.Parent_Id === topicOrNode.id);
     if (children.length > 0) {
-      const childrenSum = children.reduce(
+      return children.reduce(
         (acc, c) => acc + getAuthoritativeTopicPYQ(c, allTopics),
         0
       );
-      if (childrenSum > 0) return childrenSum;
     }
   }
 
