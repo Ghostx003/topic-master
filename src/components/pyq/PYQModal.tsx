@@ -232,7 +232,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#050811] text-slate-100 overflow-hidden animate-fade-in">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[#050811] text-slate-100 overflow-hidden animate-fade-in">
       {/* Top Navigation Bar */}
       <header className="px-6 sm:px-10 lg:px-12 py-5 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-2xl shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-4 z-20">
         {/* Left: Breadcrumbs & Topic Title */}

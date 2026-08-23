@@ -30,7 +30,7 @@ export const SubtopicsList: React.FC<SubtopicsListProps> = ({
   topic,
   onSelectSubtopic,
 }) => {
-  const { topics, addTopic, updateTopic } = useTopicMaster();
+  const { topics, subjects, addTopic, updateTopic, openPYQModal, yearFilter } = useTopicMaster();
   const directChildren = getDirectChildren(topics, topic.id);
 
   const [isAdding, setIsAdding] = useState(false);
@@ -214,17 +214,29 @@ export const SubtopicsList: React.FC<SubtopicsListProps> = ({
 
                   <div className="flex items-center gap-2 shrink-0">
                     {(() => {
-                      const pyqCount = getAuthoritativeTopicPYQ(child, topics);
+                      const subject = subjects.find((s) => s.id === child.Subject_Id || s.id === topic.Subject_Id);
+                      const pyqCount = getAuthoritativeTopicPYQ(child, topics, yearFilter, subject?.Subject_Name);
                       if (!pyqCount || pyqCount <= 0) return null;
                       const badge = getPyqBadgeStyle(pyqCount);
+                      const childChildren = topics.filter((t) => t.Parent_Id === child.id);
                       return (
-                        <span
-                          className={`flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border ${badge.wrapper}`}
-                          title={`${pyqCount} Historical PYQs in GATE CSE`}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openPYQModal(
+                              child.id,
+                              child.Topic_Name,
+                              subject?.Subject_Name || '',
+                              childChildren.map((c) => c.Topic_Name)
+                            );
+                          }}
+                          className={`flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg border ${badge.wrapper} hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm`}
+                          title={`Click to solve all ${pyqCount} Previous Year Questions for ${child.Topic_Name}`}
                         >
                           <Flame className={`w-3 h-3 ${badge.icon}`} />
                           <span className={badge.label}>{pyqCount} PYQs</span>
-                        </span>
+                        </button>
                       );
                     })()}
                     {child.Topic_Study_Hours > 0 && (
