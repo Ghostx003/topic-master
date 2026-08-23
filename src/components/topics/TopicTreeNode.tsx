@@ -50,12 +50,13 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(node.Topic_Name);
 
-  // Swipe / Slide Gesture State
+  // Swipe / Slide Gesture State (Mouse & Touch)
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef<number | null>(null);
+  const isMouseDown = useRef<boolean>(false);
 
-  // HTML5 Drag & Drop State with stable Drag Counter to prevent flicker
+  // HTML5 Drag & Drop State with stable Drag Counter (dedicated to Grip Handle)
   const [isHtml5Dragging, setIsHtml5Dragging] = useState(false);
   const [dropPosition, setDropPosition] = useState<'inside' | 'before' | 'after' | null>(null);
   const dragCounter = useRef<number>(0);
@@ -117,20 +118,23 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     }
   };
 
-  // ================= FLICKER-FREE HTML5 DRAG & DROP HANDLERS =================
+  // ================= DEDICATED GRIP HANDLE DRAG & DROP =================
   const handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
     e.dataTransfer.setData('text/plain', node.id);
     e.dataTransfer.setData('application/json', JSON.stringify({ topicId: node.id, name: node.Topic_Name }));
     e.dataTransfer.effectAllowed = 'move';
     setIsHtml5Dragging(true);
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (e: React.DragEvent) => {
+    e.stopPropagation();
     setIsHtml5Dragging(false);
     setDropPosition(null);
     dragCounter.current = 0;
   };
 
+  // Drop target listeners on the card
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -198,6 +202,67 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     setDropPosition(null);
   };
 
+  // ================= MOUSE HORIZONTAL SWIPE GESTURES =================
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    // Don't intercept button clicks, inputs, forms, or drag handle
+    if (
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('form') ||
+      target.closest('[data-topic-context-menu]') ||
+      target.closest('[data-drag-handle]')
+    ) {
+      return;
+    }
+    if (e.button !== 0) return; // only primary left click
+    dragStartX.current = e.clientX;
+    isMouseDown.current = true;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isMouseDown.current || dragStartX.current === null) return;
+    const diff = e.clientX - dragStartX.current;
+    if (Math.abs(diff) > 8) {
+      setIsDragging(true);
+      if (diff > 0 && !canIndentRight) {
+        setDragOffset(Math.min(diff * 0.2, 25));
+      } else if (diff < 0 && !canOutdentLeft) {
+        setDragOffset(Math.max(diff * 0.2, -25));
+      } else {
+        setDragOffset(Math.max(Math.min(diff, 90), -90));
+      }
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (isMouseDown.current && isDragging) {
+      if (dragOffset > 35 && canIndentRight) {
+        indentTopicRight(node.id);
+      } else if (dragOffset < -35 && canOutdentLeft) {
+        outdentTopicLeft(node.id);
+      }
+    }
+    isMouseDown.current = false;
+    dragStartX.current = null;
+    setDragOffset(0);
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    if (isMouseDown.current && isDragging) {
+      if (dragOffset > 35 && canIndentRight) {
+        indentTopicRight(node.id);
+      } else if (dragOffset < -35 && canOutdentLeft) {
+        outdentTopicLeft(node.id);
+      }
+    }
+    isMouseDown.current = false;
+    dragStartX.current = null;
+    setDragOffset(0);
+    setIsDragging(false);
+  };
+
   // ================= TOUCH SWIPE GESTURE HANDLERS =================
   const handleTouchStart = (e: React.TouchEvent) => {
     dragStartX.current = e.touches[0].clientX;
@@ -209,18 +274,18 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     const diff = e.touches[0].clientX - dragStartX.current;
 
     if (diff > 0 && !canIndentRight) {
-      setDragOffset(Math.min(diff * 0.2, 20));
+      setDragOffset(Math.min(diff * 0.2, 25));
     } else if (diff < 0 && !canOutdentLeft) {
-      setDragOffset(Math.max(diff * 0.2, -20));
+      setDragOffset(Math.max(diff * 0.2, -25));
     } else {
       setDragOffset(Math.max(Math.min(diff, 90), -90));
     }
   };
 
   const handleTouchEnd = () => {
-    if (dragOffset > 45 && canIndentRight) {
+    if (dragOffset > 35 && canIndentRight) {
       indentTopicRight(node.id);
-    } else if (dragOffset < -45 && canOutdentLeft) {
+    } else if (dragOffset < -35 && canOutdentLeft) {
       outdentTopicLeft(node.id);
     }
     setDragOffset(0);
@@ -258,14 +323,14 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
       )}
     >
       {/* Visual Swipe Helper Badges */}
-      {dragOffset > 25 && canIndentRight && (
+      {dragOffset > 20 && canIndentRight && (
         <div className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-cyan-600 text-white text-xs font-bold shadow-glow-cyan animate-pulse">
           <ArrowRight className="w-4 h-4" />
           <span>Indent → Subtopic</span>
         </div>
       )}
 
-      {dragOffset < -25 && canOutdentLeft && (
+      {dragOffset < -20 && canOutdentLeft && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-purple-600 text-white text-xs font-bold shadow-glow-purple animate-pulse">
           <span>Promote ← Parent</span>
           <ArrowLeft className="w-4 h-4" />
@@ -284,16 +349,17 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         </div>
       )}
 
-      {/* Node Row Card */}
+      {/* Node Row Card - Drops Allowed on Card, Horizontal Swipe Enabled */}
       <div
-        draggable
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onContextMenu={handleContextMenu}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -327,12 +393,16 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
         {/* Left Section: Drag Handle, Expand Toggle, Star, Title, Notes */}
         <div className="flex items-center gap-3.5 sm:gap-5 min-w-0 flex-1">
-          {/* Drag grip icon - Draggable Handle */}
+          {/* Dedicated Drag Handle - HTML5 Draggable */}
           <div
-            className="p-1 text-slate-500 group-hover:text-brand-400 transition-colors shrink-0 cursor-grab active:cursor-grabbing hover:scale-110"
-            title="Drag and drop onto any topic to nest, or reorder before/after"
+            data-drag-handle="true"
+            draggable
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            className="p-1.5 text-slate-500 hover:text-brand-300 transition-colors shrink-0 cursor-grab active:cursor-grabbing hover:scale-110 active:scale-95 bg-slate-800/40 rounded-xl border border-transparent hover:border-brand-500/30"
+            title="Click and lift outside to drag & drop anywhere in hierarchy"
           >
-            <GripVertical className="w-5 h-5" />
+            <GripVertical className="w-4 h-4" />
           </div>
 
           {/* Expand / Collapse Button or Tree Bullet - LOCKED WIDTH for perfect text alignment */}
