@@ -1,7 +1,7 @@
 import { TopicMasterState } from '../types/store';
 import { INITIAL_SUBJECTS, INITIAL_TOPICS, INITIAL_SCHEDULES } from '../utils/sampleData';
 
-const STORAGE_KEY = 'topic_master_state_gate_cse_v6';
+const STORAGE_KEY = 'topic_master_state_gate_cse_v7';
 
 export const DEFAULT_INITIAL_STATE: TopicMasterState = {
   subjects: INITIAL_SUBJECTS,

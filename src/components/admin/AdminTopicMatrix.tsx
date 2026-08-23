@@ -485,6 +485,12 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
                               Subtopic
                             </span>
                           )}
+                          {Boolean(topic.Topic_PYQ_Count && topic.Topic_PYQ_Count > 0) && (
+                            <span className="flex items-center gap-0.5 text-[9px] font-mono font-bold text-amber-300 bg-amber-950/40 border border-amber-500/30 px-1.5 rounded">
+                              <Flame className="w-2.5 h-2.5 text-amber-400" />
+                              <span>{topic.Topic_PYQ_Count} PYQs</span>
+                            </span>
+                          )}
                         </div>
                       </div>
                     </td>

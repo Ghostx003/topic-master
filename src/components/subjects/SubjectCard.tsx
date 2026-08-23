@@ -4,7 +4,7 @@ import { SubjectImportancePill } from '../common/SubjectImportancePill';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { calculateTopicProgress } from '../../utils/hierarchyUtils';
 import { formatHours } from '../../utils/timeUtils';
-import { Clock, MoreVertical, Edit3, Trash2, BookOpen, ChevronRight } from 'lucide-react';
+import { Clock, MoreVertical, Edit3, Trash2, BookOpen, ChevronRight, Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export interface SubjectCardProps {
@@ -110,13 +110,22 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onEdit, onDel
           </div>
         </div>
 
-        {/* Importance Pill Row */}
-        <div className="mt-4 mb-6">
+        {/* Importance Pill & PYQ Weightage Row */}
+        <div className="mt-4 mb-6 flex items-center justify-between gap-2 flex-wrap">
           <SubjectImportancePill
             importance={subject.Subject_Importance}
             onClick={handleImportanceClick}
             size="md"
           />
+          {subject.Subject_PYQ_Count && (
+            <span
+              className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-black text-amber-300 bg-amber-950/50 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+              title={`${subject.Subject_PYQ_Count} Previous Year Questions analyzed in GATE CSE`}
+            >
+              <Flame className="w-3.5 h-3.5 text-amber-400" />
+              <span>{subject.Subject_PYQ_Count} PYQs</span>
+            </span>
+          )}
         </div>
       </div>
 

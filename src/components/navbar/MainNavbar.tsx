@@ -9,6 +9,7 @@ import {
   Search,
   Menu,
   X,
+  BarChart3,
   Layers,
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -24,6 +25,8 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
   const { subjects, topics } = useTopicMaster();
   const navigate = useNavigate();
 
+  const totalPYQs = subjects.reduce((acc, s) => acc + (s.Subject_PYQ_Count || 0), 0);
+
   const navItems = [
     {
       to: '/subjects',
@@ -36,6 +39,12 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
       label: 'Topics & Hierarchy',
       icon: FolderTree,
       count: topics.length,
+    },
+    {
+      to: '/pyqs',
+      label: 'PYQ Analyzer',
+      icon: BarChart3,
+      count: `${(totalPYQs / 1000).toFixed(1)}k`,
     },
     {
       to: '/scheduler',

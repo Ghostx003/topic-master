@@ -7,6 +7,7 @@ import { AdminLayout } from './layouts/AdminLayout';
 import { MySubjectsPage } from './pages/MySubjectsPage';
 import { AddTopicsPage } from './pages/AddTopicsPage';
 import { SchedulerPage } from './pages/SchedulerPage';
+import { PYQAnalyzerPage } from './pages/PYQAnalyzerPage';
 import { AdminPanelPage } from './pages/AdminPanelPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
@@ -22,6 +23,8 @@ export const App: React.FC = () => {
               <Route path="/subjects" element={<MySubjectsPage />} />
               <Route path="/topics" element={<AddTopicsPage />} />
               <Route path="/scheduler" element={<SchedulerPage />} />
+              <Route path="/pyqs" element={<PYQAnalyzerPage />} />
+              <Route path="/pyq-analyzer" element={<Navigate to="/pyqs" replace />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
 

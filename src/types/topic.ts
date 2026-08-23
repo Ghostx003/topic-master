@@ -44,6 +44,7 @@ export interface Topic {
   Topic_Difficulty: TopicDifficulty;
   Topic_Tags: TopicTags;
   Topic_Study_Hours: number; // accumulated study hours (derived or summed from sessions)
+  Topic_PYQ_Count?: number; // Historical GATE PYQ Questions Count
   Topic_Sessions: StudySession[];
   Topic_Blocks: ContentBlock[];
   Topic_Order: number;

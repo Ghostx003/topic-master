@@ -4,125 +4,138 @@ import { Schedule } from '../types/schedule';
 
 export const INITIAL_SUBJECTS: Subject[] = [
   {
-    id: 'subj-cn',
-    Subject_Name: 'Computer Networks',
-    Subject_Importance: 'Important',
-    Subject_Description: 'OSI/TCP-IP models, IPv4/IPv6 addressing, subnetting, TCP flow/congestion control, routing algorithms, MAC protocols, and network security.',
-    Subject_Color: '#06b6d4', // Cyan
+    id: 'subj-ga',
+    Subject_Name: 'General Aptitude',
+    Subject_Importance: 'Urgent', // Fixed 15 Marks (429 PYQs)
+    Subject_Description: 'Quantitative arithmetic, logical reasoning syllogisms, spatial pattern folding, and English verbal grammar (429 Historical PYQs).',
+    Subject_Color: '#eab308', // Yellow
+    Subject_PYQ_Count: 429,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'subj-dm',
+    Subject_Name: 'Discrete Mathematics',
+    Subject_Importance: 'Urgent', // 390 Combined PYQs
+    Subject_Description: 'Propositional & predicate logic, sets, relations, posets, combinatorics, graph theory, and recurrence relations (390 Historical PYQs).',
+    Subject_Color: '#a855f7', // Purple
+    Subject_PYQ_Count: 390,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 13).toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'subj-algo',
+    Subject_Name: 'Algorithms',
+    Subject_Importance: 'Urgent', // 358 PYQs
+    Subject_Description: 'Asymptotic notation, divide and conquer, greedy methods, dynamic programming, Dijkstra shortest paths, MST, and NP-completeness (358 Historical PYQs).',
+    Subject_Color: '#14b8a6', // Teal
+    Subject_PYQ_Count: 358,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString(),
     updated_at: new Date().toISOString(),
   },
   {
     id: 'subj-os',
     Subject_Name: 'Operating Systems',
-    Subject_Importance: 'Urgent',
-    Subject_Description: 'Process lifecycle, CPU scheduling, synchronization semaphores, deadlock avoidance, paging memory management, and disk scheduling.',
+    Subject_Importance: 'Urgent', // 343 PYQs
+    Subject_Description: 'Process lifecycle, CPU scheduling, synchronization semaphores, deadlock avoidance, paging memory management, and disk scheduling (343 Historical PYQs).',
     Subject_Color: '#8b5cf6', // Violet
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 13).toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 'subj-prog',
-    Subject_Name: 'C-Programming',
-    Subject_Importance: 'High Scoring',
-    Subject_Description: 'Operators precedence, control flow, functions, recursion call stacks, pointer arithmetic, dynamic memory, arrays, and structs.',
-    Subject_Color: '#3b82f6', // Blue
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 12).toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 'subj-ds',
-    Subject_Name: 'Data Structures',
-    Subject_Importance: 'High Scoring',
-    Subject_Description: 'Arrays, linked lists, stacks, queues, binary trees, BST, AVL balance, binary heaps, graph representations, and hashing tables.',
-    Subject_Color: '#10b981', // Emerald
+    Subject_PYQ_Count: 343,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 11).toISOString(),
     updated_at: new Date().toISOString(),
   },
   {
     id: 'subj-dl',
     Subject_Name: 'Digital Logic',
-    Subject_Importance: 'Normal',
-    Subject_Description: 'Boolean algebra, K-map minimization, multiplexers, adders, flip-flops, synchronous/asynchronous counters, and 2s complement systems.',
+    Subject_Importance: 'High Scoring', // 313 PYQs
+    Subject_Description: 'Boolean algebra, K-map minimization, multiplexers, adders, flip-flops, synchronous/asynchronous counters, and 2s complement systems (313 Historical PYQs).',
     Subject_Color: '#f59e0b', // Amber
+    Subject_PYQ_Count: 313,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 'subj-toc',
-    Subject_Name: 'Theory of Computation',
-    Subject_Importance: 'Important',
-    Subject_Description: 'DFA/NFA minimization, regular expressions, context-free grammars, pushdown automata, Turing machines, and decidability reductions.',
-    Subject_Color: '#ec4899', // Pink
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9).toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 'subj-cd',
-    Subject_Name: 'Compiler Design',
-    Subject_Importance: 'Normal',
-    Subject_Description: 'Lexical analysis tokens, LL(1) and LR parsers, syntax-directed translation, three-address code, and basic block optimizations.',
-    Subject_Color: '#6366f1', // Indigo
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 'subj-algo',
-    Subject_Name: 'Algorithms',
-    Subject_Importance: 'High Scoring',
-    Subject_Description: 'Asymptotic notation, divide and conquer, greedy methods, dynamic programming, Dijkstra shortest paths, MST, and NP-completeness.',
-    Subject_Color: '#14b8a6', // Teal
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 'subj-dbms',
-    Subject_Name: 'Database Management System',
-    Subject_Importance: 'Important',
-    Subject_Description: 'ER modeling, relational algebra, SQL queries, functional dependencies, 3NF/BCNF normalization, ACID transactions, and B+ trees.',
-    Subject_Color: '#f43f5e', // Rose
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 'subj-coa',
-    Subject_Name: 'Computer Organisation & Architecture',
-    Subject_Importance: 'Important',
-    Subject_Description: 'Instruction formats, addressing modes, pipeline speedup & hazards, cache AMAT mapping, IEEE 754 floats, and DMA I/O transfers.',
-    Subject_Color: '#84cc16', // Lime
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 'subj-dm',
-    Subject_Name: 'Discrete Mathematics',
-    Subject_Importance: 'High Scoring',
-    Subject_Description: 'Propositional & predicate logic, sets, relations, posets, combinatorics, pigeonhole principle, graph theory, and recurrence relations.',
-    Subject_Color: '#a855f7', // Purple
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
     updated_at: new Date().toISOString(),
   },
   {
     id: 'subj-em',
     Subject_Name: 'Engineering Mathematics',
-    Subject_Importance: 'Important',
-    Subject_Description: 'Linear algebra eigenvalues/vectors, matrix rank, calculus maxima/minima, and probability distributions Bayes theorem.',
+    Subject_Importance: 'Urgent', // 306 Combined PYQs
+    Subject_Description: 'Linear algebra eigenvalues/vectors, matrix rank, calculus maxima/minima, and probability distributions Bayes theorem (306 Historical PYQs).',
     Subject_Color: '#0ea5e9', // Sky Blue
+    Subject_PYQ_Count: 306,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9).toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'subj-dbms',
+    Subject_Name: 'Database Management System',
+    Subject_Importance: 'High Scoring', // 302 PYQs
+    Subject_Description: 'ER modeling, relational algebra, SQL queries, functional dependencies, 3NF/BCNF normalization, ACID transactions, and B+ trees (302 Historical PYQs).',
+    Subject_Color: '#f43f5e', // Rose
+    Subject_PYQ_Count: 302,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'subj-toc',
+    Subject_Name: 'Theory of Computation',
+    Subject_Importance: 'High Scoring', // 293 PYQs
+    Subject_Description: 'DFA/NFA minimization, regular expressions, context-free grammars, pushdown automata, Turing machines, and decidability reductions (293 Historical PYQs).',
+    Subject_Color: '#ec4899', // Pink
+    Subject_PYQ_Count: 293,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'subj-coa',
+    Subject_Name: 'Computer Organisation & Architecture',
+    Subject_Importance: 'Important', // 251 PYQs
+    Subject_Description: 'Instruction formats, addressing modes, pipeline speedup & hazards, cache AMAT mapping, IEEE 754 floats, and DMA I/O transfers (251 Historical PYQs).',
+    Subject_Color: '#84cc16', // Lime
+    Subject_PYQ_Count: 251,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'subj-cd',
+    Subject_Name: 'Compiler Design',
+    Subject_Importance: 'Important', // 242 PYQs
+    Subject_Description: 'Lexical analysis tokens, LL(1) and LR parsers, syntax-directed translation, three-address code, and basic block optimizations (242 Historical PYQs).',
+    Subject_Color: '#6366f1', // Indigo
+    Subject_PYQ_Count: 242,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'subj-ds',
+    Subject_Name: 'Data Structures',
+    Subject_Importance: 'High Scoring', // 238 PYQs
+    Subject_Description: 'Arrays, linked lists, stacks, queues, binary trees, BST, AVL balance, binary heaps, graph representations, and hashing tables (238 Historical PYQs).',
+    Subject_Color: '#10b981', // Emerald
+    Subject_PYQ_Count: 238,
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'subj-cn',
+    Subject_Name: 'Computer Networks',
+    Subject_Importance: 'Important', // 226 PYQs
+    Subject_Description: 'OSI/TCP-IP models, IPv4/IPv6 addressing, subnetting, TCP flow/congestion control, routing algorithms, MAC protocols, and security (226 Historical PYQs).',
+    Subject_Color: '#06b6d4', // Cyan
+    Subject_PYQ_Count: 226,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
     updated_at: new Date().toISOString(),
   },
   {
-    id: 'subj-ga',
-    Subject_Name: 'General Aptitude',
-    Subject_Importance: 'High Scoring',
-    Subject_Description: 'Quantitative arithmetic, logical reasoning syllogisms, spatial pattern folding, and English verbal grammar.',
-    Subject_Color: '#eab308', // Yellow
+    id: 'subj-prog',
+    Subject_Name: 'C-Programming',
+    Subject_Importance: 'High Scoring', // 131 PYQs
+    Subject_Description: 'Operators precedence, control flow, functions, recursion call stacks, pointer arithmetic, dynamic memory, arrays, and structs (131 Historical PYQs).',
+    Subject_Color: '#3b82f6', // Blue
+    Subject_PYQ_Count: 131,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
     updated_at: new Date().toISOString(),
   },
 ];
 
-// Helper to construct structured topics with clean To-Do state and accurate Star heavy-hitter tags
+// Helper to construct structured topics with accurate PYQ counts and verified Star flags
 const makeTopic = (
   id: string,
   subjectId: string,
@@ -130,7 +143,8 @@ const makeTopic = (
   name: string,
   description: string,
   order: number,
-  isStar: boolean = false
+  isStar: boolean = false,
+  pyqCount?: number
 ): Topic => ({
   id,
   Subject_Id: subjectId,
@@ -140,6 +154,7 @@ const makeTopic = (
   Topic_Status: 'To Do',
   Topic_Difficulty: isStar ? 'Important' : 'Normal',
   Topic_Study_Hours: 0,
+  Topic_PYQ_Count: pyqCount,
   Topic_Order: order,
   Topic_Sessions: [],
   Topic_Blocks: [],
@@ -160,341 +175,287 @@ const makeTopic = (
 });
 
 export const INITIAL_TOPICS: Topic[] = [
-  // ==========================================
-  // 1. COMPUTER NETWORKS (subj-cn)
-  // ==========================================
-  makeTopic('cn-1', 'subj-cn', null, 'IPv4 Addressing & Subnetting', 'Classful vs CIDR subnet masks, Network/Broadcast IDs, subnet allocation, and VLSM.', 1, true),
-  makeTopic('cn-1-1', 'subj-cn', 'cn-1', 'Classful Addressing & Net ID / Host ID', 'Class A, B, C range boundaries, leading bits, valid host count 2^h - 2.', 1, false),
-  makeTopic('cn-1-2', 'subj-cn', 'cn-1', 'CIDR & Classless Subnetting', 'Prefix length /n, subnet mask calculation, subnet bit borrowing, host capacity.', 2, true),
-  makeTopic('cn-1-3', 'subj-cn', 'cn-1', 'VLSM & Variable Length Subnetting', 'Hierarchical prefix allocation, minimizing wasted address space.', 3, true),
-  makeTopic('cn-1-4', 'subj-cn', 'cn-1', 'Supernetting & Route Aggregation', 'Combining contiguous CIDR blocks, longest prefix matching in routing tables.', 4, true),
-
-  makeTopic('cn-2', 'subj-cn', null, 'IP Packet Header & Fragmentation', 'IPv4 header fields, TTL expiry, and MTU boundary fragmentation offset arithmetic.', 2, true),
-  makeTopic('cn-2-1', 'subj-cn', 'cn-2', 'IPv4 Header Fields & Checksum', 'VER, HLEN (x4 scale), Total Length, TTL, Protocol numbers (TCP=6, UDP=17).', 1, false),
-  makeTopic('cn-2-2', 'subj-cn', 'cn-2', 'Packet Fragmentation Offset & Flags', 'MTU boundary split, 8-byte offset scale factor, MF/DF flag bits analysis.', 2, true),
-
-  makeTopic('cn-3', 'subj-cn', null, 'Data Link Layer & Flow Control', 'Framing, CRC error detection, and sliding window flow control protocols.', 3, true),
-  makeTopic('cn-3-1', 'subj-cn', 'cn-3', 'CRC & Polynomial Error Detection', 'Generator polynomial modulo-2 binary division, transmitted frame bit length.', 1, true),
-  makeTopic('cn-3-2', 'subj-cn', 'cn-3', 'Stop & Wait Protocol Efficiency', 'Propagation delay Tp, transmission delay Tt, efficiency formula η = 1 / (1 + 2a).', 2, true),
-  makeTopic('cn-3-3', 'subj-cn', 'cn-3', 'Go-Back-N (GBN) Protocol', 'Sender window Ws = 2^k - 1, receiver window Wr = 1, cumulative ACKs, retransmissions.', 3, true),
-  makeTopic('cn-3-4', 'subj-cn', 'cn-3', 'Selective Repeat (SR) Protocol', 'Sender window Ws = 2^(k-1), receiver window Wr = 2^(k-1), individual ACKs.', 4, true),
-
-  makeTopic('cn-4', 'subj-cn', null, 'Medium Access Control (MAC)', 'Random access protocols: ALOHA throughput formulas, CSMA/CD minimum frame length.', 4, true),
-  makeTopic('cn-4-1', 'subj-cn', 'cn-4', 'Pure & Slotted ALOHA', 'Vulnerable time 2*Tt (Pure, G*e^-2G max 18.4%) vs Tt (Slotted, G*e^-G max 36.8%).', 1, false),
-  makeTopic('cn-4-2', 'subj-cn', 'cn-4', 'CSMA/CD & Exponential Backoff', 'Collision detection condition Frame Size >= 2 * Propagation Delay * Bandwidth, truncated binary backoff 2^k - 1.', 2, true),
-
-  makeTopic('cn-5', 'subj-cn', null, 'Routing Protocols & Switching', 'Distance Vector (Bellman-Ford, Count to Infinity), Link State (Dijkstra, OSPF), and Bridges/Switches.', 5, true),
-  makeTopic('cn-5-1', 'subj-cn', 'cn-5', 'Distance Vector & Count to Infinity', 'Routing table vector exchange, split horizon and poison reverse mitigation techniques.', 1, true),
-  makeTopic('cn-5-2', 'subj-cn', 'cn-5', 'Link State Routing (Dijkstra / OSPF)', 'Global network topology flooding, shortest path tree generation, and event-driven updates.', 2, true),
-  makeTopic('cn-5-3', 'subj-cn', 'cn-5', 'Bridges & Transparent Switching', 'Self-learning MAC address tables, collision domains vs broadcast domains.', 3, false),
-
-  makeTopic('cn-6', 'subj-cn', null, 'TCP & UDP Transport Protocols', '3-way handshake connection lifecycle, TCP flags, header structure, and TCP Congestion Control AIMD states.', 6, true),
-  makeTopic('cn-6-1', 'subj-cn', 'cn-6', 'TCP 3-Way Handshake & Teardown', 'SYN, SYN-ACK, ACK sequence numbers, FIN teardown, TIME_WAIT state purpose.', 1, true),
-  makeTopic('cn-6-2', 'subj-cn', 'cn-6', 'TCP Congestion Control (AIMD)', 'Slow Start (exponential), Congestion Avoidance (linear), Threshold halving, Triple Dup ACK vs Timeout.', 2, true),
-  makeTopic('cn-6-3', 'subj-cn', 'cn-6', 'UDP Datagram & Checksum', 'Connectionless overhead, pseudo-header checksum, real-time streaming usage.', 3, false),
-
-  makeTopic('cn-7', 'subj-cn', null, 'Application Layer Protocols & Security', 'DNS record resolution, HTTP/HTTPS persistent connections, SMTP, and RSA Cryptography.', 7, false),
-  makeTopic('cn-7-1', 'subj-cn', 'cn-7', 'DNS Hierarchy & Resolution', 'Iterative vs recursive query resolution, Authoritative vs Root nameservers.', 1, false),
-  makeTopic('cn-7-2', 'subj-cn', 'cn-7', 'HTTP/1.1 vs HTTP/2 & Web Caching', 'Non-persistent vs persistent pipelined connections, conditional GET headers.', 2, false),
-  makeTopic('cn-7-3', 'subj-cn', 'cn-7', 'RSA Public Key Cryptography', 'Prime selection, Euler totient phi(n), modular inverse d = e^-1 mod phi(n), encryption/decryption.', 3, true),
-
-  // ==========================================
-  // 2. OPERATING SYSTEMS (subj-os)
-  // ==========================================
-  makeTopic('os-1', 'subj-os', null, 'Process Management & Forking', 'Process Control Block (PCB), context switching overhead, process state transitions, and fork system call trees.', 1, true),
-  makeTopic('os-1-1', 'subj-os', 'os-1', 'Process States & PCB Structure', 'Ready, Running, Waiting, Terminated, context switch saving registers/stack.', 1, false),
-  makeTopic('os-1-2', 'subj-os', 'os-1', 'Fork System Call Trees & Zombie Processes', 'Child process PID return values, concurrent execution tracing, zombie/orphan lifecycles.', 2, true),
-
-  makeTopic('os-2', 'subj-os', null, 'CPU Scheduling Algorithms', 'FCFS, SJF, SRTF, Round Robin with time quantum selection, Priority scheduling, and multi-level feedback queues.', 2, true),
-  makeTopic('os-2-1', 'subj-os', 'os-2', 'Non-Preemptive vs Preemptive SJF (SRTF)', 'Gantt chart generation, minimizing average waiting time, starvation conditions.', 1, true),
-  makeTopic('os-2-2', 'subj-os', 'os-2', 'Round Robin Scheduling & Quantum Sizing', 'Context switch overhead impact, responsiveness vs throughput trade-off.', 2, true),
-  makeTopic('os-2-3', 'subj-os', 'os-2', 'Multi-Level Feedback Queue (MLFQ)', 'Dynamic priority decay, aging mechanisms to prevent priority starvation.', 3, false),
-
-  makeTopic('os-3', 'subj-os', null, 'Process Synchronization', 'Critical Section problem, Mutual Exclusion, Progress, Bounded Waiting, Peterson algorithm, and Counting Semaphores.', 3, true),
-  makeTopic('os-3-1', 'subj-os', 'os-3', 'Critical Section Criteria & Hardware Locks', 'Mutual exclusion, progress, bounded waiting, TestAndSet atomic instructions.', 1, true),
-  makeTopic('os-3-2', 'subj-os', 'os-3', 'Peterson Algorithm for 2 Processes', 'Flag array and turn variable verification for race conditions.', 2, true),
-  makeTopic('os-3-3', 'subj-os', 'os-3', 'Counting & Binary Semaphores', 'Wait (P) and Signal (V) operations, value range calculations under concurrent threads.', 3, true),
-  makeTopic('os-3-4', 'subj-os', 'os-3', 'Classical Synchronization Problems', 'Producer-Consumer, Reader-Writer (Readers preference vs Writers preference), Dining Philosophers.', 4, true),
-
-  makeTopic('os-4', 'subj-os', null, 'Deadlocks: Detection, Prevention & Avoidance', 'Necessary conditions for deadlock, Resource Allocation Graph (RAG), and Banker Algorithm for multi-instance safety.', 4, true),
-  makeTopic('os-4-1', 'subj-os', 'os-4', 'Deadlock Conditions & RAG Cycles', 'Mutual exclusion, Hold & Wait, No Preemption, Circular Wait, knot detection in RAG.', 1, false),
-  makeTopic('os-4-2', 'subj-os', 'os-4', 'Banker Algorithm for Safety & Resource Request', 'Need matrix computation, safety state sequence finding, resource request validation.', 2, true),
-
-  makeTopic('os-5', 'subj-os', null, 'Memory Management & Paging', 'Contiguous memory allocation, logical to physical address translation, Page Tables, and Multilevel Paging.', 5, true),
-  makeTopic('os-5-1', 'subj-os', 'os-5', 'Single & Multi-Level Page Table Translation', 'Page number/offset split, Page Table Entry (PTE) size, Page Table Base Register (PTBR).', 1, true),
-  makeTopic('os-5-2', 'subj-os', 'os-5', 'Inverted Page Tables & Segmentation', 'Hashing global frame table by process ID, segmentation with base/limit registers.', 2, false),
-
-  makeTopic('os-6', 'subj-os', null, 'Virtual Memory & Page Replacement', 'Demand paging, Translation Lookaside Buffer (TLB) Effective Memory Access Time, and Page Replacement Algorithms.', 6, true),
-  makeTopic('os-6-1', 'subj-os', 'os-6', 'TLB Hit Ratio & Effective Memory Access Time (EMAT)', 'Formula: EMAT = h*(TLB + M) + (1-h)*(TLB + 2*M), multi-level page table EMAT.', 1, true),
-  makeTopic('os-6-2', 'subj-os', 'os-6', 'Page Replacement: FIFO, LRU, Optimal & Belady Anomaly', 'Page fault counting on reference strings, FIFO Belady anomaly demonstration, stack property in LRU.', 2, true),
-  makeTopic('os-6-3', 'subj-os', 'os-6', 'Thrashing & Working Set Model', 'Page fault frequency, working set window Delta, frame allocation to avoid CPU collapse.', 3, false),
-
-  makeTopic('os-7', 'subj-os', null, 'Disk Scheduling & File Systems', 'Disk geometry, Seek time calculations (FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK), and Unix Inode structural calculations.', 7, true),
-  makeTopic('os-7-1', 'subj-os', 'os-7', 'Disk Arm Scheduling Algorithms', 'Track movement calculations for SCAN/ELEVATOR vs C-SCAN (unidirectional) vs LOOK.', 1, true),
-  makeTopic('os-7-2', 'subj-os', 'os-7', 'Unix Inode File System Structure', 'Direct, Single Indirect, Double Indirect, Triple Indirect block pointers and maximum file size calculations.', 2, true),
-
-  // ==========================================
-  // 3. C-PROGRAMMING (subj-prog)
-  // ==========================================
-  makeTopic('pr-1', 'subj-prog', null, 'Operators, Expressions & Control Flow', 'Operator precedence, associativity rules, short-circuit boolean evaluation, type conversions, and switch-case flow.', 1, false),
-  makeTopic('pr-1-1', 'subj-prog', 'pr-1', 'Operator Precedence & Associativity', 'Prefix/Postfix ++/--, bitwise vs logical operators, ternary evaluation.', 1, false),
-  makeTopic('pr-1-2', 'subj-prog', 'pr-1', 'Short-Circuiting in Logical Expressions', 'Evaluation skipping in && (stops on 0) and || (stops on 1).', 2, true),
-
-  makeTopic('pr-2', 'subj-prog', null, 'Pointers & Pointer Arithmetic', 'Pointer arithmetic, pointers to pointers, pointer arrays, array decaying, and function pointers.', 2, true),
-  makeTopic('pr-2-1', 'subj-prog', 'pr-2', 'Pointer Arithmetic & Array Subscripting', 'Equivalence of a[i] == *(a+i) == i[a], multi-dimensional array address offsets.', 1, true),
-  makeTopic('pr-2-2', 'subj-prog', 'pr-2', 'Array of Pointers vs Pointer to Array', 'Syntax differences: int *arr[10] vs int (*ptr)[10], memory allocation.', 2, true),
-  makeTopic('pr-2-3', 'subj-prog', 'pr-2', 'Function Pointers & Callbacks', 'Declaring and calling via function pointer signatures: void (*fp)(int).', 3, false),
-
-  makeTopic('pr-3', 'subj-prog', null, 'Recursion & Call Stack Execution', 'Recursive tracing, base conditions, tree recursion call stacks, and static/global variable side effects in recursion.', 3, true),
-  makeTopic('pr-3-1', 'subj-prog', 'pr-3', 'Tree Recursion & Stack Activation Records', 'Recursive return value aggregation, activation record stack depth, unwinding phases.', 1, true),
-  makeTopic('pr-3-2', 'subj-prog', 'pr-3', 'Static & Global Variables inside Recursive Functions', 'Persistent state across recursive activations, tracing output mutations.', 2, true),
-
-  makeTopic('pr-4', 'subj-prog', null, 'Structures, Unions & Dynamic Memory', 'Memory layout, padding/alignment, struct dereferencing, and malloc/calloc/realloc/free management.', 4, false),
-  makeTopic('pr-4-1', 'subj-prog', 'pr-4', 'Struct Padding & Data Alignment', 'Word alignment boundaries, sizeof calculations, bit fields in structures.', 1, false),
-  makeTopic('pr-4-2', 'subj-prog', 'pr-4', 'Dynamic Memory Management & Memory Leaks', 'malloc vs calloc initialization, dangling pointers, memory leak causes.', 2, false),
-
-  // ==========================================
-  // 4. DATA STRUCTURES (subj-ds)
-  // ==========================================
-  makeTopic('ds-1', 'subj-ds', null, 'Arrays & Linked Lists', 'Array address calculations (row-major vs column-major), Singly/Doubly/Circular linked lists, and cycle detection.', 1, false),
-  makeTopic('ds-1-1', 'subj-ds', 'ds-1', 'Row-Major & Column-Major Array Offsets', 'Address calculation formula: Base + ((i - L1)*dim2 + (j - L2)) * element_size.', 1, true),
-  makeTopic('ds-1-2', 'subj-ds', 'ds-1', 'Linked List Operations & Floyd Cycle Detection', 'In-place linked list reversal, slow/fast pointer cycle detection and entry point.', 2, false),
-
-  makeTopic('ds-2', 'subj-ds', null, 'Stacks, Queues & Applications', 'LIFO stack operations, Infix to Postfix/Prefix conversion, Postfix expression evaluation, and Circular Queues.', 2, true),
-  makeTopic('ds-2-1', 'subj-ds', 'ds-2', 'Infix, Postfix & Prefix Conversions', 'Stack-based operator precedence handling, parentheses matching, expression evaluation.', 1, true),
-  makeTopic('ds-2-2', 'subj-ds', 'ds-2', 'Circular Queue & Deque Implementations', 'Modulo arithmetic for full/empty queue conditions: (rear+1)%N == front.', 2, false),
-
-  makeTopic('ds-3', 'subj-ds', null, 'Binary Trees & Tree Traversals', 'Tree properties (height, node counts), Inorder, Preorder, Postorder traversals, and unique tree reconstruction.', 3, true),
-  makeTopic('ds-3-1', 'subj-ds', 'ds-3', 'Tree Properties & Node Count Bounds', 'Strict binary tree leaf nodes: L = I + 1, maximum nodes at depth d: 2^d.', 1, true),
-  makeTopic('ds-3-2', 'subj-ds', 'ds-3', 'Tree Reconstruction from Traversals', 'Unique binary tree construction requiring Inorder + (Preorder OR Postorder).', 2, true),
-
-  makeTopic('ds-4', 'subj-ds', null, 'Binary Search Trees (BST) & AVL Trees', 'BST search/insertion/deletion, Inorder predecessor/successor, and AVL tree rotations & height balance.', 4, true),
-  makeTopic('ds-4-1', 'subj-ds', 'ds-4', 'BST Search, Insertion & Deletion Cases', 'Node deletion cases (0, 1, 2 children), BST validation from preorder sequence.', 1, true),
-  makeTopic('ds-4-2', 'subj-ds', 'ds-4', 'AVL Tree Rotations & Balance Factor', 'LL, RR, LR, RL single and double rotations, minimum nodes for height h: N(h) = N(h-1) + N(h-2) + 1.', 2, true),
-
-  makeTopic('ds-5', 'subj-ds', null, 'Binary Heaps & Priority Queues', 'Min-Heap and Max-Heap properties, array representation, Heapify algorithm, and Heap Sort analysis.', 5, true),
-  makeTopic('ds-5-1', 'subj-ds', 'ds-5', 'Heapify Algorithm & Build-Heap Complexity', 'Bottom-up O(n) Build-Heap derivation vs top-down O(n log n) insertion sequence.', 1, true),
-  makeTopic('ds-5-2', 'subj-ds', 'ds-5', 'Extract-Min/Max & Priority Queue Operations', 'Percolate down / up operations in O(log n), Kth largest element using heap.', 2, true),
-
-  makeTopic('ds-6', 'subj-ds', null, 'Hashing & Collision Resolution', 'Hash functions, Linear Probing, Quadratic Probing, Double Hashing, Separate Chaining, and load factor.', 6, true),
-  makeTopic('ds-6-1', 'subj-ds', 'ds-6', 'Open Addressing Collision Probing', 'Linear probing clustering vs Quadratic probing vs Double hashing secondary hash.', 1, true),
-  makeTopic('ds-6-2', 'subj-ds', 'ds-6', 'Separate Chaining & Search Complexities', 'Load factor alpha = n/m, average successful and unsuccessful search times.', 2, true),
-
-  // ==========================================
-  // 5. DIGITAL LOGIC (subj-dl)
-  // ==========================================
-  makeTopic('dl-1', 'subj-dl', null, 'Boolean Algebra & K-Map Minimization', 'Boolean theorems, SOP/POS forms, Karnaugh Maps, Prime Implicants, and Essential Prime Implicants.', 1, true),
-  makeTopic('dl-1-1', 'subj-dl', 'dl-1', 'Boolean Laws & Canonical Forms', 'De Morgan laws, Consensus theorem, Duality principle, minterms and maxterms.', 1, false),
-  makeTopic('dl-1-2', 'subj-dl', 'dl-1', 'K-Map Minimization with Don\'t Cares', 'Finding Essential Prime Implicants, minimizing multi-variable Boolean expressions.', 2, true),
-
-  makeTopic('dl-2', 'subj-dl', null, 'Number Representations & Arithmetic', 'Signed magnitude, 1s complement, 2s complement range/arithmetic, overflow detection, and IEEE 754 floating point format.', 2, true),
-  makeTopic('dl-2-1', 'subj-dl', 'dl-2', '2s Complement Representation & Overflow', 'Range [-2^(n-1), 2^(n-1)-1], overflow detection rule (Cin XOR Cout of MSB).', 1, true),
-  makeTopic('dl-2-2', 'subj-dl', 'dl-2', 'IEEE 754 Floating-Point Standard', 'Single precision (32-bit: 1 sign, 8 exponent with bias 127, 23 mantissa), normalized values.', 2, true),
-
-  makeTopic('dl-3', 'subj-dl', null, 'Combinational Logic Circuits', 'Multiplexers, Demultiplexers, Decoders, Encoders, Priority Encoders, Half/Full Adders, and Carry Look-Ahead Adders.', 3, true),
-  makeTopic('dl-3-1', 'subj-dl', 'dl-3', 'Multiplexer Implementation of Logic Functions', 'Implementing n-variable boolean functions using 2^(n-1) to 1 MUX.', 1, true),
-  makeTopic('dl-3-2', 'subj-dl', 'dl-3', 'Decoders & Encoders with Enable Lines', 'Constructing higher order decoders from smaller decoders, active-low logic.', 2, false),
-  makeTopic('dl-3-3', 'subj-dl', 'dl-3', 'Carry Look-Ahead Adder Delay Analysis', 'Carry propagate Pi and generate Gi logic, constant addition delay.', 3, true),
-
-  makeTopic('dl-4', 'subj-dl', null, 'Sequential Circuits & Flip-Flops', 'SR, JK, D, T Flip-Flops, characteristic equations, Master-Slave configuration, and Setup/Hold timing violations.', 4, true),
-  makeTopic('dl-4-1', 'subj-dl', 'dl-4', 'Flip-Flop Characteristic & Excitation Equations', 'JK race-around condition, D flip-flop Q(t+1)=D, T flip-flop toggle logic.', 1, true),
-  makeTopic('dl-4-2', 'subj-dl', 'dl-4', 'Setup Time, Hold Time & Maximum Clock Frequency', 'Clock period Tclk >= Tcq + Tcomb + Tsetup, skew calculations.', 2, true),
-
-  makeTopic('dl-5', 'subj-dl', null, 'Counters & State Machines', 'Synchronous & Asynchronous (Ripple) counters, Mod-N counters, Up/Down counters, and Mealy vs Moore state models.', 5, true),
-  makeTopic('dl-5-1', 'subj-dl', 'dl-5', 'Synchronous vs Ripple Counter Delays', 'Ripple counter propagation delay n*Tpd vs synchronous clocking.', 1, true),
-  makeTopic('dl-5-2', 'subj-dl', 'dl-5', 'Mod-N Counter Design & State Diagram Sequence', 'Unused states, lockout prevention, ring counter and Johnson counter mod values.', 2, true),
-
-  // ==========================================
-  // 6. THEORY OF COMPUTATION (subj-toc)
-  // ==========================================
-  makeTopic('toc-1', 'subj-toc', null, 'Finite Automata: DFA & NFA', 'Deterministic and Non-Deterministic Finite Automata, subset construction, DFA state minimization, and dead states.', 1, true),
-  makeTopic('toc-1-1', 'subj-toc', 'toc-1', 'DFA Construction & Substring/Modulus Languages', 'Constructing minimal DFAs for binary numbers divisible by k, modulo arithmetic states.', 1, true),
-  makeTopic('toc-1-2', 'subj-toc', 'toc-1', 'DFA State Minimization & Myhill-Nerode Theorem', 'Table-filling equivalence partitioning algorithm, finding minimum state count.', 2, true),
-  makeTopic('toc-1-3', 'subj-toc', 'toc-1', 'NFA to DFA Conversion & State Power-Set Bounds', 'Subset construction algorithm, maximum states in equivalent DFA (2^n).', 3, false),
-
-  makeTopic('toc-2', 'subj-toc', null, 'Regular Expressions & Regular Languages', 'Regular expressions, Arden Theorem, Pumping Lemma for regular languages, and closure properties of regular languages.', 2, true),
-  makeTopic('toc-2-1', 'subj-toc', 'toc-2', 'Regular Expression Identities & Equivalence', 'Arden theorem: R = Q + RP => R = QP*, converting DFA transitions to RegEx.', 1, false),
-  makeTopic('toc-2-2', 'subj-toc', 'toc-2', 'Pumping Lemma for Regular Languages & Non-Regularity', 'Pumping lemma condition |xy| <= p, y != epsilon, proving languages like a^n b^n are non-regular.', 2, true),
-  makeTopic('toc-2-3', 'subj-toc', 'toc-2', 'Closure Properties of Regular Languages', 'Union, intersection, complement, concatenation, Kleene star, reversal, homomorphism.', 3, true),
-
-  makeTopic('toc-3', 'subj-toc', null, 'Context-Free Grammars & Pushdown Automata', 'CFG generation, ambiguous grammars, Chomsky Normal Form, and Deterministic vs Non-Deterministic Pushdown Automata.', 3, true),
-  makeTopic('toc-3-1', 'subj-toc', 'toc-3', 'CFG Ambiguity & Inherently Ambiguous Languages', 'Multiple leftmost derivations/parse trees for the same string, ambiguity undecidability.', 1, true),
-  makeTopic('toc-3-2', 'subj-toc', 'toc-3', 'Pushdown Automata (DPDA vs NPDA)', 'DPDA (DCFL) strictly less powerful than NPDA (CFL), acceptance by empty stack vs final state.', 2, true),
-  makeTopic('toc-3-3', 'subj-toc', 'toc-3', 'Closure Properties of CFL & DCFL', 'CFL closed under union/concatenation/star, NOT closed under intersection/complement.', 3, true),
-
-  makeTopic('toc-4', 'subj-toc', null, 'Turing Machines & Chomsky Hierarchy', 'Turing machine formal definition, Recursive vs Recursively Enumerable languages, and Chomsky 4-tier grammar hierarchy.', 4, true),
-  makeTopic('toc-4-1', 'subj-toc', 'toc-4', 'Chomsky Hierarchy: Types 0, 1, 2, 3', 'Regular (Type 3) subset of DCFL subset of CFL (Type 2) subset of CSL (Type 1) subset of Recursive subset of RE (Type 0).', 1, true),
-  makeTopic('toc-4-2', 'subj-toc', 'toc-4', 'Recursive (REC) vs Recursively Enumerable (RE)', 'REC halts on all inputs (decidable), RE halts on yes-instances (semi-decidable).', 2, true),
-
-  makeTopic('toc-5', 'subj-toc', null, 'Decidability, Halting Problem & Reductions', 'Decidable vs Undecidable problems across language classes, Halting Problem proof, Rice Theorem, and PCP.', 5, true),
-  makeTopic('toc-5-1', 'subj-toc', 'toc-5', 'Decidability Table for Language Families', 'Membership, Emptiness, Finiteness, Equivalence, Intersection-emptiness decidability grid.', 1, true),
-  makeTopic('toc-5-2', 'subj-toc', 'toc-5', 'Halting Problem & Rice\'s Theorem', 'Halting problem undecidability proof, Rice Theorem on non-trivial semantic properties of RE languages.', 2, true),
-  makeTopic('toc-5-3', 'subj-toc', 'toc-5', 'Post Correspondence Problem (PCP)', 'PCP and Modified PCP undecidability, reductions from PCP to CFG ambiguity.', 3, false),
-
-  // ==========================================
-  // 7. COMPILER DESIGN (subj-cd)
-  // ==========================================
-  makeTopic('cd-1', 'subj-cd', null, 'Lexical Analysis', 'Tokenization, Lex specification, transition diagrams, longest match rule, and handling buffer pairs.', 1, false),
-  makeTopic('cd-1-1', 'subj-cd', 'cd-1', 'Token, Pattern, Lexeme Recognition', 'Differentiating keywords, identifiers, constants, regular expressions in Lex.', 1, false),
-
-  makeTopic('cd-2', 'subj-cd', null, 'Top-Down Parsing: LL(1)', 'FIRST and FOLLOW set computation algorithms, LL(1) parsing table construction, and eliminating left recursion & left factoring.', 2, true),
-  makeTopic('cd-2-1', 'subj-cd', 'cd-2', 'FIRST & FOLLOW Computation Algorithms', 'Nullable productions, epsilon propagation rules, end-marker $ placement.', 1, true),
-  makeTopic('cd-2-2', 'subj-cd', 'cd-2', 'LL(1) Parsing Table & Conflict Detection', 'Table cell collisions M[A, a], condition for grammar to be LL(1) (disjoint FIRST sets).', 2, true),
-  makeTopic('cd-2-3', 'subj-cd', 'cd-2', 'Eliminating Left Recursion & Left Factoring', 'Immediate left recursion elimination A -> A alpha | beta to A -> beta A\', A\' -> alpha A\' | eps.', 3, false),
-
-  makeTopic('cd-3', 'subj-cd', null, 'Bottom-Up Parsing: LR Parsers', 'Shift-reduce parsing, LR(0) items, SLR(1), CLR(1), LALR(1) item sets, and resolving Shift-Reduce / Reduce-Reduce conflicts.', 3, true),
-  makeTopic('cd-3-1', 'subj-cd', 'cd-3', 'LR(0) and SLR(1) Parsing Tables & Conflicts', 'Augmented grammar, CLOSURE, GOTO operations, SLR(1) reduction only in FOLLOW(A).', 1, true),
-  makeTopic('cd-3-2', 'subj-cd', 'cd-3', 'CLR(1) vs LALR(1) Parsing & State Merging', 'LR(1) lookahead propagation, merging states with identical cores, LALR(1) introduce RR conflicts only.', 2, true),
-  makeTopic('cd-3-3', 'subj-cd', 'cd-3', 'Parser Power Hierarchy Comparison', 'LR(0) < SLR(1) < LALR(1) < CLR(1), number of states: LR(0) = SLR(1) = LALR(1) < CLR(1).', 3, true),
-
-  makeTopic('cd-4', 'subj-cd', null, 'Syntax-Directed Translation (SDT)', 'Syntax-Directed Definitions (SDD), Synthesized vs Inherited attributes, S-attributed definitions, and L-attributed definitions.', 4, true),
-  makeTopic('cd-4-1', 'subj-cd', 'cd-4', 'S-Attributed Definitions & Bottom-Up Evaluation', 'Only synthesized attributes, evaluated during bottom-up parsing reductions.', 1, true),
-  makeTopic('cd-4-2', 'subj-cd', 'cd-4', 'L-Attributed Definitions & Dependency Graphs', 'Inherited attributes depend only on parent and left siblings, top-down and bottom-up evaluation.', 2, true),
-
-  makeTopic('cd-5', 'subj-cd', null, 'Intermediate Code Generation & Code Optimization', 'Three-Address Code (TAC), Quadruples, Triples, Basic Blocks, Control Flow Graphs (CFG), and Loop Optimizations.', 5, true),
-  makeTopic('cd-5-1', 'subj-cd', 'cd-5', 'Three-Address Code Generation & DAG Representation', 'Directed Acyclic Graphs (DAG) for basic blocks, subexpression elimination.', 1, true),
-  makeTopic('cd-5-2', 'subj-cd', 'cd-5', 'Basic Block Partitioning & CFG Leaders', 'Leader identification rules: First statement, target of jump, statement following jump.', 2, true),
-  makeTopic('cd-5-3', 'subj-cd', 'cd-5', 'Code Optimization Techniques', 'Constant folding, constant propagation, dead code elimination, loop invariant code motion.', 3, false),
-
-  // ==========================================
-  // 8. ALGORITHMS (subj-algo)
-  // ==========================================
-  makeTopic('alg-1', 'subj-algo', null, 'Asymptotic Analysis & Recurrences', 'Big-O, Omega, Theta, Little-o/omega notations, Master Theorem cases, Akra-Bazzi method, and recursion tree analysis.', 1, true),
-  makeTopic('alg-1-1', 'subj-algo', 'alg-1', 'Asymptotic Growth Rates & Function Ordering', 'Comparing log n, n^c, c^n, n!, n^n growth rates using limits.', 1, true),
-  makeTopic('alg-1-2', 'subj-algo', 'alg-1', 'Master Theorem for Divide & Conquer', 'Cases T(n) = aT(n/b) + f(n): compare f(n) with n^(log_b a), log factors.', 2, true),
-
-  makeTopic('alg-2', 'subj-algo', null, 'Sorting & Searching Algorithms', 'Comparison sorts: Merge Sort, Quick Sort (partitioning & worst-case analysis), Heap Sort, Counting Sort, and lower bounds.', 2, true),
-  makeTopic('alg-2-1', 'subj-algo', 'alg-2', 'Quick Sort Partitioning & Worst-Case Analysis', 'Lomuto/Hoare partitioning, worst-case O(n^2) when already sorted with extreme pivot, randomized quicksort.', 1, true),
-  makeTopic('alg-2-2', 'subj-algo', 'alg-2', 'Merge Sort & Comparison Lower Bound Omega(n log n)', 'Divide & conquer stability, decision tree model for comparison-based sorting lower bound.', 2, true),
-
-  makeTopic('alg-3', 'subj-algo', null, 'Greedy Algorithms', 'Greedy-choice property, Fractional Knapsack, Huffman Coding tree construction, and Activity Selection scheduling.', 3, true),
-  makeTopic('alg-3-1', 'subj-algo', 'alg-3', 'Huffman Coding & Optimal Prefix Codes', 'Bottom-up prefix code tree, minimum bits calculation for message transmission.', 1, true),
-  makeTopic('alg-3-2', 'subj-algo', 'alg-3', 'Fractional Knapsack & Activity Selection', 'Sorting by value/weight ratio or finish times, optimal greedy schedule proof.', 2, false),
-
-  makeTopic('alg-4', 'subj-algo', null, 'Dynamic Programming', 'Optimal substructure, overlapping subproblems, 0/1 Knapsack, Longest Common Subsequence (LCS), Matrix Chain Multiplication (MCM).', 4, true),
-  makeTopic('alg-4-1', 'subj-algo', 'alg-4', '0/1 Knapsack Problem DP Formulation', 'DP state transition T[i, w] = max(T[i-1, w], val[i] + T[i-1, w-wt[i]]), space optimization.', 1, true),
-  makeTopic('alg-4-2', 'subj-algo', 'alg-4', 'Longest Common Subsequence (LCS) & Edit Distance', 'Table filling algorithm O(m*n), string transformation cost analysis.', 2, true),
-  makeTopic('alg-4-3', 'subj-algo', 'alg-4', 'Matrix Chain Multiplication (MCM)', 'Parenthesization cost minimization m[i,j] = min(m[i,k] + m[k+1,j] + p_{i-1}p_k p_j).', 3, true),
-
-  makeTopic('alg-5', 'subj-algo', null, 'Graph Algorithms: Traversal, Shortest Paths & MST', 'BFS, DFS, Topological Sorting, Dijkstra, Bellman-Ford, Floyd-Warshall, Kruskal, and Prim algorithms.', 5, true),
-  makeTopic('alg-5-1', 'subj-algo', 'alg-5', 'BFS, DFS & Topological Sorting', 'Queue BFS vs Stack DFS, cycle detection in directed graphs, Kahn algorithm.', 1, true),
-  makeTopic('alg-5-2', 'subj-algo', 'alg-5', 'Shortest Paths: Dijkstra, Bellman-Ford, Floyd-Warshall', 'Dijkstra non-negative weights O((V+E)log V), Bellman-Ford negative cycle detection O(V*E), Floyd-Warshall O(V^3).', 2, true),
-  makeTopic('alg-5-3', 'subj-algo', 'alg-5', 'Minimum Spanning Trees: Kruskal & Prim', 'Kruskal using Disjoint Set Union (DSU) O(E log E), Prim greedy cut property O(E log V).', 3, true),
-
-  makeTopic('alg-6', 'subj-algo', null, 'NP-Completeness & Reductions', 'P vs NP, NP-Hard vs NP-Complete definitions, polynomial-time reductions, Circuit SAT, 3-SAT, Vertex Cover, and Clique.', 6, false),
-  makeTopic('alg-6-1', 'subj-algo', 'alg-6', 'P, NP, NP-Complete & NP-Hard Classes', 'Deterministic vs non-deterministic polynomial time, verification vs finding certificates.', 1, false),
-  makeTopic('alg-6-2', 'subj-algo', 'alg-6', 'Classical NP-Complete Problems & Reductions', 'Cook-Levin Theorem (SAT), 3-SAT to Vertex Cover and Independent Set reductions.', 2, true),
-
-  // ==========================================
-  // 9. DATABASE MANAGEMENT SYSTEMS (subj-dbms)
-  // ==========================================
-  makeTopic('db-1', 'subj-dbms', null, 'ER-Model & Relational Model', 'Entity-Relationship diagrams, cardinality/participation constraints, converting ER to relational tables, and weak entities.', 1, false),
-  makeTopic('db-1-1', 'subj-dbms', 'db-1', 'ER Diagrams to Relational Tables Mapping', 'Minimum tables required for 1:1, 1:N, M:N relationships, handling weak entity keys.', 1, true),
-
-  makeTopic('db-2', 'subj-dbms', null, 'Relational Algebra & Tuple Calculus', 'Selection, Projection, Cartesian Product, Set Difference, Joins (Natural, Outer, Theta), Division, and TRC safety.', 2, true),
-  makeTopic('db-2-1', 'subj-dbms', 'db-2', 'Relational Algebra Operators & Relational Division', 'Division operator R / S for "for all" queries, natural join vs cross product.', 1, true),
-  makeTopic('db-2-2', 'subj-dbms', 'db-2', 'Tuple & Domain Relational Calculus (TRC / DRC)', 'First-order logic queries, safe vs unsafe expressions in relational calculus.', 2, false),
-
-  makeTopic('db-3', 'subj-dbms', null, 'SQL Queries, Joins & Aggregations', 'SELECT clauses, GROUP BY, HAVING, subqueries, Correlated Subqueries, INNER/LEFT/RIGHT/FULL OUTER JOIN, and NULL logic.', 3, true),
-  makeTopic('db-3-1', 'subj-dbms', 'db-3', 'SQL Joins & NULL Value 3-Valued Logic', 'TRUE, FALSE, UNKNOWN truth tables, LEFT OUTER JOIN with NULL filtering.', 1, true),
-  makeTopic('db-3-2', 'subj-dbms', 'db-3', 'GROUP BY, HAVING & Nested Correlated Subqueries', 'Aggregate functions (COUNT, SUM, AVG), EXISTS / NOT EXISTS correlated subqueries.', 2, true),
-
-  makeTopic('db-4', 'subj-dbms', null, 'Functional Dependencies & Normalization', 'Armstrong axioms, Attribute Closure, Candidate Keys, Canonical Cover, 1NF, 2NF, 3NF, BCNF, and Decomposition.', 4, true),
-  makeTopic('db-4-1', 'subj-dbms', 'db-4', 'Attribute Closure & Finding Candidate Keys', 'Computing X+, finding all candidate keys and super keys algorithm.', 1, true),
-  makeTopic('db-4-2', 'subj-dbms', 'db-4', 'Canonical / Minimal Cover of Functional Dependencies', 'Eliminating extraneous left attributes, removing redundant FDs.', 2, true),
-  makeTopic('db-4-3', 'subj-dbms', 'db-4', 'Normal Forms: 2NF, 3NF, BCNF Identification', '2NF (no partial dependency), 3NF (transitive dependency: X is superkey or Y is prime), BCNF (X is superkey).', 3, true),
-  makeTopic('db-4-4', 'subj-dbms', 'db-4', 'Lossless Join & Dependency Preserving Decompositions', 'Lossless join test: R1 cap R2 -> (R1 - R2) or (R2 - R1), dependency preservation checking.', 4, true),
-
-  makeTopic('db-5', 'subj-dbms', null, 'Transactions & Concurrency Control', 'ACID properties, Schedule Serializability, Conflict Serializability (Precedence Graphs), Recoverability, and 2PL.', 5, true),
-  makeTopic('db-5-1', 'subj-dbms', 'db-5', 'Conflict Serializability & Precedence Graph Cycles', 'Conflict operations (R-W, W-R, W-W on same data item), topological sort for equivalent serial order.', 1, true),
-  makeTopic('db-5-2', 'subj-dbms', 'db-5', 'Recoverable & Cascadeless Schedules', 'Dirty read problem, uncommitted dependency abort recovery order.', 2, true),
-  makeTopic('db-5-3', 'subj-dbms', 'db-5', 'Two-Phase Locking (2PL) & Strict / Rigorous 2PL', 'Growing vs shrinking phase, Strict 2PL ensures conflict serializability + recoverable schedule.', 3, true),
-
-  makeTopic('db-6', 'subj-dbms', null, 'File Organization & B / B+ Trees', 'Primary, Secondary, Clustered indexing, B-Tree and B+ Tree order, maximum/minimum keys, node splits, and height.', 6, true),
-  makeTopic('db-6-1', 'subj-dbms', 'db-6', 'B+ Tree Structure & Node Key Bounds', 'Order p: leaf node vs internal node pointer/key counts, ceiling(p/2) minimum capacity.', 1, true),
-  makeTopic('db-6-2', 'subj-dbms', 'db-6', 'Search, Insert & Block Access Calculations in B+ Trees', 'Calculating I/O block accesses for search, node splitting on overflow.', 2, true),
-
-  // ==========================================
-  // 10. COMPUTER ORGANIZATION & ARCHITECTURE (subj-coa)
-  // ==========================================
-  makeTopic('coa-1', 'subj-coa', null, 'Machine Instructions & Addressing Modes', 'Instruction formats (0, 1, 2, 3 address), Addressing modes (Immediate, Direct, Indirect, Indexed, Base, Relative), and instruction cycles.', 1, true),
-  makeTopic('coa-1-1', 'subj-coa', 'coa-1', 'Addressing Modes & Effective Address Calculations', 'Immediate, Register Indirect, Auto-increment, PC-Relative offset, Indexed addressing.', 1, true),
-  makeTopic('coa-1-2', 'subj-coa', 'coa-1', 'Instruction Encoding & Expanding Opcodes', 'Variable length opcode encoding, maximum instructions given register count and address bits.', 2, true),
-
-  makeTopic('coa-2', 'subj-coa', null, 'Instruction Pipelining & Hazard Analysis', 'Pipeline stages (IF, ID, EX, MEM, WB), Speedup formula, Structural, Data (RAW, WAR, WAW), and Control Hazards with branch penalties.', 2, true),
-  makeTopic('coa-2-1', 'subj-coa', 'coa-2', 'Pipeline Speedup, Throughput & Efficiency', 'Formula: Speedup S = (n * k) / (k + n - 1 + stalls) as n -> infinity S -> k.', 1, true),
-  makeTopic('coa-2-2', 'subj-coa', 'coa-2', 'Data Hazards & Operand Forwarding', 'Read-After-Write (RAW) true dependency, stall cycles calculation with/without forwarding.', 2, true),
-  makeTopic('coa-2-3', 'subj-coa', 'coa-2', 'Control Hazards & Branch Prediction', 'Branch penalty clock cycles, delayed branching, branch target buffer (BTB).', 3, true),
-
-  makeTopic('coa-3', 'subj-coa', null, 'Cache Memory Organization & AMAT', 'Direct mapped, Fully Associative, Set-Associative mapping, Tag/Set/Offset bit partitions, Write-through vs Write-back, and AMAT.', 3, true),
-  makeTopic('coa-3-1', 'subj-coa', 'coa-3', 'Cache Address Splitting: Tag, Set, Block Offset', 'Formulas: Offset = log2(Block Size), Set = log2(Num Sets), Tag = Addr - Set - Offset.', 1, true),
-  makeTopic('coa-3-2', 'subj-coa', 'coa-3', 'Average Memory Access Time (AMAT) & Multi-Level Cache', 'AMAT = T_L1 + M_L1 * (T_L2 + M_L2 * T_Main), simultaneous vs hierarchical access.', 2, true),
-  makeTopic('coa-3-3', 'subj-coa', 'coa-3', 'Write Policies & Cache Replacement (LRU, FIFO)', 'Write-through with write-buffer vs write-back with dirty bit, LRU bit tracking.', 3, false),
-
-  makeTopic('coa-4', 'subj-coa', null, 'Main Memory Interleaving & Virtual Memory', 'High-order vs Low-order interleaved memory banks, memory access cycle time, Page tables, and TLB hit access.', 4, true),
-  makeTopic('coa-4-1', 'subj-coa', 'coa-4', 'Memory Interleaving & Bandwidth Analysis', 'Low-order interleaving for continuous pipeline memory bandwidth.', 1, false),
-  makeTopic('coa-4-2', 'subj-coa', 'coa-4', 'Virtual Memory Address Translation in Hardware', 'Virtual Page Number (VPN) to Physical Frame Number (PFN) translation with TLB.', 2, true),
-
-  makeTopic('coa-5', 'subj-coa', null, 'Data-Path, Control Unit & I/O / DMA', 'Single-cycle vs multi-cycle datapath, Hardwired vs Microprogrammed control, Interrupt latency, and Direct Memory Access (DMA).', 5, false),
-  makeTopic('coa-5-1', 'subj-coa', 'coa-5', 'Hardwired vs Microprogrammed Control Units', 'Horizontal vs vertical microinstructions, control store size calculations.', 1, false),
-  makeTopic('coa-5-2', 'subj-coa', 'coa-5', 'I/O Organization & DMA Transfer Modes', 'Cycle stealing mode vs Burst mode DMA transfer bandwidth calculations.', 2, true),
-
-  // ==========================================
-  // 11. DISCRETE MATHEMATICS (subj-dm)
-  // ==========================================
-  makeTopic('dm-1', 'subj-dm', null, 'Propositional & First-Order Logic', 'Truth tables, Logical equivalences, Tautology/Contradiction, CNF/DNF normal forms, Predicate quantifiers (Forall, Exists), and validity.', 1, true),
-  makeTopic('dm-1-1', 'subj-dm', 'dm-1', 'Propositional Logic & Tautological Equivalences', 'Implication p -> q == ~p v q, Contrapositive, De Morgan rules in logic.', 1, true),
-  makeTopic('dm-1-2', 'subj-dm', 'dm-1', 'First-Order Predicate Logic & Quantifier Scope', 'Negating quantifiers ~(forall x P(x)) == exists x ~P(x), translating English statements.', 2, true),
-
-  makeTopic('dm-2', 'subj-dm', null, 'Sets, Relations, Functions & Posets', 'Equivalence relations, Partial Orders (Posets), Hasse diagrams, Lattices (complete/distributive), and Injective/Surjective functions.', 2, true),
-  makeTopic('dm-2-1', 'subj-dm', 'dm-2', 'Relations: Reflexive, Symmetric, Transitive & Closures', 'Number of reflexive 2^(n^2-n), symmetric 2^(n(n+1)/2), and equivalence relations (Bell numbers).', 1, true),
-  makeTopic('dm-2-2', 'subj-dm', 'dm-2', 'Posets, Hasse Diagrams & Lattices', 'GLB (meet), LUB (join), complemented and distributive lattice properties.', 2, true),
-
-  makeTopic('dm-3', 'subj-dm', null, 'Combinatorics & Recurrence Relations', 'Permutations & Combinations, Pigeonhole Principle, Inclusion-Exclusion, Generating Functions, and Homogeneous/Non-homogeneous Recurrences.', 3, true),
-  makeTopic('dm-3-1', 'subj-dm', 'dm-3', 'Pigeonhole Principle & Combinatorial Counting', 'Generalized pigeonhole principle ceil(N/k), stars and bars distribution formula C(n+k-1, k-1).', 1, true),
-  makeTopic('dm-3-2', 'subj-dm', 'dm-3', 'Linear Recurrence Relations & Characteristic Roots', 'Solving an = c1*a_{n-1} + c2*a_{n-2}, repeated roots, particular solutions.', 2, true),
-
-  makeTopic('dm-4', 'subj-dm', null, 'Graph Theory: Paths, Cycles & Coloring', 'Handshaking lemma, Euler tours, Hamiltonian cycles, Planar graphs, Euler formula, Chromatic numbers, and Graph Isomorphism.', 4, true),
-  makeTopic('dm-4-1', 'subj-dm', 'dm-4', 'Handshaking Lemma & Degree Sequences', 'Sum of degrees = 2 * |E|, Havel-Hakimi theorem for graphical degree sequences.', 1, true),
-  makeTopic('dm-4-2', 'subj-dm', 'dm-4', 'Eulerian Graphs vs Hamiltonian Graphs', 'Eulerian iff all vertices have even degree, Dirac/Ore sufficient conditions for Hamiltonian.', 2, true),
-  makeTopic('dm-4-3', 'subj-dm', 'dm-4', 'Planar Graphs, Euler Formula & Graph Coloring', 'Euler formula V - E + F = 2, max edges E <= 3V - 6, chromatic number chi(G) bounds.', 3, true),
-
-  makeTopic('dm-5', 'subj-dm', null, 'Group Theory & Algebraic Structures', 'Semi-groups, Monoids, Groups, Abelian Groups, Subgroups, Cyclic groups, and Lagrange Theorem.', 5, false),
-  makeTopic('dm-5-1', 'subj-dm', 'dm-5', 'Groups, Cyclic Groups & Lagrange Theorem', 'Order of group and elements, order of subgroup divides order of finite group.', 1, false),
-
-  // ==========================================
-  // 12. ENGINEERING MATHEMATICS (subj-em)
-  // ==========================================
-  makeTopic('em-1', 'subj-em', null, 'Linear Algebra: Matrices & Systems', 'Matrix operations, Determinants, Rank of a matrix, Systems of Linear Equations (AX=B consistency, unique/infinite/no solution).', 1, true),
-  makeTopic('em-1-1', 'subj-em', 'em-1', 'Matrix Rank & Systems of Linear Equations AX = B', 'Augmented matrix [A|B], consistency condition rank(A) = rank(A|B), unique vs infinite solutions.', 1, true),
-
-  makeTopic('em-2', 'subj-em', null, 'Eigenvalues, Eigenvectors & Cayley-Hamilton', 'Characteristic equation |A - lambda*I| = 0, properties of eigenvalues (trace=sum, det=product), Diagonalization, and Cayley-Hamilton Theorem.', 2, true),
-  makeTopic('em-2-1', 'subj-em', 'em-2', 'Eigenvalue Properties & Spectral Theorems', 'Symmetric matrix real eigenvalues, orthogonal eigenvectors, trace and determinant shortcuts.', 1, true),
-  makeTopic('em-2-2', 'subj-em', 'em-2', 'Cayley-Hamilton Theorem & Matrix Inverses', 'Matrix satisfies its own characteristic polynomial A^n + ... = 0, calculating high matrix powers.', 2, true),
-
-  makeTopic('em-3', 'subj-em', null, 'Calculus: Limits, Continuity & Extrema', 'Limits (L\'Hopital rule), Continuity, Differentiability, Mean Value Theorems, Taylor/Maclaurin series, and Maxima/Minima of single/multi variables.', 3, false),
-  makeTopic('em-3-1', 'subj-em', 'em-3', 'Limits & L\'Hopital Rule', 'Indeterminate forms 0/0 and inf/inf, standard exponential limits (1 + a/x)^x -> e^a.', 1, false),
-  makeTopic('em-3-2', 'subj-em', 'em-3', 'Maxima, Minima & Saddle Points', 'First and second derivative tests, Hessian matrix discriminant for multivariable extrema.', 2, true),
-
-  makeTopic('em-4', 'subj-em', null, 'Probability & Distributions', 'Sample space, Conditional Probability, Bayes\' Theorem, Random Variables, Expectation, Variance, Uniform, Normal, Poisson, Exponential distributions.', 4, true),
-  makeTopic('em-4-1', 'subj-em', 'em-4', 'Conditional Probability & Bayes\' Theorem', 'P(A|B) = P(B|A)*P(A) / P(B), total probability theorem application.', 1, true),
-  makeTopic('em-4-2', 'subj-em', 'em-4', 'Discrete Distributions: Binomial & Poisson', 'Binomial P(X=k)=C(n,k)p^k q^(n-k), Poisson P(X=k)=e^-lambda * lambda^k / k! with mean=variance=lambda.', 2, true),
-  makeTopic('em-4-3', 'subj-em', 'em-4', 'Continuous Distributions: Uniform, Normal & Exponential', 'Probability density functions, memoryless property of exponential distribution P(X > s+t | X > s) = P(X > t).', 3, true),
-
-  // ==========================================
-  // 13. GENERAL APTITUDE (subj-ga)
-  // ==========================================
-  makeTopic('ga-1', 'subj-ga', null, 'Quantitative Aptitude', 'Percentages, Profit & Loss, Ratio & Proportion, Work & Time, Speed Time Distance, Number Systems, and Elementary Statistics.', 1, true),
-  makeTopic('ga-1-1', 'subj-ga', 'ga-1', 'Work & Time, Pipes & Cisterns', 'Efficiency method, combined work rate 1/T = 1/A + 1/B.', 1, true),
-  makeTopic('ga-1-2', 'subj-ga', 'ga-1', 'Speed, Time & Distance, Relative Speed', 'Relative speed for trains (same vs opposite direction), average speed formula.', 2, true),
-
-  makeTopic('ga-2', 'subj-ga', null, 'Analytical & Spatial Aptitude', 'Logical deductions, Syllogisms, Seating arrangements, Blood relations, Paper folding, Mirror reflection, and 2D/3D rotations.', 2, true),
-  makeTopic('ga-2-1', 'subj-ga', 'ga-2', 'Syllogisms & Logical Deductions', 'Venn diagram representations of "All", "Some", "No" propositions.', 1, true),
-  makeTopic('ga-2-2', 'subj-ga', 'ga-2', 'Spatial Aptitude: Paper Folding & 3D Assembly', 'Mirror reflections, surface unfolding of cubes, pattern completion.', 2, true),
-
-  makeTopic('ga-3', 'subj-ga', null, 'Verbal Aptitude', 'English grammar (tenses, subject-verb agreement, prepositions), vocabulary in context, reading comprehension, and narrative sequencing.', 3, false),
-  makeTopic('ga-3-1', 'subj-ga', 'ga-3', 'English Grammar & Sentence Correction', 'Subject-verb agreement, conditional clauses, dangling modifiers.', 1, false),
-  makeTopic('ga-3-2', 'subj-ga', 'ga-3', 'Reading Comprehension & Critical Reasoning', 'Identifying author premise, strengthening/weakening arguments, inferences.', 2, false),
+  // =========================================================================
+  // 1. COMPUTER ORGANIZATION & ARCHITECTURE (subj-coa) - 251 Total PYQs
+  // =========================================================================
+  makeTopic('coa-1', 'subj-coa', null, 'Cache Memory', 'Direct, Set-Associative, Fully Associative mapping, tag/set/offset bits, Write policies, and AMAT (69 PYQs).', 1, true, 69),
+  makeTopic('coa-1-1', 'subj-coa', 'coa-1', 'Cache Mapping & Address Bits Splitting', 'Tag, Set index, and Word Offset partition formulas.', 1, true, 42),
+  makeTopic('coa-1-2', 'subj-coa', 'coa-1', 'Average Memory Access Time (AMAT)', 'Hierarchical vs simultaneous memory access time calculations.', 2, true, 27),
+
+  makeTopic('coa-2', 'subj-coa', null, 'Pipelining & Hazards', 'Instruction pipelining stages, speedup formulas, RAW/WAR/WAW data hazards, branch delays (39 PYQs).', 2, true, 39),
+  makeTopic('coa-2-1', 'subj-coa', 'coa-2', 'Pipeline Speedup & Throughput Analysis', 'Speedup S = (n*k)/(k+n-1+stalls), clock period constraints.', 1, true, 24),
+  makeTopic('coa-2-2', 'subj-coa', 'coa-2', 'Data Hazards & Operand Forwarding', 'Read-After-Write (RAW) dependency resolution with forwarding paths.', 2, true, 15),
+
+  makeTopic('coa-3', 'subj-coa', null, 'Machine Instruction', 'Instruction execution cycles, opcode decoding, and register transfer operations (21 PYQs).', 3, true, 21),
+  makeTopic('coa-4', 'subj-coa', null, 'Addressing Modes', 'Immediate, Direct, Indirect, Indexed, Base Register, and PC-Relative effective address calculations (19 PYQs).', 4, true, 19),
+  makeTopic('coa-5', 'subj-coa', null, 'Microprogramming & Control Unit', 'Horizontal vs vertical microinstructions, control store addressing, micro-program sequencing (12 PYQs).', 5, true, 12),
+  makeTopic('coa-6', 'subj-coa', null, 'Instruction Format', '0, 1, 2, 3 address instruction formats, expanding opcodes, register and address bit constraints (11 PYQs).', 6, true, 11),
+  makeTopic('coa-7', 'subj-coa', null, 'Interrupts', 'Vectored vs non-vectored interrupts, interrupt latency, priority interrupt controllers (10 PYQs).', 7, true, 10),
+  makeTopic('coa-8', 'subj-coa', null, 'Direct Memory Access (DMA)', 'DMA controller architecture, cycle stealing mode vs burst mode data transfer bandwidth (8 PYQs).', 8, true, 8),
+  makeTopic('coa-9', 'subj-coa', null, 'IO Handling', 'Programmed I/O, interrupt-driven I/O, memory-mapped I/O vs I/O-mapped I/O (8 PYQs).', 9, true, 8),
+  makeTopic('coa-10', 'subj-coa', null, 'Data Path Design', 'Single-cycle and multi-cycle datapath, ALU control signals, bus architectures (7 PYQs).', 10, true, 7),
+
+  // =========================================================================
+  // 2. COMPUTER NETWORKS (subj-cn) - 226 Total PYQs
+  // =========================================================================
+  makeTopic('cn-1', 'subj-cn', null, 'Subnetting & CIDR', 'Classless Inter-Domain Routing, prefix matching, subnet mask calculation, and VLSM (21 PYQs).', 1, true, 21),
+  makeTopic('cn-1-1', 'subj-cn', 'cn-1', 'VLSM & Variable Length Subnet Allocation', 'Hierarchical prefix distribution, maximizing usable address space.', 1, true, 12),
+  makeTopic('cn-1-2', 'subj-cn', 'cn-1', 'Longest Prefix Matching & Route Aggregation', 'Routing table lookups, CIDR supernet aggregation.', 2, true, 9),
+
+  makeTopic('cn-2', 'subj-cn', null, 'TCP Protocol', '3-way handshake connection setup/teardown, sequence/ACK numbering, TCP flags and header fields (20 PYQs).', 2, true, 20),
+  makeTopic('cn-3', 'subj-cn', null, 'Sliding Window Protocols', 'Stop-and-Wait, Go-Back-N, Selective Repeat efficiency formulas eta = 1/(1+2a) and window sizing (16 PYQs).', 3, true, 16),
+  makeTopic('cn-4', 'subj-cn', null, 'Routing Algorithms', 'Link State (Dijkstra / OSPF), Distance Vector, hierarchical routing and autonomous systems (14 PYQs).', 4, true, 14),
+  makeTopic('cn-5', 'subj-cn', null, 'Application Layer Protocols', 'DNS iterative/recursive resolution, HTTP/1.1 vs HTTP/2, SMTP, FTP, and DHCP (13 PYQs).', 5, true, 13),
+  makeTopic('cn-6', 'subj-cn', null, 'IP Packet & Header', 'IPv4 header fields, TTL expiry, Total Length, and packet fragmentation offset arithmetic (12 PYQs).', 6, true, 12),
+  makeTopic('cn-7', 'subj-cn', null, 'Network Protocols', 'ARP address resolution, ICMP error reporting, NAT translation, IPv6 header differences (11 PYQs).', 7, true, 11),
+  makeTopic('cn-8', 'subj-cn', null, 'Congestion Control', 'TCP Slow Start, Congestion Avoidance AIMD, Fast Retransmit, Fast Recovery, and threshold halving (9 PYQs).', 8, true, 9),
+  makeTopic('cn-9', 'subj-cn', null, 'Distance Vector Routing', 'Bellman-Ford vector updates, Count-to-Infinity problem, split horizon and poison reverse (8 PYQs).', 9, true, 8),
+  makeTopic('cn-10', 'subj-cn', null, 'Error Detection & CRC', 'Cyclic Redundancy Check modulo-2 polynomial division, parity checks, Hamming distance (8 PYQs).', 10, true, 8),
+  makeTopic('cn-11', 'subj-cn', null, 'IP Addressing', 'Classful IPv4 addressing boundaries, special IP ranges, loopback, private IP blocks (8 PYQs).', 11, true, 8),
+  makeTopic('cn-12', 'subj-cn', null, 'Medium Access Control (MAC)', 'Pure & Slotted ALOHA throughput formulas, CSMA/CD minimum frame length L >= 2*Tp*B (7 PYQs).', 12, false, 7),
+
+  // =========================================================================
+  // 3. DATABASE MANAGEMENT SYSTEM (subj-dbms) - 302 Total PYQs
+  // =========================================================================
+  makeTopic('db-1', 'subj-dbms', null, 'SQL Queries', 'SELECT clauses, GROUP BY, HAVING, subqueries, nested correlated subqueries, and NULL 3-valued logic (58 PYQs).', 1, true, 58),
+  makeTopic('db-1-1', 'subj-dbms', 'db-1', 'Nested & Correlated Subqueries', 'EXISTS / NOT EXISTS, IN / NOT IN, correlated row evaluations.', 1, true, 32),
+  makeTopic('db-1-2', 'subj-dbms', 'db-1', 'Aggregations & HAVING Filtering', 'GROUP BY multiple columns, aggregate function semantics.', 2, true, 26),
+
+  makeTopic('db-2', 'subj-dbms', null, 'Database Normalization', '1NF, 2NF, 3NF, BCNF, Functional Dependencies, Canonical Minimal Cover, Lossless Join decomposition (56 PYQs).', 2, true, 56),
+  makeTopic('db-2-1', 'subj-dbms', 'db-2', '3NF and BCNF Normal Forms', 'Superkey criteria, prime attributes, identifying highest normal form.', 1, true, 30),
+  makeTopic('db-2-2', 'subj-dbms', 'db-2', 'Lossless Join & Dependency Preservation', 'Decomposition validation tests R1 cap R2 -> (R1 - R2).', 2, true, 26),
+
+  makeTopic('db-3', 'subj-dbms', null, 'Relational Algebra', 'Selection, Projection, Join (Natural, Outer, Theta), Cartesian product, and Relational Division (33 PYQs).', 3, true, 33),
+  makeTopic('db-4', 'subj-dbms', null, 'B Tree & B+ Tree', 'B/B+ Tree order p, maximum/minimum key bounds, node splits on insertion, disk block I/O calculations (32 PYQs).', 4, true, 32),
+  makeTopic('db-5', 'subj-dbms', null, 'Transaction and Concurrency', 'ACID properties, Serializability schedules, View Serializability, Recoverable and Cascadeless schedules, 2PL (27 PYQs).', 5, true, 27),
+  makeTopic('db-6', 'subj-dbms', null, 'Indexing', 'Primary, Secondary, Clustered, and Dense vs Sparse index structures and block access costs (15 PYQs).', 6, true, 15),
+  makeTopic('db-7', 'subj-dbms', null, 'Relational Calculus', 'Tuple Relational Calculus (TRC), Domain Relational Calculus (DRC), and safety conditions (13 PYQs).', 7, true, 13),
+  makeTopic('db-8', 'subj-dbms', null, 'Conflict Serializable', 'Conflict operations (R-W, W-R, W-W), Precedence Graphs cycle detection, equivalent serial order (12 PYQs).', 8, true, 12),
+  makeTopic('db-9', 'subj-dbms', null, 'ER Diagram', 'Entity-Relationship models, cardinality ratios, participation constraints, mapping ER to tables (12 PYQs).', 9, true, 12),
+  makeTopic('db-10', 'subj-dbms', null, 'Candidate Key', 'Attribute closure X+ algorithms, finding all minimal candidate keys and superkeys (7 PYQs).', 10, true, 7),
+  makeTopic('db-11', 'subj-dbms', null, 'Joins in DBMS', 'INNER JOIN, LEFT/RIGHT/FULL OUTER JOIN, natural join truth tables and join algorithms (7 PYQs).', 11, true, 7),
+
+  // =========================================================================
+  // 4. DIGITAL LOGIC (subj-dl) - 313 Total PYQs
+  // =========================================================================
+  makeTopic('dl-1', 'subj-dl', null, 'Number Representation', 'Signed magnitude, 1s complement, 2s complement arithmetic, range formulas, and overflow detection (57 PYQs).', 1, true, 57),
+  makeTopic('dl-2', 'subj-dl', null, 'Circuit Output Analysis', 'Tracing outputs of combinational and sequential gate circuits, propagation delays, glitch hazards (40 PYQs).', 2, true, 40),
+  makeTopic('dl-3', 'subj-dl', null, 'Boolean Algebra', 'Boolean theorems, De Morgan laws, Consensus theorem, Duality, and Boolean function simplifications (34 PYQs).', 3, true, 34),
+  makeTopic('dl-4', 'subj-dl', null, 'Digital Counter', 'Synchronous and Asynchronous (Ripple) counters, Mod-N counters, Up/Down counters, ring & Johnson counters (18 PYQs).', 4, true, 18),
+  makeTopic('dl-5', 'subj-dl', null, 'K Map Minimization', 'Karnaugh Map grouping, Essential Prime Implicants, Prime Implicants, and Don\'t Care minimization (17 PYQs).', 5, true, 17),
+  makeTopic('dl-6', 'subj-dl', null, 'Min Sum of Products Form (SOP)', 'Minimal Sum-of-Products and Product-of-Sums expressions, standard vs canonical forms (16 PYQs).', 6, true, 16),
+  makeTopic('dl-7', 'subj-dl', null, 'IEEE Representation', 'IEEE 754 Floating Point Standard (32-bit single precision, 64-bit double precision, exponent bias, normalized values) (14 PYQs).', 7, true, 14),
+  makeTopic('dl-8', 'subj-dl', null, 'Multiplexer', 'Implementing Boolean logic functions using 2:1, 4:1, 8:1 Multiplexers and Multiplexer tree expansion (14 PYQs).', 8, true, 14),
+  makeTopic('dl-9', 'subj-dl', null, 'Canonical Normal Form', 'Minterms (m-notation) and Maxterms (M-notation), converting non-canonical expressions to canonical (10 PYQs).', 9, true, 10),
+  makeTopic('dl-10', 'subj-dl', null, 'Adder Circuits', 'Half Adder, Full Adder, Ripple Carry Adder delay, Carry Look-Ahead Adder generation and propagation logic (9 PYQs).', 10, true, 9),
+  makeTopic('dl-11', 'subj-dl', null, 'Flip-Flops & Timing', 'SR, JK, D, T Flip-Flops, race-around condition, Setup and Hold time constraints for max clock frequency (8 PYQs).', 11, false, 8),
+
+  // =========================================================================
+  // 5. OPERATING SYSTEM (subj-os) - 343 Total PYQs
+  // =========================================================================
+  makeTopic('os-1', 'subj-os', null, 'Process Synchronization', 'Critical Section criteria (Mutual Exclusion, Progress, Bounded Waiting), Peterson Algorithm, TestAndSet, and Semaphores (52 PYQs).', 1, true, 52),
+  makeTopic('os-1-1', 'subj-os', 'os-1', 'Peterson Algorithm & Critical Section Proofs', 'Flag array and turn variable race condition validation.', 1, true, 26),
+  makeTopic('os-1-2', 'subj-os', 'os-1', 'Classical Sync: Producer-Consumer & Reader-Writer', 'Binary and Counting semaphore synchronization scenarios.', 2, true, 26),
+
+  makeTopic('os-2', 'subj-os', null, 'Process Scheduling', 'CPU Scheduling algorithms (FCFS, Non-preemptive/Preemptive SJF / SRTF, Round Robin with quantum, Priority) (49 PYQs).', 2, true, 49),
+  makeTopic('os-3', 'subj-os', null, 'Virtual Memory', 'Demand paging, Translation Lookaside Buffer (TLB), Effective Memory Access Time (EMAT) calculations, multi-level page table lookups (43 PYQs).', 3, true, 43),
+  makeTopic('os-4', 'subj-os', null, 'Page Replacement', 'FIFO, LRU, Optimal page replacement algorithms, Belady Anomaly, page fault counting on reference strings (31 PYQs).', 4, true, 31),
+  makeTopic('os-5', 'subj-os', null, 'Disk Management', 'Disk geometry, Sector/Track addressing, rotational latency, transfer rate, and Unix Inode block pointer calculations (30 PYQs).', 5, true, 30),
+  makeTopic('os-6', 'subj-os', null, 'Resource Allocation & Deadlocks', 'Deadlock necessary conditions, Resource Allocation Graphs (RAG), Banker Algorithm for safety and resource requests (27 PYQs).', 6, true, 27),
+  makeTopic('os-7', 'subj-os', null, 'Disk Scheduling', 'FCFS, SSTF, SCAN (Elevator), C-SCAN, LOOK, C-LOOK seek time track movement calculations (16 PYQs).', 7, true, 16),
+  makeTopic('os-8', 'subj-os', null, 'Semaphore', 'Counting semaphore values, concurrent P/V wait/signal operation sequences and deadlock states (11 PYQs).', 8, true, 11),
+  makeTopic('os-9', 'subj-os', null, 'Threads & Concurrency', 'User-level threads vs Kernel-level threads, thread synchronization, thread control blocks (10 PYQs).', 9, true, 10),
+  makeTopic('os-10', 'subj-os', null, 'Memory Management', 'Single-level and Multi-level paging address translation, Page Table Base Register (PTBR), internal/external fragmentation (9 PYQs).', 10, true, 9),
+
+  // =========================================================================
+  // 6. DISCRETE MATHEMATICS (subj-dm) - 390 Total PYQs
+  // =========================================================================
+  // --- Combinatorics (51 PYQs) ---
+  makeTopic('dm-1', 'subj-dm', null, 'Combinatory & Counting', 'Permutations & Combinations, Binomial theorem, inclusion-exclusion principle, and counting techniques (18 PYQs).', 1, true, 18),
+  makeTopic('dm-2', 'subj-dm', null, 'Recurrence Relation', 'Solving linear homogeneous and non-homogeneous recurrence relations, characteristic roots (7 PYQs).', 2, true, 7),
+  makeTopic('dm-3', 'subj-dm', null, 'Balls In Bins & Stars and Bars', 'Distributing distinct/identical objects into distinct/identical bins, formulas C(n+k-1, k-1) (6 PYQs).', 3, true, 6),
+  makeTopic('dm-4', 'subj-dm', null, 'Counting Principles', 'Rule of sum, rule of product, pigeonhole principle applications (6 PYQs).', 4, true, 6),
+  makeTopic('dm-5', 'subj-dm', null, 'Generating Functions', 'Ordinary and exponential generating functions, closed forms for sequence generation (6 PYQs).', 5, true, 6),
+  makeTopic('dm-6', 'subj-dm', null, 'Summation & Series', 'Sum of powers of integers, geometric and arithmetic-geometric series formulas (4 PYQs).', 6, true, 4),
+  makeTopic('dm-7', 'subj-dm', null, 'Modular Arithmetic in Combinatorics', 'Fermat Little Theorem, modular inverses, Chinese Remainder Theorem basics (2 PYQs).', 7, true, 2),
+  makeTopic('dm-8', 'subj-dm', null, 'Pigeonhole Principle', 'Generalized pigeonhole principle ceil(N/k), minimum elements to guarantee duplicates (2 PYQs).', 8, true, 2),
+
+  // --- Graph Theory (88 PYQs) ---
+  makeTopic('dm-9', 'subj-dm', null, 'Graph Connectivity', 'Connected components, cut vertices, cut edges, bridges, Eulerian paths/circuits, Hamiltonian cycles (40 PYQs).', 9, true, 40),
+  makeTopic('dm-10', 'subj-dm', null, 'Degree of Graph', 'Handshaking Lemma (Sum of degrees = 2|E|), degree sequences, Havel-Hakimi theorem (13 PYQs).', 10, true, 13),
+  makeTopic('dm-11', 'subj-dm', null, 'Graph Planarity', 'Planar graphs, Euler formula V - E + F = 2, maximal planar graph edges E <= 3V - 6 (13 PYQs).', 11, true, 13),
+  makeTopic('dm-12', 'subj-dm', null, 'Graph Coloring', 'Vertex chromatic number chi(G), edge chromatic index, four-color theorem bounds, bipartite coloring (11 PYQs).', 12, true, 11),
+  makeTopic('dm-13', 'subj-dm', null, 'Graph Isomorphism', 'Graph invariant checks: vertex counts, degree multisets, adjacency matrix isomorphism (4 PYQs).', 13, true, 4),
+  makeTopic('dm-14', 'subj-dm', null, 'Counting in Graphs', 'Number of simple graphs on n vertices 2^C(n,2), labeled trees Cayley formula n^(n-2) (3 PYQs).', 14, true, 3),
+  makeTopic('dm-15', 'subj-dm', null, 'Graph Matching', 'Maximal vs maximum matchings, Hall Marriage Theorem for bipartite graphs (2 PYQs).', 15, true, 2),
+  makeTopic('dm-16', 'subj-dm', null, 'Graph Algorithms & Jaccard', 'Graph search connectivity tests and similarity metrics like Jaccard coefficient (2 PYQs).', 16, true, 2),
+
+  // --- Mathematical Logic (78 PYQs) ---
+  makeTopic('dm-17', 'subj-dm', null, 'Propositional Logic', 'Truth tables, logical equivalences, Tautology/Contradiction, CNF/DNF, inference rules (40 PYQs).', 17, true, 40),
+  makeTopic('dm-18', 'subj-dm', null, 'First Order Logic', 'Predicate quantifiers (Forall, Exists), quantifier negation, scope, validity and satisfiability of formulas (35 PYQs).', 18, true, 35),
+  makeTopic('dm-19', 'subj-dm', null, 'Logical Reasoning in Math', 'Translating complex English statements to predicate calculus (3 PYQs).', 19, true, 3),
+
+  // --- Set Theory & Algebra (173 PYQs) ---
+  makeTopic('dm-20', 'subj-dm', null, 'Relations in Discrete Math', 'Reflexive, Symmetric, Anti-symmetric, Transitive properties, Equivalence classes, and closures (38 PYQs).', 20, true, 38),
+  makeTopic('dm-21', 'subj-dm', null, 'Group Theory', 'Groups, Abelian Groups, Subgroups, Cyclic groups, Order of elements, Lagrange Theorem (33 PYQs).', 21, true, 33),
+  makeTopic('dm-22', 'subj-dm', null, 'Functions in Discrete Math', 'Injective (One-to-One), Surjective (Onto), Bijective functions, number of onto functions formulas (30 PYQs).', 22, true, 30),
+  makeTopic('dm-23', 'subj-dm', null, 'Set Theory', 'Power sets, Cartesian products, set algebra laws, cardinality of sets, De Morgan laws (27 PYQs).', 23, true, 27),
+  makeTopic('dm-24', 'subj-dm', null, 'Lattice & Boolean Algebra', 'Partially ordered sets as Lattices, Meet (GLB), Join (LUB), Distributive and Complemented Lattices (10 PYQs).', 24, true, 10),
+  makeTopic('dm-25', 'subj-dm', null, 'Partial Order & Posets', 'Posets, Hasse diagrams, Maximal/Minimal vs Greatest/Least elements, Topological sorting of Posets (10 PYQs).', 25, true, 10),
+  makeTopic('dm-26', 'subj-dm', null, 'Binary Operation', 'Properties of binary operations: associativity, commutativity, identity, inverse elements (8 PYQs).', 26, true, 8),
+  makeTopic('dm-27', 'subj-dm', null, 'Number Theory in DM', 'GCD, Euclidean algorithm, prime numbers, Euler Totient function phi(n) (7 PYQs).', 27, true, 7),
+  makeTopic('dm-28', 'subj-dm', null, 'Polynomials in Algebra', 'Polynomial roots, irreducible polynomials in finite fields (4 PYQs).', 28, true, 4),
+  makeTopic('dm-29', 'subj-dm', null, 'Countable & Uncountable Sets', 'Countably infinite sets (Integers, Rationals) vs Uncountable sets (Reals, Power set of Naturals) (2 PYQs).', 29, true, 2),
+
+  // =========================================================================
+  // 7. ENGINEERING MATHEMATICS (subj-em) - 306 Total PYQs
+  // =========================================================================
+  // --- Linear Algebra (112 PYQs) ---
+  makeTopic('em-1', 'subj-em', null, 'Eigen Value & Eigen Vectors', 'Characteristic equation |A - lambda*I| = 0, properties of eigenvalues (trace, det), Cayley-Hamilton Theorem (33 PYQs).', 1, true, 33),
+  makeTopic('em-2', 'subj-em', null, 'Matrix Operations & Types', 'Matrix multiplication, Transpose, Symmetric, Skew-Symmetric, Orthogonal, Unitary, and Nilpotent matrices (24 PYQs).', 2, true, 24),
+  makeTopic('em-3', 'subj-em', null, 'System of Equations', 'Matrix equation AX = B, augmented matrix [A|B], consistency test (Rank(A) vs Rank(A|B)), unique/infinite/no solution (17 PYQs).', 3, true, 17),
+  makeTopic('em-4', 'subj-em', null, 'Determinant', 'Properties of determinants, row/column expansion, inverse matrix formula A^-1 = adj(A)/det(A) (12 PYQs).', 4, true, 12),
+  makeTopic('em-5', 'subj-em', null, 'Rank of Matrix', 'Echelon form, row operations, linearly independent rows/columns, Rank-Nullity Theorem (7 PYQs).', 5, true, 7),
+  makeTopic('em-6', 'subj-em', null, 'Vector Space & Basis', 'Vector spaces, subspaces, linear independence, basis vectors, and dimension (7 PYQs).', 6, true, 7),
+  makeTopic('em-7', 'subj-em', null, 'LU Decomposition', 'Lower-Upper triangular matrix factorizations A = LU, forward and backward substitution (3 PYQs).', 7, true, 3),
+  makeTopic('em-8', 'subj-em', null, 'Orthonormality & Projections', 'Orthogonal vectors, Gram-Schmidt orthonormalization, vector projections (2 PYQs).', 8, true, 2),
+  makeTopic('em-9', 'subj-em', null, 'Statistics & Regression', 'Mean, variance, standard deviation, covariance, correlation coefficient (2 PYQs).', 9, true, 2),
+  makeTopic('em-10', 'subj-em', null, 'Cartesian Coordinates & Vectors', 'Dot product, cross product, vector magnitude and geometric representations (1 PYQ).', 10, true, 1),
+
+  // --- Probability (125 PYQs) ---
+  makeTopic('em-11', 'subj-em', null, 'Probability Basics', 'Axioms of probability, sample spaces, mutually exclusive events, addition rule (31 PYQs).', 11, true, 31),
+  makeTopic('em-12', 'subj-em', null, 'Expectation & Variance', 'Expected value E[X], Variance Var(X) = E[X^2] - (E[X])^2, linearity of expectation (15 PYQs).', 12, true, 15),
+  makeTopic('em-13', 'subj-em', null, 'Conditional Probability & Bayes', 'P(A|B) = P(A cap B) / P(B), Total Probability Theorem, Bayes Rule for posterior probability (14 PYQs).', 13, true, 14),
+  makeTopic('em-14', 'subj-em', null, 'Uniform Distribution', 'Continuous and discrete uniform probability density functions and moments (11 PYQs).', 14, true, 11),
+  makeTopic('em-15', 'subj-em', null, 'Random Variable', 'Discrete and Continuous random variables, cumulative distribution functions (CDF) (10 PYQs).', 15, true, 10),
+  makeTopic('em-16', 'subj-em', null, 'Binomial Distribution', 'P(X = k) = C(n,k) p^k (1-p)^(n-k), Mean = n*p, Variance = n*p*(1-p) (6 PYQs).', 16, true, 6),
+  makeTopic('em-17', 'subj-em', null, 'Exponential Distribution', 'Probability density f(x) = lambda*e^(-lambda*x), memoryless property P(X > s+t | X > s) = P(X > t) (6 PYQs).', 17, true, 6),
+  makeTopic('em-18', 'subj-em', null, 'Independent Events', 'Condition for statistical independence P(A cap B) = P(A) * P(B) (6 PYQs).', 18, true, 6),
+  makeTopic('em-19', 'subj-em', null, 'Poisson Distribution', 'P(X = k) = e^-lambda * lambda^k / k!, Mean = lambda, Variance = lambda (5 PYQs).', 19, true, 5),
+  makeTopic('em-20', 'subj-em', null, 'Normal Distribution', 'Gaussian bell curve, standard normal distribution Z = (X - mu) / sigma, symmetry properties (4 PYQs).', 20, true, 4),
+
+  // --- Calculus (69 PYQs) ---
+  makeTopic('em-21', 'subj-em', null, 'Limits', 'Evaluation of limits, L\'Hopital Rule for 0/0 and inf/inf indeterminate forms (15 PYQs).', 21, true, 15),
+  makeTopic('em-22', 'subj-em', null, 'Maxima Minima', 'First derivative test, Second derivative test, multivariable extrema using Hessian matrix (14 PYQs).', 22, true, 14),
+  makeTopic('em-23', 'subj-em', null, 'Continuity', 'Left-hand limit = Right-hand limit = Function value at point, intermediate value theorem (11 PYQs).', 23, true, 11),
+  makeTopic('em-24', 'subj-em', null, 'Differentiation', 'Chain rule, product rule, partial derivatives, directional derivatives, gradient (11 PYQs).', 24, true, 11),
+  makeTopic('em-25', 'subj-em', null, 'Integration', 'Indefinite and standard integration techniques, substitution, integration by parts (11 PYQs).', 25, true, 11),
+  makeTopic('em-26', 'subj-em', null, 'Definite Integral', 'Fundamental Theorem of Calculus, properties of definite integrals (4 PYQs).', 26, true, 4),
+
+  // =========================================================================
+  // 8. GENERAL APTITUDE (subj-ga) - 429 Total PYQs
+  // =========================================================================
+  // --- Quantitative Aptitude (197 PYQs) ---
+  makeTopic('ga-1', 'subj-ga', null, 'Probability in Aptitude', 'Permutations, combinations, coin/dice/card probability word problems (17 PYQs).', 1, true, 17),
+  makeTopic('ga-2', 'subj-ga', null, 'Numerical Computation', 'Arithmetic fractions, decimals, powers, roots, simplification (9 PYQs).', 2, true, 9),
+  makeTopic('ga-3', 'subj-ga', null, 'Ratio Proportion', 'Direct/inverse proportion, mixture problems, partnerships, ages (9 PYQs).', 3, true, 9),
+  makeTopic('ga-4', 'subj-ga', null, 'Percentage', 'Percentage increase/decrease, profit & loss, discount, simple & compound interest (8 PYQs).', 4, true, 8),
+  makeTopic('ga-5', 'subj-ga', null, 'Functions in Aptitude', 'Domain, range, composition of functions, polynomial function evaluations (7 PYQs).', 5, true, 7),
+  makeTopic('ga-6', 'subj-ga', null, 'Tabular Data & Data Interpretation', 'Interpreting tables, bar charts, pie charts, data sufficiency (7 PYQs).', 6, true, 7),
+  makeTopic('ga-7', 'subj-ga', null, 'Venn Diagram Aptitude', '2-set and 3-set Venn diagram word problems, set overlapping counts (7 PYQs).', 7, true, 7),
+  makeTopic('ga-8', 'subj-ga', null, 'Logarithms', 'Logarithm identities: log(ab) = log a + log b, base change rules (6 PYQs).', 8, true, 6),
+  makeTopic('ga-9', 'subj-ga', null, 'Quadratic Equations', 'Roots of quadratic equation, discriminant b^2 - 4ac, nature of roots (6 PYQs).', 9, true, 6),
+  makeTopic('ga-10', 'subj-ga', null, 'Absolute Value & Inequalities', 'Modulus equations |x - a| <= b, solving linear inequalities (5 PYQs).', 10, true, 5),
+
+  // --- Verbal Aptitude (165 PYQs) ---
+  makeTopic('ga-11', 'subj-ga', null, 'Most Appropriate Word', 'Contextual vocabulary fill-in-the-blanks, collocations, cloze tests (47 PYQs).', 11, true, 47),
+  makeTopic('ga-12', 'subj-ga', null, 'Passage Reading & Comprehension', 'Reading comprehension passages, author tone, main idea inference (23 PYQs).', 12, true, 23),
+  makeTopic('ga-13', 'subj-ga', null, 'Verbal Reasoning', 'Critical reasoning, strengthening and weakening arguments, logical assumptions (15 PYQs).', 13, true, 15),
+  makeTopic('ga-14', 'subj-ga', null, 'Word Pairs & Analogies', 'Semantic word pair relationships (cause-effect, tool-user, part-whole) (14 PYQs).', 14, true, 14),
+  makeTopic('ga-15', 'subj-ga', null, 'Synonyms in Context', 'Identifying word meanings and synonyms in technical context (13 PYQs).', 15, true, 13),
+  makeTopic('ga-16', 'subj-ga', null, 'Tenses in English', 'Past, present, future tenses, perfect continuous usage (9 PYQs).', 16, true, 9),
+  makeTopic('ga-17', 'subj-ga', null, 'Antonyms', 'Opposite words, antonyms in context (7 PYQs).', 17, true, 7),
+  makeTopic('ga-18', 'subj-ga', null, 'Grammatical Error Identification', 'Spotting errors in sentence clauses, prepositions, articles (6 PYQs).', 18, true, 6),
+  makeTopic('ga-19', 'subj-ga', null, 'English Grammar Rules', 'Subject-verb agreement, modifiers, parallelism, conditional sentences (5 PYQs).', 19, true, 5),
+  makeTopic('ga-20', 'subj-ga', null, 'Incorrect Sentence Part', 'Sentence correction, identifying faulty grammatical fragments (5 PYQs).', 20, true, 5),
+
+  // --- Analytical Aptitude (48 PYQs) ---
+  makeTopic('ga-21', 'subj-ga', null, 'Logical Reasoning', 'Deductive reasoning, arrangements, blood relations, puzzles (18 PYQs).', 21, true, 18),
+  makeTopic('ga-22', 'subj-ga', null, 'Statements Follow & Syllogisms', 'Logical conclusions from statements, Venn diagram validations (7 PYQs).', 22, true, 7),
+  makeTopic('ga-23', 'subj-ga', null, 'Direction Sense', 'Compass navigation problems, displacement distance calculations (5 PYQs).', 23, true, 5),
+  makeTopic('ga-24', 'subj-ga', null, 'Sequence Series', 'Number and letter sequence completion, pattern deductions (3 PYQs).', 24, true, 3),
+  makeTopic('ga-25', 'subj-ga', null, 'Age Relation Problems', 'Algebraic age relationship word equations (2 PYQs).', 25, true, 2),
+  makeTopic('ga-26', 'subj-ga', null, 'Code Words & Coding Decoding', 'Letter substitution ciphers, code transformations (2 PYQs).', 26, true, 2),
+  makeTopic('ga-27', 'subj-ga', null, 'Odd One Out', 'Classification of numbers, words, and shapes to find the outlier (2 PYQs).', 27, true, 2),
+
+  // --- Spatial Aptitude (19 PYQs) ---
+  makeTopic('ga-28', 'subj-ga', null, 'Paper Folding & Punching', 'Visualizing crease patterns and holes upon unfolding paper (5 PYQs).', 28, true, 5),
+  makeTopic('ga-29', 'subj-ga', null, 'Patterns In Two Dimensions', '2D geometric transformations, pattern completion, tessellations (4 PYQs).', 29, true, 4),
+  makeTopic('ga-30', 'subj-ga', null, 'Image Rotation', 'Clockwise and counter-clockwise 2D/3D angular rotations (3 PYQs).', 30, true, 3),
+  makeTopic('ga-31', 'subj-ga', null, 'Patterns In Three Dimensions', 'Cube surface unrolling, dice net representations (3 PYQs).', 31, true, 3),
+  makeTopic('ga-32', 'subj-ga', null, '3D Structure & Assembling Pieces', 'Combining 3D polyhedra, orthographic views (2 PYQs).', 32, true, 2),
+  makeTopic('ga-33', 'subj-ga', null, 'Mirror Image', 'Lateral inversion reflections along horizontal and vertical axes (1 PYQ).', 33, true, 1),
+
+  // =========================================================================
+  // 9. ALGORITHMS (subj-algo) - 358 Total PYQs
+  // =========================================================================
+  makeTopic('alg-1', 'subj-algo', null, 'Identify Function & Algorithm Trace', 'Tracing pseudocode, determining returned values and mathematical functions implemented (38 PYQs).', 1, true, 38),
+  makeTopic('alg-2', 'subj-algo', null, 'Recurrence Relation in Algorithms', 'Master Theorem cases T(n) = aT(n/b) + f(n), Akra-Bazzi method, recursion tree analysis (36 PYQs).', 2, true, 36),
+  makeTopic('alg-3', 'subj-algo', null, 'Minimum Spanning Tree', 'Kruskal algorithm with Union-Find O(E log E), Prim algorithm O(E log V), Cut and Cycle properties (35 PYQs).', 3, true, 35),
+  makeTopic('alg-4', 'subj-algo', null, 'Time Complexity', 'Analyzing nested loops, logarithmic steps, best/worst/average case time complexities (31 PYQs).', 4, true, 31),
+  makeTopic('alg-5', 'subj-algo', null, 'Graph Search Algorithms', 'Breadth-First Search (BFS), Depth-First Search (DFS), Topological Sorting, connected components (23 PYQs).', 5, true, 23),
+  makeTopic('alg-6', 'subj-algo', null, 'Asymptotic Notations', 'Big-O, Omega, Theta, Little-o, Little-omega formal definitions and limit comparisons (22 PYQs).', 6, true, 22),
+  makeTopic('alg-7', 'subj-algo', null, 'Sorting Algorithms', 'Comparison lower bound Omega(n log n), Merge Sort, Heap Sort, Counting Sort, stability (22 PYQs).', 7, true, 22),
+  makeTopic('alg-8', 'subj-algo', null, 'Quick Sort', 'Lomuto vs Hoare partitioning, worst case O(n^2) conditions, randomized pivot selection (15 PYQs).', 8, true, 15),
+  makeTopic('alg-9', 'subj-algo', null, 'Graph Algorithms', 'Dijkstra shortest path O((V+E)log V), Bellman-Ford negative cycles O(VE), Floyd-Warshall O(V^3) (11 PYQs).', 9, true, 11),
+  makeTopic('alg-10', 'subj-algo', null, 'Dynamic Programming', '0/1 Knapsack, Longest Common Subsequence (LCS), Matrix Chain Multiplication (MCM), optimal substructure (10 PYQs).', 10, true, 10),
+  makeTopic('alg-11', 'subj-algo', null, 'NP-Completeness', 'P, NP, NP-Complete, NP-Hard classes, 3-SAT, Vertex Cover, Clique, polynomial reductions (8 PYQs).', 11, false, 8),
+
+  // =========================================================================
+  // 10. COMPILER DESIGN (subj-cd) - 242 Total PYQs
+  // =========================================================================
+  makeTopic('cd-1', 'subj-cd', null, 'Grammar Analysis', 'Context-free grammar rules, ambiguity proofs, left recursion elimination, and left factoring (47 PYQs).', 1, true, 47),
+  makeTopic('cd-2', 'subj-cd', null, 'Parsing Techniques', 'LL(1) parsing table construction, FIRST and FOLLOW set algorithms, parser conflict resolution (22 PYQs).', 2, true, 22),
+  makeTopic('cd-3', 'subj-cd', null, 'Runtime Environment', 'Activation records on the stack, static/dynamic scoping, local variable allocations (22 PYQs).', 3, true, 22),
+  makeTopic('cd-4', 'subj-cd', null, 'LR Parser', 'LR(0), SLR(1), LALR(1), CLR(1) item collections, Shift-Reduce and Reduce-Reduce conflicts, state counts (20 PYQs).', 4, true, 20),
+  makeTopic('cd-5', 'subj-cd', null, 'Syntax Directed Translation', 'S-attributed (synthesized only) vs L-attributed definitions, dependency graphs, bottom-up action execution (19 PYQs).', 5, true, 19),
+  makeTopic('cd-6', 'subj-cd', null, 'Parameter Passing', 'Pass by value, pass by reference, pass by copy-restore, and pass by name evaluation (14 PYQs).', 6, true, 14),
+  makeTopic('cd-7', 'subj-cd', null, 'Compilation Phases', 'Lexical, Syntax, Semantic, Intermediate Code, Optimization, and Target Code generation roles (13 PYQs).', 7, true, 13),
+  makeTopic('cd-8', 'subj-cd', null, 'Intermediate Code', 'Three-Address Code (TAC), Quadruples, Triples, Basic Blocks, Control Flow Graph leaders (11 PYQs).', 8, true, 11),
+  makeTopic('cd-9', 'subj-cd', null, 'Assembler & Macros', 'Two-pass assembler design, symbol table generation, macro processors and loaders (9 PYQs).', 9, true, 9),
+  makeTopic('cd-10', 'subj-cd', null, 'Operator Precedence Grammar', 'Operator grammars, precedence matrix relations, bottom-up shift-reduce operator parsing (9 PYQs).', 10, true, 9),
+
+  // =========================================================================
+  // 11. DATA STRUCTURES (subj-ds) - 238 Total PYQs
+  // =========================================================================
+  makeTopic('ds-1', 'subj-ds', null, 'Binary Tree', 'Inorder, Preorder, Postorder traversals, unique tree reconstructions, height & node count bounds L = I + 1 (53 PYQs).', 1, true, 53),
+  makeTopic('ds-2', 'subj-ds', null, 'Binary Search Tree (BST)', 'BST search, insertion, node deletion cases, Inorder successor/predecessor (36 PYQs).', 2, true, 36),
+  makeTopic('ds-3', 'subj-ds', null, 'Binary Heap', 'Min-Heap and Max-Heap properties, Build-Heap O(n) algorithm, Extract-Min/Max O(log n), Priority Queues (30 PYQs).', 3, true, 30),
+  makeTopic('ds-4', 'subj-ds', null, 'Linked List', 'Singly, Doubly, and Circular Linked Lists, in-place reversal, Floyd cycle detection (24 PYQs).', 4, true, 24),
+  makeTopic('ds-5', 'subj-ds', null, 'Stack Data Structure', 'LIFO stack operations, Infix to Postfix/Prefix conversion, Postfix expression evaluations (19 PYQs).', 5, true, 19),
+  makeTopic('ds-6', 'subj-ds', null, 'Hashing', 'Open addressing (Linear Probing, Quadratic Probing, Double Hashing), Separate Chaining, load factor alpha = n/m (15 PYQs).', 6, true, 15),
+  makeTopic('ds-7', 'subj-ds', null, 'Queue Data Structure', 'FIFO queues, Circular Queue modulo arithmetic, Double-ended queue (Deque) implementations (15 PYQs).', 7, true, 15),
+  makeTopic('ds-8', 'subj-ds', null, 'Array Data Structure', 'Row-Major and Column-Major 2D/3D address calculation formulas (13 PYQs).', 8, true, 13),
+  makeTopic('ds-9', 'subj-ds', null, 'General Tree Structures', 'N-ary trees, thread binary trees, tree representations as first-child next-sibling (13 PYQs).', 9, true, 13),
+  makeTopic('ds-10', 'subj-ds', null, 'AVL Tree', 'AVL height balance factor in {-1, 0, +1}, single & double rotations (LL, RR, LR, RL), minimum nodes for height h (6 PYQs).', 10, true, 6),
+
+  // =========================================================================
+  // 12. C-PROGRAMMING (subj-prog) - 131 Total PYQs
+  // =========================================================================
+  makeTopic('pr-1', 'subj-prog', null, 'Programming In C Fundamentals', 'Data types, operator precedence, type conversions, bitwise operators, switch statements (29 PYQs).', 1, true, 29),
+  makeTopic('pr-2', 'subj-prog', null, 'Recursion in C', 'Recursive stack execution tracing, base cases, static and global variables inside recursive calls (19 PYQs).', 2, true, 19),
+  makeTopic('pr-3', 'subj-prog', null, 'Pointers in C', 'Pointer arithmetic, pointers to pointers, pointer arrays, array decaying, function pointers (15 PYQs).', 3, true, 15),
+  makeTopic('pr-4', 'subj-prog', null, 'Array in C', 'Multidimensional arrays, pointer equivalence a[i] == *(a+i) == i[a], string null-terminator (13 PYQs).', 4, true, 13),
+  makeTopic('pr-5', 'subj-prog', null, 'Parameter Passing in C', 'Pass by value vs simulated pass by reference via pointer dereferencing (12 PYQs).', 5, true, 12),
+  makeTopic('pr-6', 'subj-prog', null, 'Loop Invariants', 'Loop termination conditions, invariant assertions, loop bounds verification (8 PYQs).', 6, true, 8),
+  makeTopic('pr-7', 'subj-prog', null, 'Output Tracing', 'Evaluating complex print statement outputs, format specifiers, side effects in expressions (8 PYQs).', 7, true, 8),
+  makeTopic('pr-8', 'subj-prog', null, 'Identify Function in C', 'Deducing the closed-form mathematical function or algorithm coded in C snippet (6 PYQs).', 8, true, 6),
+  makeTopic('pr-9', 'subj-prog', null, 'Structure and Union', 'Memory layout, word alignment, structure padding, sizeof calculations, union overlapping fields (5 PYQs).', 9, true, 5),
+  makeTopic('pr-10', 'subj-prog', null, 'Functions & Storage Classes', 'Scope, lifetime, auto, static, extern, register storage specifiers (2 PYQs).', 10, true, 2),
+
+  // =========================================================================
+  // 13. THEORY OF COMPUTATION (subj-toc) - 293 Total PYQs
+  // =========================================================================
+  makeTopic('toc-1', 'subj-toc', null, 'Finite Automata', 'DFA and NFA state machines, transition functions, subset construction, modulo language recognizers (43 PYQs).', 1, true, 43),
+  makeTopic('toc-2', 'subj-toc', null, 'Context Free Language (CFL)', 'Context-free grammars, Pushdown Automata, parse trees, inherently ambiguous languages (35 PYQs).', 2, true, 35),
+  makeTopic('toc-3', 'subj-toc', null, 'Regular Language', 'Properties of regular languages, closure properties, union/intersection/complement/concatenation (35 PYQs).', 3, true, 35),
+  makeTopic('toc-4', 'subj-toc', null, 'Identify Class of Language', 'Determining whether a given language L is Regular, DCFL, CFL, CSL, Recursive, or RE (31 PYQs).', 4, true, 31),
+  makeTopic('toc-5', 'subj-toc', null, 'Decidability', 'Decidable vs Undecidable problems for Regular, CFL, and Turing Machines, Halting Problem, Rice Theorem (30 PYQs).', 5, true, 30),
+  makeTopic('toc-6', 'subj-toc', null, 'Regular Expression', 'RegEx identities, Arden Theorem, converting DFAs to regular expressions, non-regular language proofs (29 PYQs).', 6, true, 29),
+  makeTopic('toc-7', 'subj-toc', null, 'Minimal State Automata', 'DFA state minimization algorithm, Myhill-Nerode equivalence theorem, minimum state bounds (25 PYQs).', 7, true, 25),
+  makeTopic('toc-8', 'subj-toc', null, 'Recursive and RE Languages', 'Turing machine acceptance (halts on yes) vs total Turing machines (halts on all), Chomsky hierarchy (16 PYQs).', 8, true, 16),
+  makeTopic('toc-9', 'subj-toc', null, 'Pushdown Automata (PDA)', 'Deterministic PDA (DCFL) vs Non-Deterministic PDA (CFL), acceptance by empty stack vs final state (15 PYQs).', 9, true, 15),
+  makeTopic('toc-10', 'subj-toc', null, 'Closure Properties in TOC', 'Comprehensive closure table under Union, Intersection, Complement, Star, Homomorphism, Inverse (10 PYQs).', 10, true, 10),
 ];
 
 export const INITIAL_SCHEDULES: Schedule[] = [
@@ -502,24 +463,24 @@ export const INITIAL_SCHEDULES: Schedule[] = [
     id: 'sched-today',
     Schedule_Date: new Date().toISOString().split('T')[0],
     Schedule_Hours: 6,
-    Schedule_Subjects: ['subj-cn', 'subj-os', 'subj-algo'],
+    Schedule_Subjects: ['subj-coa', 'subj-os', 'subj-dbms'],
     Schedule_Tag_Filters: ['Star'],
     Subject_Allocations: {
-      'subj-cn': 120,
+      'subj-coa': 120,
       'subj-os': 120,
-      'subj-algo': 120,
+      'subj-dbms': 120,
     },
     Allocated_Topics: [
       {
-        topic_id: 'cn-1',
-        subject_id: 'subj-cn',
-        topic_name: 'IPv4 Addressing & Subnetting',
-        subject_name: 'Computer Networks',
+        topic_id: 'coa-1',
+        subject_id: 'subj-coa',
+        topic_name: 'Cache Memory',
+        subject_name: 'Computer Organisation & Architecture',
         allocated_minutes: 120,
         completed: false,
       },
       {
-        topic_id: 'os-3',
+        topic_id: 'os-1',
         subject_id: 'subj-os',
         topic_name: 'Process Synchronization',
         subject_name: 'Operating Systems',
@@ -527,10 +488,10 @@ export const INITIAL_SCHEDULES: Schedule[] = [
         completed: false,
       },
       {
-        topic_id: 'alg-4',
-        subject_id: 'subj-algo',
-        topic_name: 'Dynamic Programming',
-        subject_name: 'Algorithms',
+        topic_id: 'db-1',
+        subject_id: 'subj-dbms',
+        topic_name: 'SQL Queries',
+        subject_name: 'Database Management System',
         allocated_minutes: 120,
         completed: false,
       },

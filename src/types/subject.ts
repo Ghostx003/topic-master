@@ -12,6 +12,7 @@ export interface Subject {
   Subject_Importance: SubjectImportance;
   Subject_Description: string;
   Subject_Color: string; // Tailwind accent or hex
+  Subject_PYQ_Count?: number; // Total Historical GATE PYQs
   created_at: string;
   updated_at: string;
 }
