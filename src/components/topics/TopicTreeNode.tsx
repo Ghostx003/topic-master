@@ -220,6 +220,13 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     dragStartX.current = null;
   };
 
+  // Right-click context menu handler
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenuOpen(true);
+  };
+
   // Find candidate parents for demote menu
   const candidateParents = topics.filter(
     (t) => t.Subject_Id === subjectId && t.id !== node.id && t.Parent_Id !== node.id
@@ -269,6 +276,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        onContextMenu={handleContextMenu}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -508,7 +516,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                   className="fixed inset-0 z-[90] bg-transparent"
                   onClick={() => setMenuOpen(false)}
                 />
-                <div className="absolute right-0 top-12 z-[100] w-64 rounded-3xl bg-slate-900/98 backdrop-blur-2xl border border-slate-700/90 shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-2.5 text-xs text-slate-200 animate-slide-up space-y-1 ring-1 ring-white/10">
+                <div className="absolute right-0 top-12 z-[100] w-64 rounded-3xl bg-[#090d16] border-2 border-slate-700 shadow-[0_25px_70px_rgba(0,0,0,0.98)] p-2.5 text-xs text-slate-200 animate-slide-up space-y-1 ring-1 ring-white/15 opacity-100">
                   {/* Rename */}
                   <button
                     onClick={() => {
@@ -607,7 +615,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                       <div className="px-3.5 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                         Demote under specific parent
                       </div>
-                      <div className="max-h-36 overflow-y-auto custom-scrollbar">
+                      <div className="max-h-36 overflow-y-auto custom-scrollbar bg-[#050811] rounded-2xl p-1 border border-slate-800">
                         {candidateParents.slice(0, 5).map((cand) => (
                           <button
                             key={cand.id}
@@ -615,7 +623,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                               setMenuOpen(false);
                               demoteTopic(node.id, cand.id);
                             }}
-                            className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left rounded-xl text-slate-300 hover:bg-slate-800 text-xs truncate"
+                            className="w-full flex items-center gap-2.5 px-3 py-2 text-left rounded-xl text-slate-300 hover:bg-slate-800 text-xs truncate"
                           >
                             <CornerRightDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             <span className="truncate">{cand.Topic_Name}</span>

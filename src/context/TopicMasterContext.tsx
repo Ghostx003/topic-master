@@ -3,7 +3,7 @@ import { Subject, SubjectImportance, IMPORTANCE_ORDER } from '../types/subject';
 import { Topic, TopicTags, TopicDifficulty, TopicStatus, StudySession } from '../types/topic';
 import { ContentBlock } from '../types/contentBlock';
 import { Schedule } from '../types/schedule';
-import { TopicMasterState, TopicMasterActions, AppSettings } from '../types/store';
+import { TopicMasterState, TopicMasterActions, AppSettings, ThemePalette } from '../types/store';
 import { StorageService, DEFAULT_INITIAL_STATE } from '../services/storageService';
 import { BackupService, deduplicateDatabase } from '../services/backupService';
 import { getAllDescendantIds } from '../utils/hierarchyUtils';
@@ -55,12 +55,170 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
     };
   }, [state.activeTimer.isRunning]);
 
-  // Sync Theme Palette class on <html> root
+  // Authoritative RGB Color Matrices for 100% reliable real-time theme adaptation
   useEffect(() => {
-    const palette = state.settings.themePalette || 'blue';
-    const allPalettes = ['theme-emerald', 'theme-violet', 'theme-blue', 'theme-ruby', 'theme-amber', 'theme-rose', 'theme-cyan'];
-    allPalettes.forEach((cls) => document.documentElement.classList.remove(cls));
+    const THEME_RGB_MAP: Record<
+      ThemePalette,
+      {
+        50: string;
+        100: string;
+        200: string;
+        300: string;
+        400: string;
+        500: string;
+        600: string;
+        700: string;
+        800: string;
+        900: string;
+        950: string;
+        glow: string;
+        primaryHex: string;
+      }
+    > = {
+      emerald: {
+        50: '236 253 245',
+        100: '209 250 229',
+        200: '167 243 208',
+        300: '110 231 183',
+        400: '52 211 153',
+        500: '16 185 129',
+        600: '5 150 105',
+        700: '4 120 87',
+        800: '6 95 70',
+        900: '6 78 59',
+        950: '2 44 34',
+        glow: 'rgba(16, 185, 129, 0.45)',
+        primaryHex: '#10b981',
+      },
+      violet: {
+        50: '245 243 255',
+        100: '237 233 254',
+        200: '221 214 254',
+        300: '196 181 253',
+        400: '167 139 250',
+        500: '139 92 246',
+        600: '124 58 237',
+        700: '109 40 217',
+        800: '91 33 182',
+        900: '76 29 149',
+        950: '46 16 101',
+        glow: 'rgba(139, 92, 246, 0.45)',
+        primaryHex: '#8b5cf6',
+      },
+      blue: {
+        50: '239 246 255',
+        100: '219 234 254',
+        200: '191 219 254',
+        300: '147 197 253',
+        400: '96 165 250',
+        500: '59 130 246',
+        600: '37 99 235',
+        700: '29 78 216',
+        800: '30 64 175',
+        900: '30 58 138',
+        950: '23 37 84',
+        glow: 'rgba(59, 130, 246, 0.45)',
+        primaryHex: '#3b82f6',
+      },
+      ruby: {
+        50: '255 241 242',
+        100: '255 228 230',
+        200: '254 205 211',
+        300: '253 164 175',
+        400: '251 113 133',
+        500: '239 68 68',
+        600: '225 29 72',
+        700: '190 18 60',
+        800: '159 18 57',
+        900: '136 19 55',
+        950: '76 5 25',
+        glow: 'rgba(239, 68, 68, 0.45)',
+        primaryHex: '#ef4444',
+      },
+      amber: {
+        50: '255 251 235',
+        100: '254 243 199',
+        200: '253 230 138',
+        300: '252 211 77',
+        400: '251 191 36',
+        500: '245 158 11',
+        600: '217 119 6',
+        700: '180 83 9',
+        800: '146 64 14',
+        900: '120 53 15',
+        950: '69 26 3',
+        glow: 'rgba(245, 158, 11, 0.45)',
+        primaryHex: '#f59e0b',
+      },
+      rose: {
+        50: '253 242 248',
+        100: '252 231 243',
+        200: '248 180 217',
+        300: '244 114 182',
+        400: '236 72 153',
+        500: '219 39 119',
+        600: '190 24 93',
+        700: '157 23 77',
+        800: '131 24 67',
+        900: '112 26 63',
+        950: '76 5 36',
+        glow: 'rgba(236, 72, 153, 0.45)',
+        primaryHex: '#db2777',
+      },
+      cyan: {
+        50: '236 254 255',
+        100: '207 250 254',
+        200: '165 243 252',
+        300: '103 232 249',
+        400: '34 211 238',
+        500: '6 182 212',
+        600: '8 145 178',
+        700: '14 116 144',
+        800: '21 94 117',
+        900: '22 78 99',
+        950: '8 51 68',
+        glow: 'rgba(6, 182, 212, 0.45)',
+        primaryHex: '#06b6d4',
+      },
+    };
+
+    const palette = (state.settings.themePalette || 'blue') as ThemePalette;
+    const allPalettes = [
+      'theme-emerald',
+      'theme-violet',
+      'theme-blue',
+      'theme-ruby',
+      'theme-amber',
+      'theme-rose',
+      'theme-cyan',
+    ];
+
+    // 1. Sync classes on <html> and <body>
+    allPalettes.forEach((cls) => {
+      document.documentElement.classList.remove(cls);
+      document.body.classList.remove(cls);
+    });
     document.documentElement.classList.add(`theme-${palette}`);
+    document.body.classList.add(`theme-${palette}`);
+
+    // 2. Set dynamic CSS custom properties directly on document.documentElement.style
+    const theme = THEME_RGB_MAP[palette] || THEME_RGB_MAP.blue;
+    const root = document.documentElement;
+    root.style.setProperty('--brand-50-rgb', theme[50]);
+    root.style.setProperty('--brand-100-rgb', theme[100]);
+    root.style.setProperty('--brand-200-rgb', theme[200]);
+    root.style.setProperty('--brand-300-rgb', theme[300]);
+    root.style.setProperty('--brand-400-rgb', theme[400]);
+    root.style.setProperty('--brand-500-rgb', theme[500]);
+    root.style.setProperty('--brand-600-rgb', theme[600]);
+    root.style.setProperty('--brand-700-rgb', theme[700]);
+    root.style.setProperty('--brand-800-rgb', theme[800]);
+    root.style.setProperty('--brand-900-rgb', theme[900]);
+    root.style.setProperty('--brand-950-rgb', theme[950]);
+    root.style.setProperty('--brand-glow', theme.glow);
+    root.style.setProperty('--brand-glow-sm', theme.glow);
+    root.style.setProperty('--brand-glow-lg', theme.glow);
+    root.style.setProperty('--brand-primary', theme.primaryHex);
   }, [state.settings.themePalette]);
 
   // ================= SUBJECT ACTIONS =================
