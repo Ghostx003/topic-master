@@ -17,8 +17,6 @@ import {
   Clock,
   X,
   Flame,
-  Star,
-  Sparkles,
   ArrowUpDown,
   CircleDot,
   SlidersHorizontal,
@@ -322,58 +320,6 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
           All ({filterCounts.all})
         </button>
 
-        {/* Ultra High Yield */}
-        <button
-          onClick={() => setYieldFilter(yieldFilter === 'ultra' ? 'all' : 'ultra')}
-          className={clsx(
-            'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-2 select-none active:scale-95',
-            yieldFilter === 'ultra'
-              ? 'bg-rose-950/60 border-rose-500/60 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.25)] ring-1 ring-rose-400/40'
-              : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
-          )}
-        >
-          <Flame className="w-3.5 h-3.5 text-rose-400" />
-          <span>Ultra High Yield (30+ PYQs)</span>
-          <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono font-bold">
-            {filterCounts.ultra}
-          </span>
-        </button>
-
-        {/* High Yield */}
-        <button
-          onClick={() => setYieldFilter(yieldFilter === 'high' ? 'all' : 'high')}
-          className={clsx(
-            'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-2 select-none active:scale-95',
-            yieldFilter === 'high'
-              ? 'bg-amber-950/60 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/40'
-              : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
-          )}
-        >
-          <Star className="w-3.5 h-3.5 text-amber-400 fill-current" />
-          <span>High Yield (15–29 PYQs)</span>
-          <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono font-bold">
-            {filterCounts.high}
-          </span>
-        </button>
-
-        {/* Core Concepts */}
-        <button
-          onClick={() => setYieldFilter(yieldFilter === 'core' ? 'all' : 'core')}
-          className={clsx(
-            'px-3.5 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-2 select-none active:scale-95',
-            yieldFilter === 'core'
-              ? 'bg-indigo-950/60 border-indigo-500/60 text-indigo-300 shadow-glow-indigo ring-1 ring-indigo-400/40'
-              : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
-          )}
-        >
-          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-          <span>Core Concepts (1–14 PYQs)</span>
-          <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono font-bold">
-            {filterCounts.core}
-          </span>
-        </button>
-
-        <div className="h-4 w-px bg-slate-800 mx-1 hidden sm:block" />
 
         {/* Completed */}
         <button
