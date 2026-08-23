@@ -220,11 +220,11 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     dragStartX.current = null;
   };
 
-  // Right-click context menu handler
+  // Right-click context menu handler (toggle open/close)
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setMenuOpen(true);
+    setMenuOpen((prev) => !prev);
   };
 
   // Find candidate parents for demote menu
@@ -513,8 +513,13 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
             {menuOpen && (
               <>
                 <div
-                  className="fixed inset-0 z-[90] bg-transparent"
+                  className="fixed inset-0 z-[90] bg-transparent cursor-default"
                   onClick={() => setMenuOpen(false)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setMenuOpen(false);
+                  }}
                 />
                 <div className="absolute right-0 top-12 z-[100] w-64 rounded-3xl bg-[#090d16] border-2 border-slate-700 shadow-[0_25px_70px_rgba(0,0,0,0.98)] p-2.5 text-xs text-slate-200 animate-slide-up space-y-1 ring-1 ring-white/15 opacity-100">
                   {/* Rename */}
