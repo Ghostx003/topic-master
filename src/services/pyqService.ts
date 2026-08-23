@@ -1,4 +1,4 @@
-﻿import { PYQQuestion, PYQProgressMap, TopicPYQSummary, PYQYearFilter } from '../types/pyq';
+import { PYQQuestion, PYQProgressMap, TopicPYQSummary, PYQYearFilter } from '../types/pyq';
 import rawQuestions from '../data/pyqQuestions.json';
 
 const PYQ_PROGRESS_STORAGE_KEY = 'topic_master_pyq_progress_v1';
@@ -63,6 +63,12 @@ const CHAPTER_ALIASES: Record<string, string> = {
   // General Aptitude Exact Canonical Aliases
   'work time': 'time & work',
   'speed time distance': 'speed time & distance',
+  'alligation mixture': 'ratio proportion',
+  'arithmetic series': 'progressions (ap & gp)',
+  'cost market price': 'profit and loss',
+  'data interpretation': 'tabular data',
+  'factors': 'number systems & divisibility',
+  'number series': 'sequence series',
 };
 
 // ================= PRE-INDEXED FAST DATA STRUCTURES =================
