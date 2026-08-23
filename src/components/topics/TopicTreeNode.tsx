@@ -46,9 +46,16 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   activeMenuTopicId = null,
   setActiveMenuTopicId,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(Boolean(searchFilter.trim()));
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(node.Topic_Name);
+
+  // Auto-expand when user types a search query
+  React.useEffect(() => {
+    if (searchFilter.trim()) {
+      setIsExpanded(true);
+    }
+  }, [searchFilter]);
 
   // Swipe / Slide Gesture State (Mouse & Touch)
   const [dragOffset, setDragOffset] = useState(0);
