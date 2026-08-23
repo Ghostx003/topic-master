@@ -48,17 +48,17 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   activeMenuTopicId = null,
   setActiveMenuTopicId,
 }) => {
-  // Default expanded so hierarchy tree ladder is immediately visible
-  const [isExpanded, setIsExpanded] = useState(true);
+  // Default minimized (collapsed) so topics start in a clean overview
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(node.Topic_Name);
 
-  // Auto-expand when user searches or when children are added/indented into this node
+  // Auto-expand when user searches
   React.useEffect(() => {
-    if (searchFilter.trim() || (node.children && node.children.length > 0)) {
+    if (searchFilter.trim()) {
       setIsExpanded(true);
     }
-  }, [searchFilter, node.children?.length]);
+  }, [searchFilter]);
 
   // Swipe / Slide Gesture State (Mouse & Touch)
   const [dragOffset, setDragOffset] = useState(0);
