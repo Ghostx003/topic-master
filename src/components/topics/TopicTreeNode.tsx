@@ -207,7 +207,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   );
 
   return (
-    <div className={clsx('relative select-none', isRoot ? 'my-5 sm:my-6' : 'my-2.5 sm:my-3')}>
+    <div className={clsx('relative select-none transition-all', menuOpen ? 'z-50' : 'z-0', isRoot ? 'my-5 sm:my-6' : 'my-2.5 sm:my-3')}>
       {/* Visual Swipe Helper Badges */}
       {dragOffset > 25 && canIndentRight && (
         <div className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-cyan-600 text-white text-xs font-bold shadow-glow-cyan animate-pulse">
@@ -248,6 +248,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         onTouchEnd={handleTouchEnd}
         className={clsx(
           'group relative flex items-center justify-between gap-5 sm:gap-6 rounded-3xl border backdrop-blur-2xl card-highlight transition-all duration-200',
+          menuOpen ? 'z-50' : 'z-0',
           isHtml5Dragging && 'opacity-40 scale-[0.98] border-brand-500/60 shadow-none',
           dropPosition === 'inside'
             ? 'border-2 border-brand-400 bg-brand-500/20 shadow-glow-lg scale-[1.01]'
@@ -461,7 +462,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           </div>
 
           {/* Hierarchy & Move Context Menu */}
-          <div className="w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0 relative">
+          <div className={clsx('w-9 sm:w-10 h-9 sm:h-10 flex items-center justify-center shrink-0 relative', menuOpen && 'z-[100]')}>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
@@ -472,8 +473,8 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
             {menuOpen && (
               <>
-                <div className="fixed inset-0 z-20" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 top-12 z-30 w-64 rounded-3xl bg-slate-900 border border-slate-700 shadow-2xl p-2.5 text-xs text-slate-200 animate-slide-up space-y-1">
+                <div className="fixed inset-0 z-[90] bg-transparent" onClick={() => setMenuOpen(false)} />
+                <div className="absolute right-0 top-12 z-[100] w-64 rounded-3xl bg-slate-900/98 backdrop-blur-2xl border border-slate-700/90 shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-2.5 text-xs text-slate-200 animate-slide-up space-y-1 ring-1 ring-white/10">
                   {/* Rename */}
                   <button
                     onClick={() => {
