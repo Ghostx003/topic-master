@@ -1,8 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useTopicMaster } from '../context/TopicMasterContext';
 import { TopicTagBadge } from '../components/common/TopicTagBadge';
-import { INITIAL_SUBJECTS, INITIAL_TOPICS } from '../utils/sampleData';
 import { getAuthoritativeTopicPYQ } from '../utils/pyqUtils';
+import {
+  ALL_PYQ_QUESTIONS,
+  getQuestionsForSubject,
+  loadPYQProgress,
+} from '../services/pyqService';
 import { Subject } from '../types/subject';
 import { Topic } from '../types/topic';
 import {
@@ -30,44 +34,31 @@ export const PYQAnalyzerPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [frequencyFilter, setFrequencyFilter] = useState<'all' | 'ultra' | 'high' | 'core' | 'done' | 'pending'>('all');
 
-  const initialSubjMap = useMemo(() => new Map(INITIAL_SUBJECTS.map((s) => [s.id, s])), []);
-  const initialTopicMap = useMemo(() => new Map(INITIAL_TOPICS.map((t) => [t.id, t])), []);
   const subjectsMap = useMemo(() => new Map(subjects.map((s) => [s.id, s])), [subjects]);
 
-  // Precompute O(1) PYQ count maps once
-  const { topicPyqMap, subjectPyqMap, totalPYQs, completedPYQs } = useMemo(() => {
+  // Precompute O(1) PYQ count maps strictly from actually attached questions
+  const { topicPyqMap, subjectPyqMap } = useMemo(() => {
     const tMap = new Map<string, number>();
     const sMap = new Map<string, number>();
 
-    let total = 0;
-    let completed = 0;
+    // 1. Calculate for subjects once (strictly count attached questions in DB)
+    subjects.forEach((s) => {
+      const qs = getQuestionsForSubject(s.Subject_Name);
+      sMap.set(s.id, qs.length);
+    });
 
-    // 1. Calculate for every topic once
+    // 2. Calculate for every topic once (strictly attached questions in DB or sum of subtopics)
     topics.forEach((t) => {
       const subj = subjectsMap.get(t.Subject_Id);
       const count = getAuthoritativeTopicPYQ(t, topics, 'all', subj?.Subject_Name);
       tMap.set(t.id, count);
-      if (t.Topic_Tags?.Done) {
-        completed += count;
-      }
-    });
-
-    // 2. Calculate for subjects once (sum of root topics)
-    subjects.forEach((s) => {
-      const rootTopics = topics.filter((t) => t.Subject_Id === s.id && !t.Parent_Id);
-      const sum = rootTopics.reduce((acc, t) => acc + (tMap.get(t.id) || 0), 0);
-      const val = sum > 0 ? sum : (s.Subject_PYQ_Count || initialSubjMap.get(s.id)?.Subject_PYQ_Count || 0);
-      sMap.set(s.id, val);
-      total += val;
     });
 
     return {
       topicPyqMap: tMap,
       subjectPyqMap: sMap,
-      totalPYQs: total > 0 ? total : 3184,
-      completedPYQs: completed,
     };
-  }, [topics, subjects, subjectsMap, initialSubjMap]);
+  }, [topics, subjects, subjectsMap]);
 
   const getTopicPYQs = (topic: Topic): number => {
     return topicPyqMap.get(topic.id) || 0;
@@ -77,11 +68,24 @@ export const PYQAnalyzerPage: React.FC = () => {
     return subjectPyqMap.get(subj.id) || 0;
   };
 
-  const completedPercentage = totalPYQs > 0 ? Math.round((completedPYQs / totalPYQs) * 100) : 0;
+  // Overall Statistics - STRICTLY count actually attached questions
+  const totalPYQs = useMemo(() => {
+    if (selectedSubjectId === 'all') {
+      return ALL_PYQ_QUESTIONS.length;
+    }
+    const subj = subjectsMap.get(selectedSubjectId);
+    return subj ? (subjectPyqMap.get(subj.id) || 0) : 0;
+  }, [selectedSubjectId, subjectsMap, subjectPyqMap]);
 
-  const starredTopicsCount = useMemo(() => {
-    return topics.filter((t) => t.Topic_Tags?.Star || initialTopicMap.get(t.id)?.Topic_Tags?.Star).length;
-  }, [topics, initialTopicMap]);
+  const completedPYQs = useMemo(() => {
+    const progress = loadPYQProgress();
+    const targetQuestions = selectedSubjectId === 'all'
+      ? ALL_PYQ_QUESTIONS
+      : getQuestionsForSubject(subjectsMap.get(selectedSubjectId)?.Subject_Name || '');
+    return targetQuestions.filter((q) => Boolean(progress[q.id]?.completed)).length;
+  }, [selectedSubjectId, subjectsMap]);
+
+  const completedPercentage = totalPYQs > 0 ? Math.round((completedPYQs / totalPYQs) * 100) : 0;
 
   // Sort subjects by PYQ count descending (O(1) lookups)
   const sortedSubjects = useMemo(() => {
@@ -102,7 +106,7 @@ export const PYQAnalyzerPage: React.FC = () => {
     topics.forEach((t) => {
       if (selectedSubjectId !== 'all' && t.Subject_Id !== selectedSubjectId) return;
       const pyqs = topicPyqMap.get(t.id) || 0;
-      const isStarred = Boolean(t.Topic_Tags?.Star || initialTopicMap.get(t.id)?.Topic_Tags?.Star);
+      const isStarred = Boolean(t.Topic_Tags?.Star);
       if (pyqs <= 0 && !isStarred) return;
 
       counts.all++;
@@ -115,11 +119,11 @@ export const PYQAnalyzerPage: React.FC = () => {
     });
 
     return counts;
-  }, [topics, selectedSubjectId, initialTopicMap, topicPyqMap]);
+  }, [topics, selectedSubjectId, topicPyqMap]);
 
   // Filtered & Sorted Topics with PYQs (O(1) lookups)
   const filteredTopics = useMemo(() => {
-    let list = topics.filter((t) => (topicPyqMap.get(t.id) || 0) > 0 || t.Topic_Tags?.Star || initialTopicMap.get(t.id)?.Topic_Tags?.Star);
+    let list = topics.filter((t) => (topicPyqMap.get(t.id) || 0) > 0 || t.Topic_Tags?.Star);
 
     // Filter by subject
     if (selectedSubjectId !== 'all') {
@@ -152,258 +156,211 @@ export const PYQAnalyzerPage: React.FC = () => {
     // Sort descending by PYQ count
     list.sort((a, b) => (topicPyqMap.get(b.id) || 0) - (topicPyqMap.get(a.id) || 0));
     return list;
-  }, [topics, selectedSubjectId, searchQuery, frequencyFilter, initialTopicMap, topicPyqMap]);
+  }, [topics, selectedSubjectId, searchQuery, frequencyFilter, topicPyqMap]);
 
   return (
     <div className="space-y-8 pb-28">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      {/* Header with Title & Stats */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-800/80">
         <div>
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-cyan-400 p-0.5 shadow-glow-sm">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-                <BarChart3 className="w-6 h-6 text-brand-400" />
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+              <BarChart3 className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-                PYQ Frequency Analyzer
+              <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                <span>GATE CSE PYQ Frequency Analyzer</span>
+                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300">
+                  Authoritative DB ({ALL_PYQ_QUESTIONS.length} PYQs)
+                </span>
               </h1>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Data-driven GATE CSE historical question distribution and heavy-hitter topic intelligence.
+              <p className="text-sm text-slate-400 mt-1">
+                Data-driven GATE CSE historical question distribution, topic yield ranking, and smart practice shortcuts.
               </p>
             </div>
           </div>
         </div>
-
-        {/* Global Summary Badge */}
-        <div className="flex items-center gap-3 bg-[#0c1424] border border-slate-800/90 px-5 py-3 rounded-2xl shadow-inner shrink-0">
-          <Flame className="w-5 h-5 text-amber-400 animate-pulse" />
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-              Total PYQs Cataloged
-            </div>
-            <div className="text-2xl font-black text-white font-mono">{totalPYQs} Questions</div>
-          </div>
-        </div>
       </div>
 
-      {/* Top 4 Insight Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Card 1: PYQ Completion Progress */}
-        <div className="group relative p-6 rounded-3xl bg-gradient-to-br from-[#0e1627]/90 via-[#0a1020]/85 to-[#070b16]/95 border border-slate-800/80 hover:border-emerald-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
-              <CheckCircle2 className="w-5 h-5" />
+      {/* Hero Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total PYQs */}
+        <div className="p-5 rounded-3xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl flex items-center gap-4 shadow-sm hover:border-slate-700 transition-all">
+          <div className="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+            <Layers className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="text-2xl font-black text-white font-mono tracking-tight">
+              {totalPYQs}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+              {selectedSubjectId === 'all' ? 'Total Attached PYQs' : 'Subject Attached PYQs'}
+            </div>
+          </div>
+        </div>
+
+        {/* Ultra High Yield Topics */}
+        <div className="p-5 rounded-3xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl flex items-center gap-4 shadow-sm hover:border-slate-700 transition-all">
+          <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400">
+            <Flame className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="text-2xl font-black text-rose-400 font-mono tracking-tight">
+              {tierCounts.ultra}
+            </div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+              Ultra High Yield (30+)
+            </div>
+          </div>
+        </div>
+
+        {/* High Yield Topics */}
+        <div className="p-5 rounded-3xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl flex items-center gap-4 shadow-sm hover:border-slate-700 transition-all">
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            <Star className="w-6 h-6 fill-current" />
+          </div>
+          <div>
+            <div className="text-2xl font-black text-amber-400 font-mono tracking-tight">
+              {tierCounts.high}
+            </div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+              High Yield (15–29)
+            </div>
+          </div>
+        </div>
+
+        {/* PYQ Completion Rate */}
+        <div className="p-5 rounded-3xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl flex items-center gap-4 shadow-sm hover:border-slate-700 transition-all">
+          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Completed PYQs
-              </div>
-              <div className="text-xl font-black text-white font-mono">
-                {completedPYQs} / {totalPYQs}
-              </div>
-              <div className="text-xs font-mono font-bold text-emerald-400 mt-0.5">
-                {completedPercentage}% Mastered
-              </div>
+              </span>
+              <span className="text-xs font-mono font-bold text-emerald-400">
+                {completedPercentage}%
+              </span>
             </div>
-          </div>
-          <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden mt-4">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
-              style={{ width: `${Math.max(completedPercentage, 2)}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Card 2: Highest Frequency Topic */}
-        <div className="group relative p-6 rounded-3xl bg-gradient-to-br from-[#0e1627]/90 via-[#0a1020]/85 to-[#070b16]/95 border border-slate-800/80 hover:border-cyan-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400">
-              <Flame className="w-5 h-5" />
+            <div className="text-xl font-black text-white font-mono tracking-tight mt-0.5">
+              {completedPYQs} / {totalPYQs}
             </div>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Highest Yield Topic
-              </div>
-              <div className="text-xl font-black text-white truncate max-w-[170px]">Cache Memory</div>
-              <div className="text-xs font-mono font-bold text-cyan-300 mt-0.5">
-                69 PYQs (COA)
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Star Heavy Hitters */}
-        <div className="group relative p-6 rounded-3xl bg-gradient-to-br from-[#0e1627]/90 via-[#0a1020]/85 to-[#070b16]/95 border border-slate-800/80 hover:border-amber-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400">
-              <Star className="w-5 h-5 fill-current" />
-            </div>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Starred PYQ Topics
-              </div>
-              <div className="text-xl font-black text-white font-mono">
-                {starredTopicsCount} Heavy Hitters
-              </div>
-              <div className="text-xs text-amber-300 font-medium mt-0.5">
-                High Priority Revision
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Top Ranked Subject */}
-        <div className="group relative p-6 rounded-3xl bg-gradient-to-br from-[#0e1627]/90 via-[#0a1020]/85 to-[#070b16]/95 border border-slate-800/80 hover:border-brand-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all hover:-translate-y-1">
-          <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-brand-500/15 border border-brand-500/30 text-brand-400">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                #1 Ranked Subject
-              </div>
-              <div className="text-xl font-black text-white truncate max-w-[170px]">
-                {sortedSubjects[0]?.Subject_Name || 'General Aptitude'}
-              </div>
-              <div className="text-xs font-mono font-bold text-brand-300 mt-0.5">
-                {getSubjectPYQs(sortedSubjects[0] || INITIAL_SUBJECTS[0])} PYQs
-              </div>
+            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1.5">
+              <div
+                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                style={{ width: `${completedPercentage}%` }}
+              />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Subject PYQ Ranking Leaderboard */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#0e1627]/90 via-[#0a1020]/85 to-[#070b16]/95 border border-slate-800/80 shadow-2xl backdrop-blur-2xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
-              <Layers className="w-5 h-5 text-brand-400" />
-              <span>Subject PYQ Weightage Leaderboard</span>
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Click any subject below to filter the heavy-hitter topics matrix.
-            </p>
-          </div>
-
-          {selectedSubjectId !== 'all' && (
-            <button
-              onClick={() => setSelectedSubjectId('all')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-slate-300 hover:border-brand-500 transition-colors"
-            >
-              <X className="w-3.5 h-3.5" />
-              <span>Show All Subjects</span>
-            </button>
-          )}
+      {/* Subject Weightage Breakdown Cards Carousel / Grid */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-brand-400" />
+            <span>Subject-Wise PYQ Distribution</span>
+          </h3>
+          <span className="text-xs text-slate-500">
+            Click any subject to filter topics below
+          </span>
         </div>
 
-        {/* Subject Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3.5">
-          {sortedSubjects.map((subj) => {
-            const isSelected = selectedSubjectId === subj.id;
-            const pyqs = getSubjectPYQs(subj);
-            const pct = totalPYQs > 0 ? Math.round((pyqs / totalPYQs) * 100) : 0;
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {/* All Subjects Pill Button */}
+          <button
+            onClick={() => setSelectedSubjectId('all')}
+            className={clsx(
+              'p-3.5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between select-none active:scale-95',
+              selectedSubjectId === 'all'
+                ? 'bg-brand-500/20 border-brand-400 text-white shadow-glow-sm ring-1 ring-brand-400/50'
+                : 'bg-slate-900/70 border-slate-800 text-slate-300 hover:bg-slate-900 hover:border-slate-700'
+            )}
+          >
+            <span className="text-xs font-bold truncate">All Subjects</span>
+            <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-800/60">
+              <span className="text-[10px] text-slate-400 font-mono">13 Subjects</span>
+              <span className="text-xs font-black font-mono text-amber-300">{ALL_PYQ_QUESTIONS.length}</span>
+            </div>
+          </button>
 
-            const subjDonePYQs = topics
-              .filter((t) => t.Subject_Id === subj.id && t.Topic_Tags?.Done)
-              .reduce((sum, t) => sum + getTopicPYQs(t), 0);
+          {/* Individual Subjects */}
+          {sortedSubjects.map((subj) => {
+            const pyqs = getSubjectPYQs(subj);
+            const isSelected = selectedSubjectId === subj.id;
 
             return (
-              <div
+              <button
                 key={subj.id}
-                onClick={() => setSelectedSubjectId(isSelected ? 'all' : subj.id)}
+                onClick={() => setSelectedSubjectId(subj.id)}
                 className={clsx(
-                  'group relative p-4 rounded-2xl border transition-all duration-200 cursor-pointer select-none flex flex-col justify-between',
+                  'p-3.5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between select-none active:scale-95',
                   isSelected
-                    ? 'bg-brand-500/20 border-brand-400 shadow-glow-sm ring-1 ring-brand-400'
-                    : 'bg-[#080d1a]/90 hover:bg-[#0c1424] border-slate-800/90 hover:border-slate-700'
+                    ? 'border-brand-400 text-white shadow-glow-sm ring-1 ring-brand-400/50'
+                    : 'bg-slate-900/70 border-slate-800 text-slate-300 hover:bg-slate-900 hover:border-slate-700'
                 )}
+                style={
+                  isSelected
+                    ? { backgroundColor: `${subj.Subject_Color || '#8b5cf6'}25` }
+                    : undefined
+                }
               >
-                <div>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: subj.Subject_Color || '#8b5cf6' }}
-                    />
-                    <span
-                      className={clsx(
-                        'text-xs font-bold truncate transition-colors',
-                        isSelected ? 'text-brand-300' : 'text-slate-200 group-hover:text-white'
-                      )}
-                      title={subj.Subject_Name}
-                    >
-                      {subj.Subject_Name}
-                    </span>
-                  </div>
-
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-xl font-black text-white font-mono">{pyqs}</span>
-                    <span className="text-[10px] text-slate-400 font-semibold">PYQs</span>
-                  </div>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: subj.Subject_Color || '#8b5cf6' }}
+                  />
+                  <span className="text-xs font-bold truncate">{subj.Subject_Name}</span>
                 </div>
-
-                {/* Micro Percentage Bar */}
-                <div className="mt-3">
-                  <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-brand-500 transition-all duration-500"
-                      style={{ width: `${Math.min(pct * 4, 100)}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-[9px] text-slate-400 font-mono font-bold mt-1">
-                    <span>{subjDonePYQs}/{pyqs} done</span>
-                    <span>~{pct}%</span>
-                  </div>
+                <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-800/60">
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {Math.round((pyqs / ALL_PYQ_QUESTIONS.length) * 100)}% wt
+                  </span>
+                  <span className="text-xs font-black font-mono text-amber-300 flex items-center gap-0.5">
+                    <Flame className="w-3 h-3 text-amber-400" />
+                    {pyqs}
+                  </span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
       </div>
 
-      {/* Heavy Hitter Topics Matrix Section */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#0e1627]/90 via-[#0a1020]/85 to-[#070b16]/95 border border-slate-800/80 shadow-2xl backdrop-blur-2xl space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
-              <Flame className="w-5 h-5 text-amber-400" />
-              <span>Heavy-Hitter PYQ Topics Matrix</span>
-              <span className="px-3 py-1 text-xs font-mono font-bold rounded-xl bg-slate-900 border border-slate-800 text-brand-300">
-                {filteredTopics.length} Topics
-              </span>
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Click the checkbox to mark PYQ topics as completed and track your historical question coverage.
-            </p>
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+      {/* Main Filter Toolbar & Ranked Topics Table */}
+      <div className="space-y-4 pt-4">
+        {/* Search & Yield Category Filters */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search PYQ topic..."
+              placeholder="Search topics, keywords, concepts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-9 py-2 text-xs rounded-2xl bg-slate-900/90 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500/60 shadow-inner"
+              className="w-full pl-11 pr-10 py-3 text-xs rounded-2xl bg-slate-900/90 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 shadow-inner"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
+
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+            <span>Showing {filteredTopics.length} Ranked Topics</span>
+          </div>
         </div>
 
-        {/* Frequency Tier Filters (Requested in media_1787496116285.png) */}
-        <div className="flex items-center gap-2.5 flex-wrap text-xs">
-          <span className="text-slate-400 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-            <SlidersHorizontal className="w-3.5 h-3.5" />
+        {/* Filter Pills */}
+        <div className="flex items-center gap-2 flex-wrap text-xs pt-1 pb-1">
+          <span className="text-slate-400 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shrink-0">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-brand-400" />
             <span>Yield Tier:</span>
           </span>
 
@@ -416,7 +373,7 @@ export const PYQAnalyzerPage: React.FC = () => {
                 : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
             )}
           >
-            All Topics ({tierCounts.all})
+            All Tiers ({tierCounts.all})
           </button>
 
           <button
@@ -516,6 +473,9 @@ export const PYQAnalyzerPage: React.FC = () => {
                   const subj = subjectsMap.get(topic.Subject_Id);
                   const isStarred = Boolean(topic.Topic_Tags?.Star);
                   const isDone = Boolean(topic.Topic_Tags?.Done);
+                  const subtopicNames = topics
+                    .filter((t) => t.Parent_Id === topic.id)
+                    .map((c) => c.Topic_Name);
 
                   return (
                     <tr
@@ -631,10 +591,11 @@ export const PYQAnalyzerPage: React.FC = () => {
                               openPYQModal(
                                 topic.id,
                                 topic.Topic_Name,
-                                subj?.Subject_Name || ''
+                                subj?.Subject_Name || '',
+                                subtopicNames
                               );
                             }}
-                            className="p-2 rounded-xl bg-slate-900 hover:bg-amber-950/60 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 transition-colors"
+                            className="p-2 rounded-xl bg-slate-900 hover:bg-amber-950/60 text-slate-300 hover:text-amber-300 border border-slate-800 hover:border-amber-500/40 transition-colors cursor-pointer"
                             title="Practice GateOverflow Questions for this topic"
                           >
                             <Flame className="w-3.5 h-3.5 fill-current text-amber-400" />
@@ -651,8 +612,8 @@ export const PYQAnalyzerPage: React.FC = () => {
                           </button>
                           <button
                             onClick={() => openTopicDetailModal(topic.id)}
-                            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-colors"
-                            title="Open Topic Workspace"
+                            className="p-2 rounded-xl bg-slate-900 hover:bg-brand-950/60 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/40 transition-colors"
+                            title="Open topic details"
                           >
                             <FileText className="w-3.5 h-3.5" />
                           </button>
