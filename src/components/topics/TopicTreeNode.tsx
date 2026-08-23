@@ -17,6 +17,7 @@ import {
   X,
   FileText,
   Clock,
+  Layers,
 } from 'lucide-react';
 import { formatHours } from '../../utils/timeUtils';
 import { clsx } from 'clsx';
@@ -54,6 +55,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   const hasChildren = node.children && node.children.length > 0;
   const isDone = Boolean(node.Topic_Tags?.Done);
   const isStarred = Boolean(node.Topic_Tags?.Star);
+  const isRoot = node.depth === 0;
 
   // Handle inline renaming
   const handleSaveName = (e: React.FormEvent) => {
@@ -86,61 +88,69 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   );
 
   return (
-    <div className="relative select-none">
-      {/* Node Row */}
+    <div className="relative select-none my-2">
+      {/* Node Row Card */}
       <div
         className={clsx(
-          'group relative flex items-center justify-between gap-3 px-3.5 py-2.5 my-1 rounded-2xl border transition-all duration-200 backdrop-blur-md',
-          isDone
-            ? 'bg-emerald-950/20 border-emerald-500/20 hover:border-emerald-500/40 text-slate-300'
-            : 'bg-slate-900/60 border-slate-800/80 hover:border-brand-500/40 text-slate-100 shadow-sm hover:shadow-glow-sm'
+          'group relative flex items-center justify-between gap-4 rounded-2xl border transition-all duration-300 backdrop-blur-xl',
+          isRoot
+            ? isDone
+              ? 'px-5 py-3.5 sm:py-4 bg-gradient-to-r from-emerald-950/20 via-slate-900/60 to-slate-950/70 border-emerald-500/30 text-slate-300 shadow-sm'
+              : 'px-5 py-3.5 sm:py-4 bg-gradient-to-r from-slate-900/95 via-slate-900/70 to-slate-950/90 border-slate-800/90 hover:border-brand-500/50 text-slate-100 shadow-card-glow hover:shadow-card-hover'
+            : isDone
+            ? 'px-4 py-3 sm:py-3.5 bg-slate-950/50 border-emerald-500/20 text-slate-400'
+            : 'px-4 py-3 sm:py-3.5 bg-slate-950/70 hover:bg-slate-900/80 border-slate-800/70 hover:border-slate-700 text-slate-200 shadow-sm'
         )}
         style={{
-          marginLeft: `${node.depth * 24}px`,
+          marginLeft: isRoot ? '0px' : `${node.depth * 28}px`,
         }}
       >
-        {/* Left Side: Expand toggle, Depth Indicator, Name, and Tags */}
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          {/* Expand / Collapse Button */}
+        {/* Left Section: Expand Toggle, Star, Title, Subtopics Pill, Time Pill */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {/* Expand / Collapse Button or Tree Bullet */}
           {hasChildren ? (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors shrink-0"
+              className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors shrink-0"
               aria-label={isExpanded ? 'Collapse subtopics' : 'Expand subtopics'}
             >
-              {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              {isExpanded ? <ChevronDown className="w-4 h-4 text-brand-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
             </button>
+          ) : isRoot ? (
+            <div className="w-7 h-7 rounded-xl bg-slate-800/60 border border-slate-700/50 shrink-0 flex items-center justify-center">
+              <Layers className="w-3.5 h-3.5 text-slate-400" />
+            </div>
           ) : (
             <div className="w-6 shrink-0 flex items-center justify-center">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+              <span className="w-2 h-2 rounded-full bg-slate-600 group-hover:bg-brand-400 transition-colors" />
             </div>
           )}
 
           {/* Quick Star Button */}
           <button
             onClick={() => handleToggleTag('Star', isStarred)}
-            className="shrink-0 p-1 rounded-lg hover:bg-slate-800/80 transition-colors"
-            title={isStarred ? 'Starred' : 'Star Topic'}
+            className="shrink-0 transition-transform active:scale-90"
+            title={isStarred ? 'Starred Topic (Click to remove)' : 'Star Topic'}
           >
             <TopicTagBadge type="Star" value={isStarred} />
           </button>
 
-          {/* Topic Title or Inline Editor */}
+          {/* Topic Title or Inline Rename Editor */}
           {isEditingName ? (
-            <form onSubmit={handleSaveName} className="flex items-center gap-2 flex-1 max-w-md">
+            <form onSubmit={handleSaveName} className="flex items-center gap-2 flex-1 max-w-lg">
               <input
                 type="text"
                 value={editedName}
                 onChange={(e) => setEditedName(e.target.value)}
                 autoFocus
-                className="px-2 py-1 text-sm bg-slate-950 border border-brand-500 rounded-lg text-white focus:outline-none w-full"
+                className="px-3 py-1.5 text-sm font-semibold bg-slate-950 border border-brand-500 rounded-xl text-white focus:outline-none w-full shadow-glow-sm"
               />
               <button
                 type="submit"
-                className="p-1 rounded bg-brand-600 text-white hover:bg-brand-500"
+                className="p-1.5 rounded-xl bg-brand-600 text-white hover:bg-brand-500 shadow-sm"
                 title="Save"
               >
-                <Check className="w-3.5 h-3.5" />
+                <Check className="w-4 h-4" />
               </button>
               <button
                 type="button"
@@ -148,24 +158,27 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                   setEditedName(node.Topic_Name);
                   setIsEditingName(false);
                 }}
-                className="p-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700"
+                className="p-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700"
                 title="Cancel"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
               </button>
             </form>
           ) : (
             <div
               onClick={() => openTopicDetailModal(node.id)}
-              className="cursor-pointer flex items-center gap-2 flex-1 min-w-0 group/title"
+              className="cursor-pointer flex items-center gap-3 flex-1 min-w-0 group/title"
               title="Click to open Topic Detail Workspace"
             >
               <span
                 className={clsx(
-                  'text-sm font-semibold truncate transition-colors',
+                  'truncate transition-colors',
+                  isRoot ? 'text-[15px] font-bold tracking-tight' : 'text-sm font-medium',
                   isDone
                     ? 'line-through text-slate-400'
-                    : 'text-slate-100 group-hover/title:text-brand-300 font-medium'
+                    : isRoot
+                    ? 'text-white group-hover/title:text-brand-300'
+                    : 'text-slate-200 group-hover/title:text-brand-300'
                 )}
               >
                 {node.Topic_Name}
@@ -173,15 +186,15 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
               {/* Subtopic count badge if parent */}
               {hasChildren && (
-                <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-800/80 text-slate-400 border border-slate-700/60 shrink-0">
+                <span className="px-2.5 py-0.5 text-[11px] font-semibold rounded-xl bg-slate-800/80 text-slate-300 border border-slate-700/60 shrink-0 shadow-sm">
                   {node.children.length} {node.children.length === 1 ? 'subtopic' : 'subtopics'}
                 </span>
               )}
 
-              {/* Study time indicator if studied */}
+              {/* Study time indicator pill */}
               {node.Topic_Study_Hours > 0 && (
-                <span className="flex items-center gap-1 text-[11px] font-mono text-cyan-400/90 bg-cyan-950/40 border border-cyan-500/20 px-2 py-0.2 rounded-md shrink-0">
-                  <Clock className="w-3 h-3" />
+                <span className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-2.5 py-0.5 rounded-xl shrink-0 shadow-[0_0_10px_rgba(6,182,212,0.15)]">
+                  <Clock className="w-3.5 h-3.5 text-cyan-400" />
                   {formatHours(node.Topic_Study_Hours)}
                 </span>
               )}
@@ -190,7 +203,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         </div>
 
         {/* Center/Right Tag Pills */}
-        <div className="hidden lg:flex items-center gap-1.5 shrink-0">
+        <div className="hidden lg:flex items-center gap-2 shrink-0">
           <TopicTagBadge
             type="Done"
             value={node.Topic_Tags?.Done}
@@ -225,11 +238,11 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         </div>
 
         {/* Action Controls & Dropdown Menu */}
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           {/* Quick Add Subtopic Button */}
           <button
             onClick={() => onAddSubtopic(node.id)}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-brand-300 hover:bg-brand-500/10 border border-transparent hover:border-brand-500/30 transition-all"
+            className="p-2 rounded-xl text-slate-400 hover:text-brand-300 hover:bg-brand-500/10 border border-transparent hover:border-brand-500/30 transition-all active:scale-95"
             title="Add Subtopic"
             aria-label="Add subtopic"
           >
@@ -239,8 +252,8 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           {/* Quick Open Detail Modal Button */}
           <button
             onClick={() => openTopicDetailModal(node.id)}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-            title="Open Workspace"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
+            title="Open Topic Workspace"
             aria-label="Open topic detail workspace"
           >
             <FileText className="w-4 h-4" />
@@ -250,7 +263,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
               aria-label="More actions"
             >
               <MoreHorizontal className="w-4 h-4" />
@@ -259,7 +272,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
             {menuOpen && (
               <>
                 <div className="fixed inset-0 z-20" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 top-8 z-30 w-52 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-1.5 text-xs text-slate-200 animate-slide-up space-y-0.5">
+                <div className="absolute right-0 top-10 z-30 w-56 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 text-xs text-slate-200 animate-slide-up space-y-1">
                   {/* Rename */}
                   <button
                     onClick={() => {
@@ -269,7 +282,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-800 transition-colors"
                   >
                     <Edit2 className="w-3.5 h-3.5 text-brand-400" />
-                    <span>Rename Topic</span>
+                    <span className="font-semibold">Rename Topic</span>
                   </button>
 
                   {/* Add Subtopic */}
@@ -281,7 +294,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-800 transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Add Child Subtopic</span>
+                    <span className="font-semibold">Add Child Subtopic</span>
                   </button>
 
                   <div className="h-px bg-slate-800 my-1" />
@@ -320,7 +333,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-indigo-950/50 text-indigo-300 transition-colors"
                     >
                       <CornerLeftUp className="w-3.5 h-3.5" />
-                      <span>Promote to Main Topic</span>
+                      <span className="font-semibold">Promote to Main Topic</span>
                     </button>
                   )}
 
@@ -330,7 +343,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                       <div className="px-3 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                         Demote under
                       </div>
-                      <div className="max-h-28 overflow-y-auto custom-scrollbar">
+                      <div className="max-h-32 overflow-y-auto custom-scrollbar">
                         {candidateParents.slice(0, 5).map((cand) => (
                           <button
                             key={cand.id}
@@ -356,7 +369,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                       setMenuOpen(false);
                       onDeleteTopic(node.id, node.Topic_Name);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-rose-950/50 text-rose-400 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-rose-950/50 text-rose-400 transition-colors font-semibold"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Delete Topic</span>
@@ -368,13 +381,13 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         </div>
       </div>
 
-      {/* Render Recursive Child Nodes */}
+      {/* Render Recursive Child Nodes with Indentation Guide Line */}
       {hasChildren && isExpanded && (
-        <div className="relative">
-          {/* Subtle vertical connector line */}
+        <div className="relative mt-1 mb-2">
+          {/* Subtle vertical connector guide line */}
           <div
-            className="absolute left-0 top-0 bottom-2 w-px bg-slate-800"
-            style={{ marginLeft: `${node.depth * 24 + 14}px` }}
+            className="absolute left-0 top-0 bottom-3 w-px bg-gradient-to-b from-slate-700/60 via-slate-800/40 to-transparent"
+            style={{ marginLeft: `${(node.depth + 1) * 28 - 14}px` }}
           />
           {node.children.map((child) => (
             <TopicTreeNode

@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Subject } from '../../types/subject';
 import { TopicTreeNodeType } from '../../types/topic';
 import { useTopicMaster } from '../../context/TopicMasterContext';
-import { buildTopicTree } from '../../utils/hierarchyUtils';
+import { buildTopicTree, calculateTopicProgress } from '../../utils/hierarchyUtils';
+import { formatHours } from '../../utils/timeUtils';
 import { TopicTreeNode } from './TopicTreeNode';
 import { EmptyState } from '../common/EmptyState';
 import { Button } from '../common/Button';
@@ -11,6 +12,8 @@ import {
   Search,
   FolderTree,
   CheckCircle2,
+  Clock,
+  X,
 } from 'lucide-react';
 
 export interface TopicTreeProps {
@@ -32,6 +35,11 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
   // Build recursive tree for this subject
   const treeNodes = useMemo(() => {
     return buildTopicTree(topics, subject.id, null);
+  }, [topics, subject.id]);
+
+  // Compute subject metrics
+  const stats = useMemo(() => {
+    return calculateTopicProgress(topics, subject.id);
   }, [topics, subject.id]);
 
   // Filter tree nodes if search query exists
@@ -60,39 +68,45 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
       .filter((n): n is TopicTreeNodeType => n !== null);
   }, [treeNodes, searchFilter]);
 
-  const totalSubjectTopics = topics.filter((t) => t.Subject_Id === subject.id).length;
-  const completedSubjectTopics = topics.filter(
-    (t) => t.Subject_Id === subject.id && (t.Topic_Tags?.Done || t.Topic_Status === 'Done')
-  ).length;
-
   return (
-    <div className="flex flex-col flex-1 p-6 rounded-3xl bg-slate-950/60 border border-slate-800/80 backdrop-blur-2xl shadow-xl">
+    <div className="flex flex-col flex-1 p-6 sm:p-8 rounded-3xl bg-slate-950/70 border border-slate-800/80 backdrop-blur-2xl shadow-2xl">
       {/* Subject Header & Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-800/80">
         <div>
           <div className="flex items-center gap-3">
-            <div
-              className="w-4 h-4 rounded-full"
+            <span
+              className="w-4 h-4 rounded-full shadow-[0_0_12px_rgba(139,92,246,0.5)] shrink-0"
               style={{ backgroundColor: subject.Subject_Color || '#8b5cf6' }}
             />
-            <h2 className="text-2xl font-black text-white tracking-tight">{subject.Subject_Name}</h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              {subject.Subject_Name}
+            </h2>
+            <span className="px-3 py-1 text-xs font-bold font-mono rounded-xl bg-slate-900 border border-slate-700 text-slate-300">
+              {stats.percentage}% Complete
+            </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1 max-w-xl">
-            {subject.Subject_Description || 'Hierarchical topic management and study tree.'}
+
+          <p className="text-xs sm:text-sm text-slate-400 mt-1.5 max-w-2xl leading-relaxed">
+            {subject.Subject_Description || 'Hierarchical topic curriculum, subtopic nesting, and real-time study tracking.'}
           </p>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Button */}
         <div className="flex items-center gap-3 shrink-0">
-          <Button variant="primary" onClick={onAddMainTopic} icon={<Plus className="w-4 h-4" />}>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={onAddMainTopic}
+            icon={<Plus className="w-4 h-4" />}
+          >
             Add Main Topic
           </Button>
         </div>
       </div>
 
-      {/* Sub-bar: Search and stats */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 my-4">
-        {/* Search */}
+      {/* Toolbar: Search input and Stats summary badges */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 my-6">
+        {/* Search Input */}
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -100,25 +114,39 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
             placeholder={`Search topics in ${subject.Subject_Name}...`}
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-900/80 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500/60 transition-colors"
+            className="w-full pl-10 pr-9 py-2.5 text-xs rounded-2xl bg-slate-900/80 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500/60 transition-all shadow-inner"
           />
+          {searchFilter && (
+            <button
+              onClick={() => setSearchFilter('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        {/* Counts summary */}
-        <div className="flex items-center gap-3 text-xs font-semibold text-slate-400">
-          <span className="flex items-center gap-1.5 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
+        {/* Counts summary pills */}
+        <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-300 flex-wrap">
+          <span className="flex items-center gap-1.5 bg-slate-900/90 px-3.5 py-2 rounded-xl border border-slate-800 shadow-sm">
             <FolderTree className="w-3.5 h-3.5 text-brand-400" />
-            {totalSubjectTopics} Total Topics
+            <span>{stats.total} Topics</span>
           </span>
-          <span className="flex items-center gap-1.5 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
+
+          <span className="flex items-center gap-1.5 bg-slate-900/90 px-3.5 py-2 rounded-xl border border-slate-800 shadow-sm">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            {completedSubjectTopics} Done
+            <span>{stats.completed} Done</span>
+          </span>
+
+          <span className="flex items-center gap-1.5 bg-slate-900/90 px-3.5 py-2 rounded-xl border border-slate-800 shadow-sm font-mono">
+            <Clock className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{formatHours(stats.totalHours)}</span>
           </span>
         </div>
       </div>
 
-      {/* Topic Tree Content */}
-      <div className="flex-1 overflow-y-auto mt-2 space-y-1">
+      {/* Topic Tree Nodes List with generous spacing */}
+      <div className="flex-1 overflow-y-auto space-y-3 pt-1">
         {treeNodes.length === 0 ? (
           <EmptyState
             icon={FolderTree}
@@ -129,7 +157,7 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
             actionIcon={<Plus className="w-4 h-4" />}
           />
         ) : filteredTreeNodes.length === 0 ? (
-          <div className="text-center py-12 text-slate-400 text-sm">
+          <div className="text-center py-16 text-slate-400 text-sm rounded-2xl border border-dashed border-slate-800">
             No topics matching &ldquo;{searchFilter}&rdquo;
           </div>
         ) : (
