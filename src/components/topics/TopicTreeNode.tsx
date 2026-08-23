@@ -110,7 +110,6 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     if (dragStartX.current === null) return;
     const diff = e.touches[0].clientX - dragStartX.current;
 
-    // Constrain drag based on whether indent/outdent is valid
     if (diff > 0 && !canIndentRight) {
       setDragOffset(Math.min(diff * 0.2, 20));
     } else if (diff < 0 && !canOutdentLeft) {
@@ -132,7 +131,6 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Only drag when using handle or main row area (avoid interactive buttons)
     const target = e.target as HTMLElement;
     if (target.closest('button, input, form, a, select')) return;
 
@@ -171,18 +169,17 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
     window.addEventListener('mouseup', onMouseUp);
   };
 
-  // Find candidate parents for demote (siblings within same subject)
+  // Find candidate parents for demote
   const candidateParents = topics.filter(
     (t) => t.Subject_Id === subjectId && t.id !== node.id && t.Parent_Id !== node.id
   );
 
   return (
-    <div className="relative select-none my-3 sm:my-3.5">
+    <div className={clsx('relative select-none', isRoot ? 'my-5 sm:my-6' : 'my-2.5 sm:my-3')}>
       {/* Visual Swipe Helper Badges */}
       {dragOffset > 25 && canIndentRight && (
         <div
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 text-white text-xs font-bold shadow-glow-cyan animate-pulse"
-          style={{ transform: `translateY(-50%)` }}
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-cyan-600 text-white text-xs font-bold shadow-glow-cyan animate-pulse"
         >
           <ArrowRight className="w-4 h-4" />
           <span>Indent → Subtopic</span>
@@ -191,8 +188,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
       {dragOffset < -25 && canOutdentLeft && (
         <div
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-glow-purple animate-pulse"
-          style={{ transform: `translateY(-50%)` }}
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-purple-600 text-white text-xs font-bold shadow-glow-purple animate-pulse"
         >
           <span>Promote ← Parent</span>
           <ArrowLeft className="w-4 h-4" />
@@ -206,24 +202,24 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         onTouchEnd={handleTouchEnd}
         onMouseDown={handleMouseDown}
         className={clsx(
-          'group relative flex items-center justify-between gap-4 sm:gap-5 rounded-3xl border backdrop-blur-2xl card-highlight transition-shadow duration-300',
+          'group relative flex items-center justify-between gap-5 sm:gap-6 rounded-3xl border backdrop-blur-2xl card-highlight transition-all duration-300',
           isDragging ? 'cursor-grabbing' : 'cursor-grab',
           isRoot
             ? isDone
-              ? 'px-5 sm:px-8 py-4 sm:py-5 bg-gradient-to-r from-emerald-950/20 via-slate-900/70 to-slate-950/80 border-emerald-500/30 text-slate-300 shadow-sm'
-              : 'px-5 sm:px-8 py-4 sm:py-5 bg-gradient-to-r from-slate-900/95 via-slate-900/80 to-slate-950/95 border-slate-800/90 hover:border-brand-500/50 text-slate-100 shadow-card-glow hover:shadow-card-hover'
+              ? 'px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-emerald-950/25 via-slate-900/80 to-slate-950/90 border-emerald-500/30 text-slate-300 shadow-md'
+              : 'px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-slate-900/95 via-slate-900/85 to-slate-950/95 border-slate-800/90 hover:border-brand-500/50 text-slate-100 shadow-card-glow hover:shadow-card-hover'
             : isDone
-            ? 'px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-950/60 border-emerald-500/20 text-slate-400'
-            : 'px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-950/80 hover:bg-slate-900/90 border-slate-800/80 hover:border-slate-700 text-slate-200 shadow-sm'
+            ? 'px-5 sm:px-7 py-4 sm:py-4.5 bg-slate-950/70 border-emerald-500/20 text-slate-400'
+            : 'px-5 sm:px-7 py-4 sm:py-4.5 bg-slate-950/90 hover:bg-slate-900/90 border-slate-800/90 hover:border-slate-700 text-slate-200 shadow-sm'
         )}
         style={{
-          marginLeft: isRoot ? '0px' : `${node.depth * 34}px`,
+          marginLeft: isRoot ? '0px' : `${node.depth * 38}px`,
           transform: `translateX(${dragOffset}px)`,
           transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1)',
         }}
       >
         {/* Left Section: Drag Handle, Expand Toggle, Star, Title, Subtopics Pill, Time Pill */}
-        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+        <div className="flex items-center gap-3.5 sm:gap-5 min-w-0 flex-1">
           {/* Drag grip icon hint */}
           <div
             className="p-1 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0 cursor-grab active:cursor-grabbing"
@@ -236,7 +232,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           {hasChildren ? (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-2 rounded-2xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors shrink-0"
+              className="p-2.5 rounded-2xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors shrink-0"
               aria-label={isExpanded ? 'Collapse subtopics' : 'Expand subtopics'}
             >
               {isExpanded ? (
@@ -246,12 +242,12 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
               )}
             </button>
           ) : isRoot ? (
-            <div className="w-8 h-8 rounded-2xl bg-gradient-to-tr from-brand-500/20 to-indigo-500/10 border border-brand-500/30 shrink-0 flex items-center justify-center shadow-glow-sm">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-brand-500/20 to-indigo-500/10 border border-brand-500/30 shrink-0 flex items-center justify-center shadow-glow-sm">
               <Layers className="w-4 h-4 text-brand-400" />
             </div>
           ) : (
             <div className="w-6 shrink-0 flex items-center justify-center">
-              <span className="w-2 h-2 rounded-full bg-slate-600 group-hover:bg-brand-400 group-hover:shadow-[0_0_8px_rgba(139,92,246,0.6)] transition-all" />
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-600 group-hover:bg-brand-400 group-hover:shadow-[0_0_8px_rgba(139,92,246,0.6)] transition-all" />
             </div>
           )}
 
@@ -265,17 +261,17 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
           {/* Topic Title or Inline Rename Editor */}
           {isEditingName ? (
-            <form onSubmit={handleSaveName} className="flex items-center gap-2 flex-1 max-w-lg">
+            <form onSubmit={handleSaveName} className="flex items-center gap-2 flex-1 max-w-xl">
               <input
                 type="text"
                 value={editedName}
                 onChange={(e) => setEditedName(e.target.value)}
                 autoFocus
-                className="px-3.5 py-2 text-sm font-semibold bg-slate-950 border border-brand-500 rounded-xl text-white focus:outline-none w-full shadow-glow-sm"
+                className="px-4 py-2.5 text-sm font-semibold bg-slate-950 border border-brand-500 rounded-2xl text-white focus:outline-none w-full shadow-glow-sm"
               />
               <button
                 type="submit"
-                className="p-2 rounded-xl bg-brand-600 text-white hover:bg-brand-500 shadow-sm transition-transform active:scale-95"
+                className="p-2.5 rounded-2xl bg-brand-600 text-white hover:bg-brand-500 shadow-sm transition-transform active:scale-95"
                 title="Save"
               >
                 <Check className="w-4 h-4" />
@@ -286,7 +282,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                   setEditedName(node.Topic_Name);
                   setIsEditingName(false);
                 }}
-                className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors"
+                className="p-2.5 rounded-2xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors"
                 title="Cancel"
               >
                 <X className="w-4 h-4" />
@@ -295,20 +291,20 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           ) : (
             <div
               onClick={() => openTopicDetailModal(node.id)}
-              className="cursor-pointer flex items-center gap-3 sm:gap-3.5 flex-1 min-w-0 group/title"
+              className="cursor-pointer flex items-center gap-3 sm:gap-4 flex-1 min-w-0 group/title py-0.5"
               title="Click to open Topic Detail Workspace"
             >
               <span
                 className={clsx(
-                  'truncate transition-colors',
+                  'truncate transition-colors leading-relaxed',
                   isRoot
-                    ? 'text-base sm:text-lg font-bold tracking-tight'
-                    : 'text-[14.5px] font-semibold',
+                    ? 'text-lg sm:text-xl font-bold tracking-tight'
+                    : 'text-[15.5px] font-semibold',
                   isDone
                     ? 'line-through text-slate-400'
                     : isRoot
                     ? 'text-white group-hover/title:text-brand-300'
-                    : 'text-slate-200 group-hover/title:text-brand-300'
+                    : 'text-slate-100 group-hover/title:text-brand-300'
                 )}
               >
                 {node.Topic_Name}
@@ -316,21 +312,21 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
               {/* Depth tier indicator if nested deeply */}
               {node.depth > 1 && (
-                <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono font-bold rounded-lg bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 shrink-0">
+                <span className="hidden sm:inline-block px-2.5 py-1 text-[11px] font-mono font-bold rounded-xl bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 shrink-0">
                   Level {node.depth + 1}
                 </span>
               )}
 
               {/* Subtopic count badge if parent */}
               {hasChildren && (
-                <span className="px-3 py-1 text-xs font-bold rounded-xl bg-slate-800/90 text-slate-300 border border-slate-700/60 shrink-0 shadow-sm">
+                <span className="px-3.5 py-1 text-xs font-bold rounded-xl bg-slate-800/90 text-slate-300 border border-slate-700/70 shrink-0 shadow-sm">
                   {node.children.length} {node.children.length === 1 ? 'subtopic' : 'subtopics'}
                 </span>
               )}
 
               {/* Study time indicator pill */}
               {node.Topic_Study_Hours > 0 && (
-                <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-3 py-1 rounded-xl shrink-0 shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+                <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-3.5 py-1 rounded-xl shrink-0 shadow-[0_0_12px_rgba(6,182,212,0.15)]">
                   <Clock className="w-3.5 h-3.5 text-cyan-400" />
                   {formatHours(node.Topic_Study_Hours)}
                 </span>
@@ -340,7 +336,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         </div>
 
         {/* Center/Right Tag Pills */}
-        <div className="hidden lg:flex items-center gap-2.5 shrink-0">
+        <div className="hidden lg:flex items-center gap-3 shrink-0">
           <TopicTagBadge
             type="Done"
             value={node.Topic_Tags?.Done}
@@ -375,12 +371,12 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
         </div>
 
         {/* Action Controls & Dropdown Menu */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
           {/* Quick Outdent (Promote Left) Button */}
           {canOutdentLeft && (
             <button
               onClick={() => outdentTopicLeft(node.id)}
-              className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-purple-300 hover:bg-purple-500/15 border border-transparent hover:border-purple-500/30 transition-all active:scale-95"
+              className="p-2.5 sm:p-3 rounded-2xl text-slate-400 hover:text-purple-300 hover:bg-purple-500/15 border border-transparent hover:border-purple-500/30 transition-all active:scale-95"
               title="Promote / Outdent Left (Swipe Left)"
               aria-label="Promote topic level"
             >
@@ -392,7 +388,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           {canIndentRight && (
             <button
               onClick={() => indentTopicRight(node.id)}
-              className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-cyan-300 hover:bg-cyan-500/15 border border-transparent hover:border-cyan-500/30 transition-all active:scale-95"
+              className="p-2.5 sm:p-3 rounded-2xl text-slate-400 hover:text-cyan-300 hover:bg-cyan-500/15 border border-transparent hover:border-cyan-500/30 transition-all active:scale-95"
               title="Indent Right to Subtopic under previous topic (Swipe Right)"
               aria-label="Indent topic into subtopic"
             >
@@ -403,7 +399,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           {/* Quick Add Subtopic Button */}
           <button
             onClick={() => onAddSubtopic(node.id)}
-            className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-brand-300 hover:bg-brand-500/15 border border-transparent hover:border-brand-500/30 transition-all active:scale-95"
+            className="p-2.5 sm:p-3 rounded-2xl text-slate-400 hover:text-brand-300 hover:bg-brand-500/15 border border-transparent hover:border-brand-500/30 transition-all active:scale-95"
             title="Add Nested Subtopic"
             aria-label="Add subtopic"
           >
@@ -413,7 +409,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           {/* Quick Open Detail Modal Button */}
           <button
             onClick={() => openTopicDetailModal(node.id)}
-            className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
+            className="p-2.5 sm:p-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
             title="Open Topic Workspace"
             aria-label="Open topic detail workspace"
           >
@@ -424,7 +420,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 sm:p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
+              className="p-2.5 sm:p-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all active:scale-95"
               aria-label="More actions"
             >
               <MoreHorizontal className="w-4 h-4" />
@@ -433,7 +429,7 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
             {menuOpen && (
               <>
                 <div className="fixed inset-0 z-20" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 top-11 z-30 w-64 rounded-3xl bg-slate-900 border border-slate-700 shadow-2xl p-2 text-xs text-slate-200 animate-slide-up space-y-1">
+                <div className="absolute right-0 top-12 z-30 w-64 rounded-3xl bg-slate-900 border border-slate-700 shadow-2xl p-2.5 text-xs text-slate-200 animate-slide-up space-y-1">
                   {/* Rename */}
                   <button
                     onClick={() => {
@@ -572,11 +568,11 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
 
       {/* Render Recursive Child Nodes with Indentation Guide Line */}
       {hasChildren && isExpanded && (
-        <div className="relative mt-1 mb-3">
-          {/* Subtle vertical connector guide line */}
+        <div className="relative mt-2 mb-4">
+          {/* Vertical branch connector guide line */}
           <div
-            className="absolute left-0 top-0 bottom-4 w-0.5 bg-gradient-to-b from-brand-500/40 via-slate-800/40 to-transparent"
-            style={{ marginLeft: `${(node.depth + 1) * 34 - 17}px` }}
+            className="absolute left-0 top-0 bottom-4 w-0.5 bg-gradient-to-b from-brand-500/50 via-slate-700/40 to-transparent"
+            style={{ marginLeft: `${(node.depth + 1) * 38 - 19}px` }}
           />
           {node.children.map((child) => (
             <TopicTreeNode

@@ -69,11 +69,11 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
   }, [treeNodes, searchFilter]);
 
   return (
-    <div className="flex flex-col flex-1 p-8 sm:p-10 lg:p-12 rounded-3xl bg-slate-950/70 border border-slate-800/80 backdrop-blur-2xl shadow-2xl">
+    <div className="flex flex-col flex-1 p-6 sm:p-10 lg:p-12 rounded-3xl bg-slate-950/70 border border-slate-800/80 backdrop-blur-2xl shadow-2xl">
       {/* Subject Header & Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-slate-800/80">
         <div>
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-4">
             <span
               className="w-4 h-4 rounded-full shadow-[0_0_15px_rgba(139,92,246,0.6)] shrink-0"
               style={{ backgroundColor: subject.Subject_Color || '#8b5cf6' }}
@@ -147,7 +147,7 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
       </div>
 
       {/* Topic Tree Nodes List with comfortable row spacing */}
-      <div className="flex-1 overflow-y-auto space-y-3.5 pt-2">
+      <div className="flex-1 overflow-y-auto space-y-4 pt-2">
         {treeNodes.length === 0 ? (
           <EmptyState
             icon={FolderTree}
