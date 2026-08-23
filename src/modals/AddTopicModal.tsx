@@ -126,16 +126,17 @@ export const AddTopicModal: React.FC<AddTopicModalProps> = ({
           />
         </div>
 
-        {/* Description */}
+        {/* Description / Fine-Print Note */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-            Description / Overview (Optional)
+            1-2 Line Fine-Print Note / Concept Summary (Optional)
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            placeholder="e.g. Master Theorem cases comparing n^(log_b a) with f(n), and extended logarithmic cases."
             rows={2}
-            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-brand-500"
+            className="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
           />
         </div>
 

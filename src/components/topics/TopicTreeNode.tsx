@@ -291,45 +291,54 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
           ) : (
             <div
               onClick={() => openTopicDetailModal(node.id)}
-              className="cursor-pointer flex items-center gap-3 sm:gap-4 flex-1 min-w-0 group/title py-0.5"
+              className="cursor-pointer flex flex-col justify-center flex-1 min-w-0 group/title py-0.5"
               title="Click to open Topic Detail Workspace"
             >
-              <span
-                className={clsx(
-                  'truncate transition-colors leading-relaxed',
-                  isRoot
-                    ? 'text-lg sm:text-xl font-bold tracking-tight'
-                    : 'text-[15.5px] font-semibold',
-                  isDone
-                    ? 'line-through text-slate-400'
-                    : isRoot
-                    ? 'text-white group-hover/title:text-brand-300'
-                    : 'text-slate-100 group-hover/title:text-brand-300'
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                <span
+                  className={clsx(
+                    'truncate transition-colors leading-relaxed',
+                    isRoot
+                      ? 'text-lg sm:text-xl font-bold tracking-tight'
+                      : 'text-[15.5px] font-semibold',
+                    isDone
+                      ? 'line-through text-slate-400'
+                      : isRoot
+                      ? 'text-white group-hover/title:text-brand-300'
+                      : 'text-slate-100 group-hover/title:text-brand-300'
+                  )}
+                >
+                  {node.Topic_Name}
+                </span>
+
+                {/* Depth tier indicator if nested deeply */}
+                {node.depth > 1 && (
+                  <span className="hidden sm:inline-block px-2.5 py-1 text-[11px] font-mono font-bold rounded-xl bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 shrink-0">
+                    Level {node.depth + 1}
+                  </span>
                 )}
-              >
-                {node.Topic_Name}
-              </span>
 
-              {/* Depth tier indicator if nested deeply */}
-              {node.depth > 1 && (
-                <span className="hidden sm:inline-block px-2.5 py-1 text-[11px] font-mono font-bold rounded-xl bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 shrink-0">
-                  Level {node.depth + 1}
-                </span>
-              )}
+                {/* Subtopic count badge if parent */}
+                {hasChildren && (
+                  <span className="px-3.5 py-1 text-xs font-bold rounded-xl bg-slate-800/90 text-slate-300 border border-slate-700/70 shrink-0 shadow-sm">
+                    {node.children.length} {node.children.length === 1 ? 'subtopic' : 'subtopics'}
+                  </span>
+                )}
 
-              {/* Subtopic count badge if parent */}
-              {hasChildren && (
-                <span className="px-3.5 py-1 text-xs font-bold rounded-xl bg-slate-800/90 text-slate-300 border border-slate-700/70 shrink-0 shadow-sm">
-                  {node.children.length} {node.children.length === 1 ? 'subtopic' : 'subtopics'}
-                </span>
-              )}
+                {/* Study time indicator pill */}
+                {node.Topic_Study_Hours > 0 && (
+                  <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-3.5 py-1 rounded-xl shrink-0 shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                    {formatHours(node.Topic_Study_Hours)}
+                  </span>
+                )}
+              </div>
 
-              {/* Study time indicator pill */}
-              {node.Topic_Study_Hours > 0 && (
-                <span className="flex items-center gap-1.5 text-xs font-mono font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-3.5 py-1 rounded-xl shrink-0 shadow-[0_0_12px_rgba(6,182,212,0.15)]">
-                  <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                  {formatHours(node.Topic_Study_Hours)}
-                </span>
+              {/* Fine Print 1-2 Line Notes / Key Concept Summary */}
+              {node.Topic_Description && (
+                <p className="text-[12px] text-slate-400/90 font-normal leading-relaxed line-clamp-1 sm:line-clamp-2 mt-0.5 tracking-wide">
+                  {node.Topic_Description}
+                </p>
               )}
             </div>
           )}
