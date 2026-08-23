@@ -1,4 +1,4 @@
-﻿import { PYQQuestion, PYQProgressMap, TopicPYQSummary, PYQYearFilter } from '../types/pyq';
+import { PYQQuestion, PYQProgressMap, TopicPYQSummary, PYQYearFilter } from '../types/pyq';
 import rawQuestions from '../data/pyqQuestions.json';
 
 const PYQ_PROGRESS_STORAGE_KEY = 'topic_master_pyq_progress_v1';
@@ -56,15 +56,14 @@ const CHAPTER_ALIASES: Record<string, string> = {
   'maxima minima': 'calculus: maxima and minima',
 
   // General Aptitude
-  'alligation mixture': 'quantitative aptitude',
-  'arithmetic series': 'quantitative aptitude',
-  'cost market price': 'quantitative aptitude',
-  'data interpretation': 'quantitative aptitude',
-  'factors': 'quantitative aptitude',
-  'number series': 'quantitative aptitude',
-  'work time': 'quantitative aptitude',
-  'passage reading': 'verbal aptitude',
-  'most appropriate word': 'verbal aptitude',
+  'alligation mixture': 'ratio proportion',
+  'arithmetic series': 'progressions (ap & gp)',
+  'cost market price': 'profit and loss',
+  'data interpretation': 'tabular data',
+  'factors': 'number systems & divisibility',
+  'number series': 'sequence series',
+  'speed time distance': 'speed time & distance',
+  'work time': 'time & work',
 };
 
 // ================= PRE-INDEXED FAST DATA STRUCTURES =================
