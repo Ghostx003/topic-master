@@ -5,7 +5,7 @@ import { ContentBlock } from '../types/contentBlock';
 import { Schedule } from '../types/schedule';
 import { TopicMasterState, TopicMasterActions, AppSettings } from '../types/store';
 import { StorageService, DEFAULT_INITIAL_STATE } from '../services/storageService';
-import { BackupService } from '../services/backupService';
+import { BackupService, deduplicateDatabase } from '../services/backupService';
 import { getAllDescendantIds } from '../utils/hierarchyUtils';
 
 interface TopicMasterContextType extends TopicMasterState, TopicMasterActions {
@@ -315,10 +315,21 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
       const parentTopic = prev.topics.find((t) => t.id === topic.Parent_Id);
       const newParentId = parentTopic ? parentTopic.Parent_Id : null;
 
+      const newSiblings = prev.topics.filter(
+        (t) => t.Subject_Id === topic.Subject_Id && t.Parent_Id === newParentId && t.id !== id
+      );
+
       return {
         ...prev,
         topics: prev.topics.map((t) =>
-          t.id === id ? { ...t, Parent_Id: newParentId, updated_at: new Date().toISOString() } : t
+          t.id === id
+            ? {
+                ...t,
+                Parent_Id: newParentId,
+                Topic_Order: newSiblings.length,
+                updated_at: new Date().toISOString(),
+              }
+            : t
         ),
       };
     });
@@ -326,11 +337,32 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   const demoteTopic = useCallback((id: string, newParentId: string) => {
     setState((prev) => {
-      if (id === newParentId) return prev;
+      const topic = prev.topics.find((t) => t.id === id);
+      if (!topic || id === newParentId) return prev;
+
+      // Prevent cyclic hierarchy
+      const descendants = getAllDescendantIds(prev.topics, id);
+      if (descendants.includes(newParentId)) return prev;
+
+      const targetParent = prev.topics.find((t) => t.id === newParentId);
+      if (!targetParent) return prev;
+
+      const newSiblings = prev.topics.filter(
+        (t) => t.Subject_Id === targetParent.Subject_Id && t.Parent_Id === newParentId && t.id !== id
+      );
+
       return {
         ...prev,
         topics: prev.topics.map((t) =>
-          t.id === id ? { ...t, Parent_Id: newParentId, updated_at: new Date().toISOString() } : t
+          t.id === id
+            ? {
+                ...t,
+                Parent_Id: newParentId,
+                Subject_Id: targetParent.Subject_Id,
+                Topic_Order: newSiblings.length,
+                updated_at: new Date().toISOString(),
+              }
+            : t
         ),
       };
     });
@@ -821,12 +853,37 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
         return { success: false, message: validation.error || 'Invalid backup structure.' };
       }
 
-      const nextState = BackupService.importBackup(state, validation.data, mode);
+      const { nextState, removedSubjects, removedTopics } = BackupService.importBackup(
+        state,
+        validation.data,
+        mode
+      );
       setState(nextState);
-      return { success: true, message: `Successfully imported backup in ${mode} mode!` };
+      const dupMsg =
+        removedSubjects > 0 || removedTopics > 0
+          ? ` (Cleaned ${removedTopics} duplicate topics & ${removedSubjects} duplicate subjects)`
+          : '';
+      return { success: true, message: `Successfully imported backup in ${mode} mode!${dupMsg}` };
     },
     [state]
   );
+
+  const removeDuplicates = useCallback((): { removedSubjects: number; removedTopics: number } => {
+    let removedSubjects = 0;
+    let removedTopics = 0;
+    setState((prev) => {
+      const result = deduplicateDatabase(prev.subjects, prev.topics, prev.schedules);
+      removedSubjects = result.removedSubjectsCount;
+      removedTopics = result.removedTopicsCount;
+      return {
+        ...prev,
+        subjects: result.cleanSubjects,
+        topics: result.cleanTopics,
+        schedules: result.cleanSchedules,
+      };
+    });
+    return { removedSubjects, removedTopics };
+  }, []);
 
   const resetToDemoData = useCallback(() => {
     setState(DEFAULT_INITIAL_STATE);
@@ -902,6 +959,7 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
         toggleScheduleTopicCompleted,
         exportData,
         importData,
+        removeDuplicates,
         resetToDemoData,
         clearAllData,
         updateSettings,

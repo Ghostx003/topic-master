@@ -15,6 +15,121 @@ export interface BackupPayload {
   };
 }
 
+/**
+ * Robust database deduplication engine:
+ * Removes duplicate subjects by name, duplicate topics by (subject + parent + name),
+ * remaps orphaned parent links, and cleans schedules.
+ */
+export function deduplicateDatabase(
+  subjects: Subject[],
+  topics: Topic[],
+  schedules: Schedule[] = []
+): {
+  cleanSubjects: Subject[];
+  cleanTopics: Topic[];
+  cleanSchedules: Schedule[];
+  removedSubjectsCount: number;
+  removedTopicsCount: number;
+} {
+  // 1. Deduplicate Subjects by Name
+  const subjectNameMap = new Map<string, Subject>();
+  const subjectIdAliases = new Map<string, string>(); // oldId -> masterId
+  const cleanSubjects: Subject[] = [];
+  let removedSubjectsCount = 0;
+
+  for (const subj of subjects) {
+    const key = subj.Subject_Name.trim().toLowerCase();
+    if (subjectNameMap.has(key)) {
+      const master = subjectNameMap.get(key)!;
+      subjectIdAliases.set(subj.id, master.id);
+      removedSubjectsCount++;
+    } else {
+      subjectNameMap.set(key, subj);
+      cleanSubjects.push(subj);
+    }
+  }
+
+  // 2. Deduplicate Topics by (Subject_Id + Parent_Id + Topic_Name)
+  const topicKeyMap = new Map<string, Topic>();
+  const topicIdAliases = new Map<string, string>(); // oldTopicId -> masterTopicId
+  let tempCleanTopics: Topic[] = [];
+  let removedTopicsCount = 0;
+
+  for (const top of topics) {
+    const canonicalSubjectId = subjectIdAliases.get(top.Subject_Id) || top.Subject_Id;
+    const parentKey = top.Parent_Id || 'root';
+    const nameKey = top.Topic_Name.trim().toLowerCase();
+    const compositeKey = `${canonicalSubjectId}::${parentKey}::${nameKey}`;
+
+    if (topicKeyMap.has(compositeKey)) {
+      const master = topicKeyMap.get(compositeKey)!;
+      topicIdAliases.set(top.id, master.id);
+      removedTopicsCount++;
+    } else {
+      const cleanTop: Topic = {
+        ...top,
+        Subject_Id: canonicalSubjectId,
+      };
+      topicKeyMap.set(compositeKey, cleanTop);
+      tempCleanTopics.push(cleanTop);
+    }
+  }
+
+  // 3. Remap Parent IDs and fix broken hierarchy references
+  const validTopicIds = new Set(tempCleanTopics.map((t) => t.id));
+  const cleanTopics = tempCleanTopics.map((top) => {
+    let parentId = top.Parent_Id;
+    if (parentId && topicIdAliases.has(parentId)) {
+      parentId = topicIdAliases.get(parentId)!;
+    }
+    // If parent ID does not exist in valid topics, promote to root
+    if (parentId && !validTopicIds.has(parentId)) {
+      parentId = null;
+    }
+    return {
+      ...top,
+      Parent_Id: parentId,
+    };
+  });
+
+  // 4. Clean and Remap Schedules
+  const cleanSchedules = schedules.map((sched) => {
+    const seenAllocations = new Set<string>();
+    const cleanAllocations = (sched.Allocated_Topics || [])
+      .map((at) => {
+        const canonicalTopicId = topicIdAliases.get(at.topic_id) || at.topic_id;
+        const canonicalSubjectId = subjectIdAliases.get(at.subject_id) || at.subject_id;
+        return {
+          ...at,
+          topic_id: canonicalTopicId,
+          subject_id: canonicalSubjectId,
+        };
+      })
+      .filter((at) => {
+        if (!validTopicIds.has(at.topic_id)) return false;
+        if (seenAllocations.has(at.topic_id)) return false;
+        seenAllocations.add(at.topic_id);
+        return true;
+      });
+
+    return {
+      ...sched,
+      Schedule_Subjects: Array.from(
+        new Set(sched.Schedule_Subjects.map((sid) => subjectIdAliases.get(sid) || sid))
+      ),
+      Allocated_Topics: cleanAllocations,
+    };
+  });
+
+  return {
+    cleanSubjects,
+    cleanTopics,
+    cleanSchedules,
+    removedSubjectsCount,
+    removedTopicsCount,
+  };
+}
+
 export const BackupService = {
   exportBackup(state: TopicMasterState): string {
     const payload: BackupPayload = {
@@ -107,66 +222,46 @@ export const BackupService = {
     currentState: TopicMasterState,
     payload: BackupPayload,
     mode: 'overwrite' | 'merge'
-  ): TopicMasterState {
+  ): { nextState: TopicMasterState; removedSubjects: number; removedTopics: number } {
     const incoming = payload.data;
 
+    let targetSubjects: Subject[] = [];
+    let targetTopics: Topic[] = [];
+    let targetSchedules: Schedule[] = [];
+
     if (mode === 'overwrite') {
-      return {
-        ...currentState,
-        subjects: incoming.subjects,
-        topics: incoming.topics,
-        schedules: incoming.schedules || [],
-        activeScheduleId: incoming.schedules?.[0]?.id || null,
-        settings: { ...currentState.settings, ...(incoming.settings || {}) },
-      };
+      targetSubjects = incoming.subjects;
+      targetTopics = incoming.topics;
+      targetSchedules = incoming.schedules || [];
+    } else {
+      // Merge Mode: Combine existing + incoming
+      targetSubjects = [...currentState.subjects, ...incoming.subjects];
+      targetTopics = [...currentState.topics, ...incoming.topics];
+      targetSchedules = [...currentState.schedules, ...(incoming.schedules || [])];
     }
 
-    // Merge Mode
-    const existingSubjectIds = new Set(currentState.subjects.map((s) => s.id));
-    const mergedSubjects = [...currentState.subjects];
+    // Automatically deduplicate on import
+    const {
+      cleanSubjects,
+      cleanTopics,
+      cleanSchedules,
+      removedSubjectsCount,
+      removedTopicsCount,
+    } = deduplicateDatabase(targetSubjects, targetTopics, targetSchedules);
 
-    for (const subj of incoming.subjects) {
-      if (existingSubjectIds.has(subj.id)) {
-        // Update existing
-        const idx = mergedSubjects.findIndex((s) => s.id === subj.id);
-        if (idx >= 0) mergedSubjects[idx] = { ...mergedSubjects[idx], ...subj };
-      } else {
-        mergedSubjects.push(subj);
-        existingSubjectIds.add(subj.id);
-      }
-    }
-
-    const existingTopicIds = new Set(currentState.topics.map((t) => t.id));
-    const mergedTopics = [...currentState.topics];
-
-    for (const top of incoming.topics) {
-      if (existingTopicIds.has(top.id)) {
-        const idx = mergedTopics.findIndex((t) => t.id === top.id);
-        if (idx >= 0) mergedTopics[idx] = { ...mergedTopics[idx], ...top };
-      } else {
-        mergedTopics.push(top);
-        existingTopicIds.add(top.id);
-      }
-    }
-
-    const existingScheduleIds = new Set(currentState.schedules.map((s) => s.id));
-    const mergedSchedules = [...currentState.schedules];
-
-    for (const sched of incoming.schedules || []) {
-      if (existingScheduleIds.has(sched.id)) {
-        const idx = mergedSchedules.findIndex((s) => s.id === sched.id);
-        if (idx >= 0) mergedSchedules[idx] = { ...mergedSchedules[idx], ...sched };
-      } else {
-        mergedSchedules.push(sched);
-        existingScheduleIds.add(sched.id);
-      }
-    }
+    const nextState: TopicMasterState = {
+      ...currentState,
+      subjects: cleanSubjects,
+      topics: cleanTopics,
+      schedules: cleanSchedules,
+      activeScheduleId: cleanSchedules?.[0]?.id || null,
+      settings: { ...currentState.settings, ...(incoming.settings || {}) },
+    };
 
     return {
-      ...currentState,
-      subjects: mergedSubjects,
-      topics: mergedTopics,
-      schedules: mergedSchedules,
+      nextState,
+      removedSubjects: removedSubjectsCount,
+      removedTopics: removedTopicsCount,
     };
   },
 };

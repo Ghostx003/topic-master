@@ -15,6 +15,7 @@ import {
   FileJson,
   Database,
   Palette,
+  Sparkles,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -41,6 +42,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     settings,
     updateSettings,
     importData,
+    removeDuplicates,
     resetToDemoData,
     clearAllData,
   } = useTopicMaster();
@@ -95,6 +97,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
       }
     };
     reader.readAsText(file);
+  };
+
+  const handleRemoveDuplicates = () => {
+    const { removedSubjects, removedTopics } = removeDuplicates();
+    if (removedSubjects === 0 && removedTopics === 0) {
+      toast.info('Database Clean', 'No duplicate subjects or topics found in your database.');
+    } else {
+      toast.success(
+        'Duplicates Removed',
+        `Successfully removed ${removedTopics} duplicate topics and ${removedSubjects} duplicate subjects.`
+      );
+    }
   };
 
   const executeImport = (mode: 'overwrite' | 'merge') => {
@@ -271,6 +285,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 </button>
               </div>
             )}
+          </div>
+
+          {/* Deduplication & Cleanup Engine */}
+          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-cyan-400" />
+                <span>Clean & Deduplicate Topics</span>
+              </h4>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed max-w-md">
+                Scan and remove duplicate topics with identical names under the same subject, preserving all notes, tags, and stars.
+              </p>
+            </div>
+            <button
+              onClick={handleRemoveDuplicates}
+              className="px-4 py-2.5 text-xs font-bold rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 transition-all flex items-center gap-2 shrink-0 active:scale-95 shadow-glow-sm"
+            >
+              <Sparkles className="w-4 h-4 text-cyan-400" />
+              <span>Remove Duplicates</span>
+            </button>
           </div>
 
           {/* Reset & Maintenance */}
