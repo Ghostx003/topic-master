@@ -1,4 +1,4 @@
-﻿import { Topic, TopicTreeNodeType } from '../types/topic';
+import { Topic, TopicTreeNodeType } from '../types/topic';
 import { PYQYearFilter } from '../types/pyq';
 import { getQuestionsForTopic, filterQuestionsByYear } from '../services/pyqService';
 import { INITIAL_SUBJECTS } from './sampleData';
@@ -27,32 +27,23 @@ export function getAuthoritativeTopicPYQ(
 
   let result = 0;
 
-  // 1. If this is a tree node with children, it is a parent topic.
-  //    Parent PYQ count is STRICTLY and ALWAYS equal to the sum of all its subtopics.
-  if ('children' in topicOrNode && Array.isArray((topicOrNode as any).children) && (topicOrNode as any).children.length > 0) {
-    result = (topicOrNode as any).children.reduce(
+  // 1. Calculate sum from any child topics
+  let childrenSum = 0;
+  const children = allTopics.length > 0
+    ? allTopics.filter((t) => t.Parent_Id === topicOrNode.id)
+    : ('children' in topicOrNode && Array.isArray((topicOrNode as any).children))
+    ? (topicOrNode as any).children
+    : [];
+
+  if (children.length > 0) {
+    childrenSum = children.reduce(
       (acc: number, c: any) => acc + getAuthoritativeTopicPYQ(c, allTopics, yearFilter, subjectName),
       0
     );
-    AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
-    return result;
   }
 
-  // 2. If it has children in allTopics, it is a parent topic.
-  //    Parent PYQ count is STRICTLY and ALWAYS equal to the sum of all its subtopics.
-  if (allTopics.length > 0) {
-    const children = allTopics.filter((t) => t.Parent_Id === topicOrNode.id);
-    if (children.length > 0) {
-      result = children.reduce(
-        (acc, c) => acc + getAuthoritativeTopicPYQ(c, allTopics, yearFilter, subjectName),
-        0
-      );
-      AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
-      return result;
-    }
-  }
-
-  // 3. Look up in the authoritative 3,683 GATE PYQ questions database
+  // 2. Look up direct questions attached to this topic
+  let directSum = 0;
   const effSubjectName =
     subjectName ||
     INITIAL_SUBJECTS.find((s) => s.id === topicOrNode.Subject_Id)?.Subject_Name ||
@@ -61,17 +52,17 @@ export function getAuthoritativeTopicPYQ(
   if (effSubjectName) {
     const matchedQs = getQuestionsForTopic(effSubjectName, topicOrNode.Topic_Name, []);
     if (matchedQs.length > 0) {
-      result = yearFilter === 'all'
+      directSum = yearFilter === 'all'
         ? matchedQs.length
         : filterQuestionsByYear(matchedQs, yearFilter).length;
-      AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
-      return result;
     }
   }
 
-  // No questions attached for this topic in database
-  AUTHORITATIVE_PYQ_CACHE.set(cacheKey, 0);
-  return 0;
+  // If children have question counts (e.g. Chapter level with subtopics), use childrenSum.
+  // Otherwise if node itself has attached questions, use directSum.
+  result = childrenSum > 0 ? childrenSum : directSum;
+  AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
+  return result;
 }
 
 /**
