@@ -199,9 +199,6 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic('os-10', 'subj-os', 'os-ch-mem', 'Memory Management', 'Contiguous memory allocation (First Fit, Best Fit, Worst Fit), internal vs external fragmentation.', 1, true),
   makeTopic('os-3', 'subj-os', 'os-ch-mem', 'Virtual Memory', 'Demand paging, Translation Lookaside Buffer (TLB), Effective Memory Access Time (EMAT) calculations, page table lookups.', 2, true),
   makeTopic('os-4', 'subj-os', 'os-ch-mem', 'Page Replacement', 'FIFO, LRU, Optimal page replacement algorithms, Belady Anomaly, page fault counting on reference strings.', 3, true),
-  makeTopic('os-sub-tlb', 'subj-os', 'os-3', 'Translation Lookaside Buffer (TLB)', 'TLB hit ratio, TLB miss penalty, multi-level paging EMAT = Hit*(TLB+RAM) + Miss*(TLB+(k+1)*RAM).', 1, false),
-  makeTopic('os-sub-ml-page', 'subj-os', 'os-3', 'Multi-Level Paging', 'Hierarchical paging, outer page table, inner page table, page directory index calculations.', 2, false),
-  makeTopic('os-sub-lru', 'subj-os', 'os-4', 'Least Recently Used (LRU) & Optimal', 'LRU stack/counter implementations, stack algorithm property, comparing LRU vs FIFO vs Optimal.', 1, false),
 
   // --- Chapter 6: Storage, File Systems & I/O ---
   makeTopic('os-ch-storage', 'subj-os', null, 'Storage, File Systems & I/O', 'Disk geometry, seek times, Unix Inode pointers, disk scheduling algorithms, and I/O handling.', 6, true),

@@ -512,13 +512,6 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                   {node.Topic_Name}
                 </span>
 
-                {/* Depth tier indicator if nested deeply */}
-                {node.depth > 1 && (
-                  <span className="hidden sm:inline-block px-2.5 py-1 text-[11px] font-mono font-bold rounded-xl bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 shrink-0">
-                    Level {node.depth + 1}
-                  </span>
-                )}
-
                 {/* Subtopic count badge if parent */}
                 {hasChildren && (
                   <span className="px-3.5 py-1 text-xs font-bold rounded-xl bg-slate-800/90 text-slate-300 border border-slate-700/70 shrink-0 shadow-sm">
