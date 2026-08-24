@@ -3,7 +3,7 @@ import { INITIAL_SUBJECTS, INITIAL_TOPICS, INITIAL_SCHEDULES } from '../utils/sa
 import { Subject } from '../types/subject';
 import { Topic } from '../types/topic';
 
-const STORAGE_KEY = 'topic_master_state_gate_cse_v9_clean';
+const STORAGE_KEY = 'topic_master_state_gate_cse_v10_syllabus';
 
 export const DEFAULT_INITIAL_STATE: TopicMasterState = {
   subjects: INITIAL_SUBJECTS,
@@ -30,7 +30,7 @@ export const StorageService = {
     try {
       // Clean up legacy storage keys
       try {
-        ['topic_master_state_gate_cse_v8_pyq', 'topic_master_state_v7', 'topic_master_state_v6', 'topic_master_state_v5'].forEach((k) => {
+        ['topic_master_state_gate_cse_v9_clean', 'topic_master_state_gate_cse_v8_pyq', 'topic_master_state_v7', 'topic_master_state_v6', 'topic_master_state_v5'].forEach((k) => {
           localStorage.removeItem(k);
         });
       } catch {}
