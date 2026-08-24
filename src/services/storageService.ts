@@ -3,7 +3,7 @@ import { INITIAL_SUBJECTS, INITIAL_TOPICS, INITIAL_SCHEDULES } from '../utils/sa
 import { Subject } from '../types/subject';
 import { Topic } from '../types/topic';
 
-const STORAGE_KEY = 'topic_master_state_gate_cse_v11_clean';
+const STORAGE_KEY = 'topic_master_state_gate_cse_v12_final';
 
 export const DEFAULT_INITIAL_STATE: TopicMasterState = {
   subjects: INITIAL_SUBJECTS,
@@ -30,7 +30,15 @@ export const StorageService = {
     try {
       // Clean up legacy storage keys
       try {
-        ['topic_master_state_gate_cse_v10_syllabus', 'topic_master_state_gate_cse_v9_clean', 'topic_master_state_gate_cse_v8_pyq', 'topic_master_state_v7', 'topic_master_state_v6', 'topic_master_state_v5'].forEach((k) => {
+        [
+          'topic_master_state_gate_cse_v11_clean',
+          'topic_master_state_gate_cse_v10_syllabus',
+          'topic_master_state_gate_cse_v9_clean',
+          'topic_master_state_gate_cse_v8_pyq',
+          'topic_master_state_v7',
+          'topic_master_state_v6',
+          'topic_master_state_v5',
+        ].forEach((k) => {
           localStorage.removeItem(k);
         });
       } catch {}
@@ -66,28 +74,15 @@ export const StorageService = {
         };
       });
 
+      const seedPrefixes = ['os-', 'dm-', 'coa-', 'cn-', 'alg-', 'ds-', 'pr-', 'dl-', 'cd-', 'db-', 'toc-', 'em-', 'ga-'];
+
       const hydratedTopics: Topic[] = parsed.topics
         .filter((t: Topic) => {
-          // Filter out obsolete split/merged seed topics so new ones take over
-          if (
-            t.id === 'dm-16' ||
-            t.id === 'os-1' ||
-            t.id === 'db-1-1' ||
-            t.id === 'db-1-2' ||
-            t.id === 'db-2-1' ||
-            t.id === 'db-2-2' ||
-            t.id === 'cn-1-1' ||
-            t.id === 'cn-1-2' ||
-            t.id === 'cn-3-1' ||
-            t.id === 'cn-3-2' ||
-            t.id === 'cn-3-3' ||
-            t.id === 'cn-10-1' ||
-            t.id === 'cn-10-2' ||
-            t.id === 'coa-1-1' ||
-            t.id === 'coa-1-2' ||
-            t.id === 'coa-2-1' ||
-            t.id === 'coa-2-2'
-          ) return false;
+          // If this is a system seed topic (matches prefix) but no longer in INITIAL_TOPICS, drop it
+          const isSeed = seedPrefixes.some((p) => t.id.startsWith(p));
+          if (isSeed && !initialTopicMap.has(t.id)) {
+            return false;
+          }
           return true;
         })
         .map((t: Topic) => {
