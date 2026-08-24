@@ -30,45 +30,32 @@ export function sortQuestionsNewestFirst(questions: PYQQuestion[]): PYQQuestion[
     const yearA = extractYearNumber(a.year);
     const yearB = extractYearNumber(b.year);
     if (yearB !== yearA) return yearB - yearA; // Newest first
-    return a.questionNumber - b.questionNumber;
+
+    const numA =
+      typeof a.questionNumber === 'number'
+        ? a.questionNumber
+        : parseFloat(String(a.questionNumber).replace(/[^0-9.]/g, '')) || 0;
+    const numB =
+      typeof b.questionNumber === 'number'
+        ? b.questionNumber
+        : parseFloat(String(b.questionNumber).replace(/[^0-9.]/g, '')) || 0;
+    if (numA !== numB) return numA - numB;
+    return String(a.questionNumber).localeCompare(String(b.questionNumber));
   });
 }
 
 // Custom aliases for exact canonical name matching
 const CHAPTER_ALIASES: Record<string, string> = {
-  // Digital Logic
-  'ieee representation': 'floating point representation',
-  'canonical normal form': 'canonical and standard forms',
-  'min sum of products form': 'minimal sum of products (sop)',
-  'min products of sum form': 'minimal product of sums (pos)',
-  'number representation': 'number systems and base conversions',
-
-  // Data Structures
-  'variable scope': 'data structures',
-  'abstract data type': 'abstract data types (adt)',
-  'infix prefix': 'infix, prefix, and postfix conversions',
-
-  // Discrete Mathematics
-  'mathematical induction': 'propositional logic',
-  'countable uncountable set': 'set theory',
-
-  // Engineering Mathematics
-  'bayes theorem': 'conditional probability',
-  'variance': 'random variable',
-  'bernoulli distribution': 'binomial distribution',
-  'chi square distribution': 'probability',
-  'gaussian elimination': 'system of equations',
-  'maxima minima': 'calculus: maxima and minima',
-
-  // General Aptitude Exact Canonical Aliases
-  'work time': 'time & work',
-  'speed time distance': 'speed time & distance',
-  'alligation mixture': 'ratio proportion',
-  'arithmetic series': 'progressions (ap & gp)',
-  'cost market price': 'profit and loss',
-  'data interpretation': 'tabular data',
-  'factors': 'number systems & divisibility',
-  'number series': 'sequence series',
+  // General aliases for natural UI queries
+  'time and work': 'work time',
+  'time & work': 'work time',
+  'speed time & distance': 'speed time distance',
+  'k-map': 'k map',
+  'k-map minimization': 'k map',
+  'b-tree': 'b tree',
+  'b and b+ tree': 'b tree',
+  'b+ tree': 'b tree',
+  'finite automata (dfa/nfa)': 'finite automata',
 };
 
 // ================= PRE-INDEXED FAST DATA STRUCTURES =================

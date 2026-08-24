@@ -160,478 +160,705 @@ const makeTopic = (
 
 export const INITIAL_TOPICS: Topic[] = [
   // =========================================================================
-  // 1. OPERATING SYSTEMS (subj-os)
-  // =========================================================================
-  // --- Chapter 1: Processes, Threads & System Calls ---
-  makeTopic('os-ch-proc', 'subj-os', null, 'Processes, Threads & System Calls', 'Process states, PCB, user/kernel threads, fork/exec system calls, context switching, and IPC.', 1, true),
-  makeTopic('os-sub-proc', 'subj-os', 'os-ch-proc', 'Process & Process States', '5-state process model (New, Ready, Running, Waiting, Terminated) and Process Control Block (PCB).', 1, true),
-  makeTopic('os-9', 'subj-os', 'os-ch-proc', 'Threads', 'User-level threads vs Kernel-level threads, multithreading models, thread control blocks.', 2, true),
-  makeTopic('os-sub-fork', 'subj-os', 'os-ch-proc', 'Fork System Call', 'fork() process creation tree calculations, return value 0/PID, parent-child processes.', 3, true),
-  makeTopic('os-sub-context', 'subj-os', 'os-ch-proc', 'Context Switch', 'CPU register saving, state restoration, dispatcher latency, preemptive vs non-preemptive switching.', 4, true),
-  makeTopic('os-sub-ipc', 'subj-os', 'os-ch-proc', 'Inter Process Communication', 'Shared memory architecture, message passing queues, socket communication, pipes.', 5, true),
-  makeTopic('os-sub-syscall', 'subj-os', 'os-ch-proc', 'System Calls', 'System call interface, trap instructions, standard system calls exec(), wait(), exit().', 6, true),
-
-  // --- Chapter 2: CPU Scheduling ---
-  makeTopic('os-ch-sched', 'subj-os', null, 'CPU Scheduling', 'Scheduling algorithms FCFS, SJF, SRTF, Round Robin, priority scheduling, and multi-level queues.', 2, true),
-  makeTopic('os-2', 'subj-os', 'os-ch-sched', 'Process Scheduling', 'CPU Scheduling algorithms, Gantt charts, turnaround time, waiting time, and response time.', 1, true),
-  makeTopic('os-sub-fcfs', 'subj-os', 'os-2', 'First-Come First-Served (FCFS)', 'Non-preemptive scheduling order by arrival time, convoy effect, and average waiting time calculations.', 1, false),
-  makeTopic('os-sub-sjf', 'subj-os', 'os-2', 'Shortest Job First (SJF & SRTF)', 'Non-preemptive SJF and Preemptive Shortest Remaining Time First (SRTF) optimal waiting time.', 2, false),
-  makeTopic('os-sub-rr', 'subj-os', 'os-2', 'Round Robin Scheduling', 'Time quantum sizing, context switch overhead, queue management, turnaround and waiting time.', 3, false),
-  makeTopic('os-sub-prio', 'subj-os', 'os-2', 'Priority Scheduling', 'Preemptive and non-preemptive priority assignments, starvation problems, and aging solutions.', 4, false),
-  makeTopic('os-sub-mlfq', 'subj-os', 'os-2', 'Multi-Level Feedback Queue (MLFQ)', 'Multiple priority ready queues, dynamic priority adjustments, and I/O bound vs CPU bound processes.', 5, false),
-
-  // --- Chapter 3: Process Synchronization ---
-  makeTopic('os-ch-sync', 'subj-os', null, 'Process Synchronization', 'Critical section problem, Peterson algorithm, classical sync, semaphores, and precedence graphs.', 3, true),
-  makeTopic('os-1', 'subj-os', 'os-ch-sync', 'Process Synchronization', 'Critical Section criteria (Mutual Exclusion, Progress, Bounded Waiting), Peterson Algorithm.', 1, true),
-  makeTopic('os-8', 'subj-os', 'os-ch-sync', 'Semaphore', 'Counting and binary semaphore values, concurrent P/V wait/signal operation sequences and deadlock states.', 2, true),
-  makeTopic('os-sub-sync-crit', 'subj-os', 'os-1', 'Critical Section Problem & Hardware Locks', 'Mutual exclusion, progress, bounded waiting, TestAndSet and CompareAndSwap atomic instructions.', 1, false),
-  makeTopic('os-sub-sync-peterson', 'subj-os', 'os-1', 'Peterson Algorithm for 2 Processes', 'Shared flag array and turn variable correctness proofs for 2-process mutual exclusion.', 2, false),
-  makeTopic('os-sub-sync-classic', 'subj-os', 'os-1', 'Classical Synchronization Problems', 'Producer-Consumer (bounded buffer), Readers-Writers priority, and Dining Philosophers.', 3, false),
-
-  // --- Chapter 4: Deadlocks & Resource Allocation ---
-  makeTopic('os-ch-deadlock', 'subj-os', null, 'Deadlocks & Resource Allocation', 'Necessary deadlock conditions, Resource Allocation Graphs, Banker algorithm, safety and recovery.', 4, true),
-  makeTopic('os-6', 'subj-os', 'os-ch-deadlock', 'Resource Allocation', 'Deadlock necessary conditions (Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait), Banker Algorithm.', 1, true),
-  makeTopic('os-sub-banker', 'subj-os', 'os-6', 'Bankers Algorithm & Safe Sequences', 'Allocation, Max, Need (Max - Allocation), and Available matrices; safety test and resource requests.', 1, false),
-  makeTopic('os-sub-rag', 'subj-os', 'os-6', 'Resource Allocation Graphs (RAG)', 'RAG cycle detection, single vs multiple instance resource deadlock, and wait-for graphs.', 2, false),
-
-  // --- Chapter 5: Memory Management & Virtual Memory ---
-  makeTopic('os-ch-mem', 'subj-os', null, 'Memory Management & Virtual Memory', 'Paging, multi-level page tables, TLB, EMAT, page replacement algorithms, and allocation policies.', 5, true),
-  makeTopic('os-10', 'subj-os', 'os-ch-mem', 'Memory Management', 'Contiguous memory allocation (First Fit, Best Fit, Worst Fit), internal vs external fragmentation.', 1, true),
-  makeTopic('os-3', 'subj-os', 'os-ch-mem', 'Virtual Memory', 'Demand paging, Translation Lookaside Buffer (TLB), Effective Memory Access Time (EMAT) calculations, page table lookups.', 2, true),
-  makeTopic('os-4', 'subj-os', 'os-ch-mem', 'Page Replacement', 'FIFO, LRU, Optimal page replacement algorithms, Belady Anomaly, page fault counting on reference strings.', 3, true),
-
-  // --- Chapter 6: Storage, File Systems & I/O ---
-  makeTopic('os-ch-storage', 'subj-os', null, 'Storage, File Systems & I/O', 'Disk geometry, seek times, Unix Inode pointers, disk scheduling algorithms, and I/O handling.', 6, true),
-  makeTopic('os-5', 'subj-os', 'os-ch-storage', 'Disk', 'Disk geometry, Sector/Track addressing, rotational latency, transfer rate, and Unix Inode block pointer calculations.', 1, true),
-  makeTopic('os-7', 'subj-os', 'os-ch-storage', 'Disk Scheduling', 'FCFS, SSTF, SCAN (Elevator), C-SCAN, LOOK, C-LOOK seek time track movement calculations.', 2, true),
-  makeTopic('os-sub-fs', 'subj-os', 'os-ch-storage', 'File System', 'Directory structures, file control blocks, file access methods, file attributes and mounting.', 3, true),
-  makeTopic('os-sub-io', 'subj-os', 'os-ch-storage', 'IO Handling', 'Programmed I/O, Interrupt-Driven I/O, I/O subsystem kernel services, device drivers and controllers.', 4, true),
-
-  // =========================================================================
-  // 2. COMPILER DESIGN (subj-cd)
-  // =========================================================================
-  // --- Chapter 1: Lexical Analysis & System Software ---
-  makeTopic('cd-ch-lex', 'subj-cd', null, 'Lexical Analysis & System Software', 'Phases of compiler, token generation, lexeme, regular definitions, assemblers, linkers, loaders.', 1, true),
-  makeTopic('cd-7', 'subj-cd', 'cd-ch-lex', 'Compilation Phases', 'Lexical, Syntax, Semantic, Intermediate Code, Code Optimization, and Target Code Generation phases.', 1, true),
-  makeTopic('cd-sub-lex', 'subj-cd', 'cd-ch-lex', 'Lexical Analysis', 'Token recognition, pattern matching, regular definitions, input buffering, and Lex tool.', 2, true),
-  makeTopic('cd-9', 'subj-cd', 'cd-ch-lex', 'Assembler', 'Two-pass assembler, symbol table generation, opcode table, and location counter management.', 3, true),
-  makeTopic('cd-sub-linker', 'subj-cd', 'cd-ch-lex', 'Linker & Loader', 'Static vs dynamic linking, relocation, absolute vs relocatable loaders, and object modules.', 4, true),
-
-  // --- Chapter 2: Parsing & Syntax Analysis ---
-  makeTopic('cd-ch-parse', 'subj-cd', null, 'Parsing & Syntax Analysis', 'Grammars, ambiguity elimination, LL(1) top-down parsing, and LR bottom-up parsing hierarchy.', 2, true),
-  makeTopic('cd-1', 'subj-cd', 'cd-ch-parse', 'Grammar', 'Context-free grammars, ambiguity proofs, left recursion elimination, and left factoring.', 1, true),
-  makeTopic('cd-sub-topdown', 'subj-cd', 'cd-ch-parse', 'Top-Down Parsers (LL(1))', 'Recursive descent parsing, predictive parsing, FIRST and FOLLOW sets computation, LL(1) tables.', 2, true),
-  makeTopic('cd-sub-ff', 'subj-cd', 'cd-sub-topdown', 'FIRST & FOLLOW Sets', 'FIRST set derivation rules for terminals/non-terminals, FOLLOW set endmarker $ and epsilon handling.', 1, false),
-  makeTopic('cd-sub-ll1-table', 'subj-cd', 'cd-sub-topdown', 'LL(1) Parsing Table & Conflicts', 'LL(1) table construction M[A,a], detecting multiple entries / conflicts, LL(1) grammar condition.', 2, false),
-  makeTopic('cd-2', 'subj-cd', 'cd-ch-parse', 'Parsing', 'Shift-reduce parsing, handle pruning, shift-reduce conflicts, reduce-reduce conflicts.', 3, true),
-  makeTopic('cd-4', 'subj-cd', 'cd-ch-parse', 'LR Parser', 'Bottom-up parsing power: LR(0), SLR(1), LALR(1), and CLR(1) item sets and parsing table construction.', 4, true),
-  makeTopic('cd-sub-lr0-slr1', 'subj-cd', 'cd-4', 'LR(0) & SLR(1) Parsing', 'LR(0) item set closures, goto transitions, shift-reduce conflicts, using FOLLOW sets for SLR(1) reductions.', 1, false),
-  makeTopic('cd-sub-lalr-clr', 'subj-cd', 'cd-4', 'CLR(1) & LALR(1) Parsers', 'Canonical LR(1) lookahead items, merging states with identical cores for LALR(1), parsing power hierarchy.', 2, false),
-
-  // --- Chapter 3: Syntax-Directed Translation & Intermediate Code ---
-  makeTopic('cd-ch-sdt', 'subj-cd', null, 'Syntax-Directed Translation & Intermediate Code', 'S-attributed and L-attributed SDDs, 3AC quadruples/triples, and basic block DAGs.', 3, true),
-  makeTopic('cd-5', 'subj-cd', 'cd-ch-sdt', 'Syntax Directed Translation', 'Synthesized attributes, Inherited attributes, S-attributed and L-attributed definitions.', 1, true),
-  makeTopic('cd-8', 'subj-cd', 'cd-ch-sdt', 'Intermediate Code', 'Three-address code (3AC) generation, quadruples, triples, indirect triples, and backpatching.', 2, true),
-  makeTopic('cd-sub-dag', 'subj-cd', 'cd-ch-sdt', 'Directed Acyclic Graph', 'DAG representation of basic blocks, local common subexpression elimination, and value numbering.', 3, true),
-
-  // --- Chapter 4: Runtime Environments ---
-  makeTopic('cd-ch-runtime', 'subj-cd', null, 'Runtime Environments', 'Activation records, stack allocation, parameter passing, and scope rules.', 4, true),
-  makeTopic('cd-3', 'subj-cd', 'cd-ch-runtime', 'Runtime Environment', 'Activation records, frame pointer, stack pointer, return address, dynamic and static links.', 1, true),
-  makeTopic('cd-6', 'subj-cd', 'cd-ch-runtime', 'Parameter Passing', 'Pass by value, pass by reference, pass by copy-restore (value-result), and pass by name.', 2, true),
-
-  // --- Chapter 5: Code Optimization & Code Generation ---
-  makeTopic('cd-ch-opt', 'subj-cd', null, 'Code Optimization & Code Generation', 'Basic blocks, flow graphs, loop optimizations, and data-flow equations.', 5, true),
-  makeTopic('cd-sub-bb', 'subj-cd', 'cd-ch-opt', 'Basic Blocks', 'Identifying leader instructions, partitioning 3AC into basic blocks, and control flow graphs.', 1, true),
-  makeTopic('cd-sub-opt', 'subj-cd', 'cd-ch-opt', 'Code Optimization', 'Constant folding, constant propagation, dead code elimination, loop invariant motion, strength reduction.', 2, true),
-  makeTopic('cd-sub-live', 'subj-cd', 'cd-ch-opt', 'Live Variable Analysis', 'Data-flow equations: in[B] = use[B] U (out[B] - def[B]), reaching definitions, available expressions.', 3, true),
-
-  // =========================================================================
-  // 3. THEORY OF COMPUTATION (subj-toc)
-  // =========================================================================
-  // --- Chapter 1: Regular Expressions & Finite Automata ---
-  makeTopic('toc-ch-reg', 'subj-toc', null, 'Regular Expressions & Finite Automata', 'DFA, NFA, minimal state automata, regular expressions, Arden theorem, and pumping lemma.', 1, true),
-  makeTopic('toc-1', 'subj-toc', 'toc-ch-reg', 'Finite Automata', 'Deterministic Finite Automata (DFA) formal definitions, state transition functions, string acceptance.', 1, true),
-  makeTopic('toc-sub-nfa', 'subj-toc', 'toc-1', 'Non-Deterministic Finite Automata (NFA)', 'NFA to DFA subset construction (2^Q states), epsilon-NFA transitions, and dead states.', 1, false),
-  makeTopic('toc-7', 'subj-toc', 'toc-ch-reg', 'Minimal State Automata', 'Myhill-Nerode equivalence relations, table filling algorithm, 0/1/k-equivalence state partitioning.', 2, true),
-  makeTopic('toc-6', 'subj-toc', 'toc-ch-reg', 'Regular Expression', 'Regular expressions syntax, Arden Theorem (R = Q + RP -> R = QP*), and proving non-regularity.', 3, true),
-  makeTopic('toc-sub-pump-reg', 'subj-toc', 'toc-6', 'Pumping Lemma for Regular Languages', 'Pumping length p, decomposition w = xyz with |xy| <= p, |y| >= 1, proving languages non-regular.', 1, false),
-
-  // --- Chapter 2: Context-Free Languages & Pushdown Automata ---
-  makeTopic('toc-ch-cfl', 'subj-toc', null, 'Context-Free Languages & Pushdown Automata', 'Context-free grammars, derivations, Chomsky/Greibach normal forms, PDA, and pumping lemma.', 2, true),
-  makeTopic('toc-2', 'subj-toc', 'toc-ch-cfl', 'Context Free Language', 'Context-free grammars (CFG), leftmost/rightmost derivations, parse trees, ambiguity in grammars.', 1, true),
-  makeTopic('toc-9', 'subj-toc', 'toc-ch-cfl', 'Pushdown Automata', 'Deterministic PDA (DPDA) vs Non-Deterministic PDA (NPDA), acceptance by final state vs empty stack.', 2, true),
-  makeTopic('toc-sub-cnf', 'subj-toc', 'toc-2', 'Chomsky Normal Form (CNF)', 'CNF production format (A -> BC or A -> a), derivation length 2n - 1 for string of length n.', 1, false),
-
-  // --- Chapter 3: Language Hierarchy & Closure Properties ---
-  makeTopic('toc-ch-class', 'subj-toc', null, 'Language Hierarchy & Closure Properties', 'Chomsky hierarchy (Regular, DCFL, CFL, CSL, REC, RE) and closure properties under operations.', 3, true),
-  makeTopic('toc-4', 'subj-toc', 'toc-ch-class', 'Identify Class Language', 'Identifying class of language: Regular vs DCFL vs CFL vs CSL vs Recursive vs RE.', 1, true),
-  makeTopic('toc-10', 'subj-toc', 'toc-ch-class', 'Closure Property', 'Closure properties table (Union, Intersection, Complement, Concatenation, Kleene Star, Homomorphism).', 2, true),
-  makeTopic('toc-sub-countable', 'subj-toc', 'toc-ch-class', 'Countable Uncountable Set', 'Countable languages, Cantor diagonalization, set of all languages 2^(Sigma*) is uncountable.', 3, true),
-
-  // --- Chapter 4: Turing Machines, Decidability & Reducibility ---
-  makeTopic('toc-ch-dec', 'subj-toc', null, 'Turing Machines, Decidability & Reducibility', 'Turing machines, halting problem, decidability/undecidability, Rice theorem, and reductions.', 4, true),
-  makeTopic('toc-sub-tm', 'subj-toc', 'toc-ch-dec', 'Turing Machine', 'Single-tape and multi-tape Turing Machines, transition function delta, configuration transitions.', 1, true),
-  makeTopic('toc-8', 'subj-toc', 'toc-ch-dec', 'Recursive and Recursively Enumerable Languages', 'Turing machine acceptance (halts on yes) vs total Turing machines (halts on all).', 2, true),
-  makeTopic('toc-5', 'subj-toc', 'toc-ch-dec', 'Decidability', 'Decidable vs Undecidable problems for Regular, CFL, and Turing Machines, Halting Problem, Rice Theorem.', 3, true),
-  makeTopic('toc-sub-rice', 'subj-toc', 'toc-5', 'Rice Theorem & Reductions', 'Rice Theorem Part 1 and Part 2 on non-trivial semantic properties, mapping reduction A <=m B.', 1, false),
-
-  // =========================================================================
-  // 4. ALGORITHMS (subj-algo)
-  // =========================================================================
-  // --- Chapter 1: Asymptotic Analysis & Recurrences ---
-  makeTopic('alg-ch-asymp', 'subj-algo', null, 'Asymptotic Analysis & Recurrences', 'Asymptotic notations, time and space complexity analysis of loops, master theorem, recursion tree analysis, and algorithmic tracing.', 1, true),
-  makeTopic('alg-6', 'subj-algo', 'alg-ch-asymp', 'Asymptotic Notations', 'Big-O, Omega, Theta, Little-o, Little-omega formal definitions and limit comparisons.', 1, true),
-  makeTopic('alg-4', 'subj-algo', 'alg-ch-asymp', 'Time Complexity', 'Analyzing nested loops, logarithmic steps, best/worst/average case time complexities.', 2, true),
-  makeTopic('alg-2', 'subj-algo', 'alg-ch-asymp', 'Recurrence Relation', 'Master Theorem cases T(n) = aT(n/b) + f(n), Akra-Bazzi method, recursion tree analysis.', 3, true),
-  makeTopic('alg-1', 'subj-algo', 'alg-ch-asymp', 'Identify Function', 'Tracing pseudocode, determining returned values and mathematical functions implemented.', 4, true),
-  makeTopic('alg-sub-recur', 'subj-algo', 'alg-ch-asymp', 'Recursion', 'Recursion call stack depth, base termination conditions, recursion tree traces.', 5, true),
-  makeTopic('alg-sub-loop-inv', 'subj-algo', 'alg-ch-asymp', 'Loop Invariants', 'Loop termination conditions, invariant assertions, loop bounds verification and algorithmic correctness.', 6, true),
-  makeTopic('alg-sub-output', 'subj-algo', 'alg-ch-asymp', 'Output', 'Evaluating iterative loops, pseudocode execution tracing, side effects in algorithmic control flow.', 7, true),
-  makeTopic('alg-sub-aliasing', 'subj-algo', 'alg-ch-asymp', 'Aliasing', 'Memory referencing, pointer aliasing, variable side effects during function calls and loop iterations.', 8, true),
-  makeTopic('alg-sub-des-tech', 'subj-algo', 'alg-ch-asymp', 'Algorithm Design Techniques', 'Greedy vs dynamic vs divide and conquer paradigms, optimal choice heuristics.', 9, true),
-  makeTopic('alg-sub-alg-des', 'subj-algo', 'alg-ch-asymp', 'Algorithm Design', 'Correctness proofs, state representations, problem reductions.', 10, true),
-  makeTopic('alg-sub-space', 'subj-algo', 'alg-ch-asymp', 'Space Complexity', 'Auxiliary space, recursion stack depth analysis, in-place vs extra memory bounds.', 11, true),
-  makeTopic('alg-sub-cs', 'subj-algo', 'alg-ch-asymp', 'Computer Science', 'Core computer science fundamentals, state models, computational limits.', 12, true),
-
-  // --- Chapter 2: Divide and Conquer, Searching & Sorting ---
-  makeTopic('alg-ch-sort', 'subj-algo', null, 'Divide and Conquer, Searching & Sorting', 'Comparison sorting lower bounds, divide-and-conquer sorts, binary search, inversions, and stability.', 2, true),
-  makeTopic('alg-7', 'subj-algo', 'alg-ch-sort', 'Sorting', 'Comparison lower bound Omega(n log n), sorting classifications, adaptive sorting, stability properties.', 1, true),
-  makeTopic('alg-8', 'subj-algo', 'alg-ch-sort', 'Quick Sort', 'Lomuto vs Hoare partitioning, worst case O(n^2) conditions, randomized pivot selection.', 2, true),
-  makeTopic('alg-sub-merge', 'subj-algo', 'alg-ch-sort', 'Merge Sort', 'Merge sort divide-and-conquer, recurrence T(n) = 2T(n/2) + O(n), auxiliary O(n) space.', 3, true),
-  makeTopic('alg-sub-search', 'subj-algo', 'alg-ch-sort', 'Searching', 'Linear search, binary search variations, search in rotated sorted array, peak finding.', 4, true),
-  makeTopic('alg-sub-binsearch', 'subj-algo', 'alg-ch-sort', 'Binary Search', 'Binary search interval halving, logarithmic time complexity O(log n), search boundaries.', 5, true),
-  makeTopic('alg-sub-heap-sort', 'subj-algo', 'alg-ch-sort', 'Heap Sort', 'Heap Sort algorithm, in-place O(n log n) worst-case time, Build-Heap initialization.', 6, true),
-  makeTopic('alg-sub-ins-sort', 'subj-algo', 'alg-ch-sort', 'Insertion Sort', 'Insertion sort adaptive algorithm, O(n) best-case for nearly sorted lists, O(n^2) worst case.', 7, true),
-
-  // --- Chapter 3: Graph Algorithms & Traversals ---
-  makeTopic('alg-ch-graph', 'subj-algo', null, 'Graph Algorithms & Traversals', 'Graph traversals, single-source and all-pairs shortest paths, DAG topological ordering, SCCs.', 3, true),
-  makeTopic('alg-5', 'subj-algo', 'alg-ch-graph', 'Graph Search', 'Breadth-First Search (BFS), Depth-First Search (DFS), edge classification (tree/back/forward/cross).', 1, true),
-  makeTopic('alg-sub-topo', 'subj-algo', 'alg-ch-graph', 'Topological Sort', 'DAG topological sorting, Kahn in-degree zero algorithm, DFS departure finish times.', 2, true),
-  makeTopic('alg-sub-scc', 'subj-algo', 'alg-ch-graph', 'Strongly Connected Components', 'Kosaraju two-pass DFS algorithm, Tarjan low-link algorithm, component condensation DAG.', 3, true),
-  makeTopic('alg-sub-graph-alg', 'subj-algo', 'alg-ch-graph', 'Graph Algorithms', 'Cycle detection in directed/undirected graphs, bipartite testing, connected components.', 4, true),
-
-  // --- Chapter 4: Greedy Algorithms & Shortest Paths ---
-  makeTopic('alg-ch-greedy', 'subj-algo', null, 'Greedy Algorithms & Shortest Paths', 'Greedy choice property, minimum spanning trees (Kruskal, Prim), Dijkstra, Bellman-Ford, and Huffman.', 4, true),
-  makeTopic('alg-3', 'subj-algo', 'alg-ch-greedy', 'Minimum Spanning Tree', 'Kruskal (Disjoint Set Union) and Prim (Priority Queue) algorithms, cut/cycle properties, uniqueness.', 1, true),
-  makeTopic('alg-9', 'subj-algo', 'alg-ch-greedy', 'Shortest Path', 'Single-source shortest paths: Dijkstra algorithm (non-negative weights) and Bellman-Ford (negative edges).', 2, true),
-  makeTopic('alg-sub-dijkstra', 'subj-algo', 'alg-ch-greedy', 'Dijkstras Algorithm', 'Dijkstra greedy vertex relaxation d[v] = min(d[v], d[u] + w), priority queue O((V+E) log V).', 3, true),
-  makeTopic('alg-sub-huffman', 'subj-algo', 'alg-ch-greedy', 'Huffman Code', 'Optimal prefix codes, Huffman greedy tree construction, average bits per character calculation.', 4, true),
-
-  // --- Chapter 5: Dynamic Programming ---
-  makeTopic('alg-ch-dp', 'subj-algo', null, 'Dynamic Programming', 'Optimal substructure, overlapping subproblems, 0/1 knapsack, LCS, LIS, MCM, and Floyd-Warshall.', 5, true),
-  makeTopic('alg-10', 'subj-algo', 'alg-ch-dp', 'Dynamic Programming', '0/1 Knapsack, Longest Common Subsequence (LCS), Longest Increasing Subsequence (LIS), Subset Sum.', 1, true),
-  makeTopic('alg-sub-mcm', 'subj-algo', 'alg-ch-dp', 'Matrix Chain Ordering', 'Matrix Chain Multiplication parenthesization recurrence m[i,j] = min(m[i,k] + m[k+1,j] + p_i-1 p_k p_j).', 2, true),
-
-  // --- Chapter 6: Hashing & Tree Structures ---
-  makeTopic('alg-ch-hash', 'subj-algo', null, 'Hashing & Tree Structures', 'Hash functions, linear/quadratic probing, double hashing, binary search trees, and heaps.', 6, true),
-  makeTopic('alg-sub-hashing', 'subj-algo', 'alg-ch-hash', 'Hashing', 'Hash tables, collision resolution via chaining and open addressing, load factor alpha = n/m.', 1, true),
-  makeTopic('alg-sub-lin-probe', 'subj-algo', 'alg-ch-hash', 'Linear Probing', 'Linear probing collision resolution h(k,i) = (h(k) + i) mod m, primary clustering.', 2, true),
-  makeTopic('alg-sub-double-hash', 'subj-algo', 'alg-ch-hash', 'Double Hashing', 'Double hashing collision resolution h(k,i) = (h1(k) + i * h2(k)) mod m, uniform hashing.', 3, true),
-  makeTopic('alg-sub-bst', 'subj-algo', 'alg-ch-hash', 'Binary Search Tree', 'BST search, insertion, deletion, and tree traversals in algorithm contexts.', 4, true),
-
-  // =========================================================================
-  // 5. DATA STRUCTURES (subj-ds)
-  // =========================================================================
-  // --- Chapter 1: Linear Data Structures ---
-  makeTopic('ds-ch-linear', 'subj-ds', null, 'Linear Data Structures', 'Arrays, linked lists, stacks, queues, and expression evaluation.', 1, true),
-  makeTopic('ds-8', 'subj-ds', 'ds-ch-linear', 'Array', '1D and 2D arrays, row-major and column-major address calculations Base + (i*N + j)*size.', 1, true),
-  makeTopic('ds-4', 'subj-ds', 'ds-ch-linear', 'Linked List', 'Singly, doubly, and circular linked lists, pointer manipulation, reversal, cycle detection.', 2, true),
-  makeTopic('ds-5', 'subj-ds', 'ds-ch-linear', 'Stack', 'Stack LIFO operations, push/pop array and pointer implementations, applications.', 3, true),
-  makeTopic('ds-7', 'subj-ds', 'ds-ch-linear', 'Queue', 'Queue FIFO operations, circular queue wrap-around (rear+1)%N == front, deque, priority queue.', 4, true),
-  makeTopic('ds-sub-infix', 'subj-ds', 'ds-ch-linear', 'Infix Prefix', 'Infix to postfix and prefix conversion using operator precedence and associativity, evaluation.', 5, true),
-
-  // --- Chapter 2: Trees & Binary Search Trees (BST) ---
-  makeTopic('ds-ch-tree', 'subj-ds', null, 'Trees & Binary Search Trees (BST)', 'Binary tree properties, traversals, BST operations, AVL balance rotations.', 2, true),
-  makeTopic('ds-1', 'subj-ds', 'ds-ch-tree', 'Binary Tree', 'Binary tree node relations (L = N2 + 1), full, complete, and strictly binary trees, height bounds.', 1, true),
-  makeTopic('ds-sub-tree-trav', 'subj-ds', 'ds-1', 'Tree Traversal & Reconstruction', 'Inorder, Preorder, Postorder, and Level-Order traversals; unique tree reconstruction.', 1, false),
-  makeTopic('ds-2', 'subj-ds', 'ds-ch-tree', 'Binary Search Tree', 'BST property (Left < Root < Right), search, insert, delete with inorder successor/predecessor.', 2, true),
-  makeTopic('ds-10', 'subj-ds', 'ds-ch-tree', 'AVL Tree', 'Self-balancing BST, balance factor in {-1, 0, 1}, LL, RR, LR, RL single and double rotations.', 3, true),
-
-  // --- Chapter 3: Priority Queues & Binary Heaps ---
-  makeTopic('ds-ch-heap', 'subj-ds', null, 'Priority Queues & Binary Heaps', 'Min-heap, max-heap, array representations, heapify, and build-heap.', 3, true),
-  makeTopic('ds-3', 'subj-ds', 'ds-ch-heap', 'Binary Heap', 'Max-Heap and Min-Heap array representations, heapify O(log n), Build-Heap linear O(n).', 1, true),
-  makeTopic('ds-sub-pq', 'subj-ds', 'ds-ch-heap', 'Priority Queue', 'Priority Queue ADT, extract-min, decrease-key operations using binary heaps.', 2, true),
-
-  // --- Chapter 4: Hashing & Hash Tables ---
-  makeTopic('ds-ch-hash', 'subj-ds', null, 'Hashing & Hash Tables', 'Hash functions, chaining, open addressing, uniform hashing assumptions.', 4, true),
-  makeTopic('ds-6', 'subj-ds', 'ds-ch-hash', 'Hashing', 'Hash table dictionary operations, collision resolution techniques, load factor alpha.', 1, true),
-  makeTopic('ds-sub-unif-hash', 'subj-ds', 'ds-ch-hash', 'Uniform Hashing', 'Simple Uniform Hashing Assumption (SUHA), expected search time Theta(1 + alpha).', 2, true),
-
-  // =========================================================================
-  // 6. C-PROGRAMMING (subj-prog)
-  // =========================================================================
-  // --- Chapter 1: C Fundamentals, Control Flow & Loops ---
-  makeTopic('pr-ch-fund', 'subj-prog', null, 'C Fundamentals, Control Flow & Loops', 'Data types, operator precedence, bitwise operations, loops, conditional statements, and output tracing.', 1, true),
-  makeTopic('pr-1', 'subj-prog', 'pr-ch-fund', 'Programming In C', 'C syntax, primitive data types, format specifiers, type casting, operator precedence table.', 1, true),
-  makeTopic('pr-7', 'subj-prog', 'pr-ch-fund', 'Output', 'Tracing printf outputs, post-increment/pre-increment side effects, bitwise operations, loops.', 2, true),
-  makeTopic('pr-6', 'subj-prog', 'pr-ch-fund', 'Loop Invariants', 'Loop termination conditions, invariant assertions, iteration complexity, nested loops.', 3, true),
-  makeTopic('pr-8', 'subj-prog', 'pr-ch-fund', 'Identify Function', 'Determining returned value or mathematical function executed by C code snippets.', 4, true),
-
-  // --- Chapter 2: Functions, Parameter Passing & Recursion ---
-  makeTopic('pr-ch-recur', 'subj-prog', null, 'Functions, Parameter Passing & Recursion', 'Function calls, activation records, parameter passing mechanisms, and recursive tracing.', 2, true),
-  makeTopic('pr-10', 'subj-prog', 'pr-ch-recur', 'Functions', 'Function declarations, return values, scope rules, local vs global variables, static variables.', 1, true),
-  makeTopic('pr-2', 'subj-prog', 'pr-ch-recur', 'Recursion', 'Recursion call stack execution, base termination conditions, tail recursion, stack depth.', 2, true),
-  makeTopic('pr-5', 'subj-prog', 'pr-ch-recur', 'Parameter Passing', 'Pass by value vs simulated pass by reference using pointer arguments, evaluation order.', 3, true),
-
-  // --- Chapter 3: Pointers, Arrays & Strings ---
-  makeTopic('pr-ch-ptr', 'subj-prog', null, 'Pointers, Arrays & Strings', 'Pointer arithmetic, pointers to pointers, array-pointer decay, dynamic memory allocation.', 3, true),
-  makeTopic('pr-3', 'subj-prog', 'pr-ch-ptr', 'Pointers', 'Pointer dereferencing (*), address-of (&), pointer arithmetic, void pointers, function pointers.', 1, true),
-  makeTopic('pr-4', 'subj-prog', 'pr-ch-ptr', 'Array', '1D and 2D arrays, array indexing a[i] == *(a+i), passing arrays to functions, multidimensional arrays.', 2, true),
-  makeTopic('pr-sub-strings', 'subj-prog', 'pr-ch-ptr', 'Strings', 'Null-terminated string arrays, string library functions (strlen, strcpy, strcmp), string literals.', 3, true),
-  makeTopic('pr-sub-aliasing', 'subj-prog', 'pr-ch-ptr', 'Aliasing', 'Pointer aliasing, multiple pointers referencing the same memory block and side effects.', 4, true),
-
-  // --- Chapter 4: Structures & Unions ---
-  makeTopic('pr-ch-struct', 'subj-prog', null, 'Structures & Unions', 'Structure alignment, padding, self-referential structures, and unions.', 4, true),
-  makeTopic('pr-9', 'subj-prog', 'pr-ch-struct', 'Structure', 'Structure declarations, dot (.) and arrow (->) operators, structure padding/alignment rules.', 1, true),
-  makeTopic('pr-sub-union', 'subj-prog', 'pr-ch-struct', 'Union', 'Unions memory sharing, sizeof evaluation, bit-fields, enum types.', 2, true),
-
-  // =========================================================================
-  // 7. DIGITAL LOGIC (subj-dld)
-  // =========================================================================
-  // --- Chapter 1: Number Systems & Boolean Algebra ---
-  makeTopic('dl-ch-num', 'subj-dld', null, 'Number Systems & Boolean Algebra', 'Number representation, 2s complement, Boolean laws, and canonical minterms/maxterms.', 1, true),
-  makeTopic('dl-1', 'subj-dld', 'dl-ch-num', 'Number Representation', 'Base-r radix conversions, 1s and 2s complement signed integers, range of numbers, overflow detection.', 1, true),
-  makeTopic('dl-7', 'subj-dld', 'dl-ch-num', 'Boolean Function', 'Boolean algebra laws, De Morgan theorems, duality, canonical SOP (minterms) and POS (maxterms).', 2, true),
-  makeTopic('dl-sub-fp', 'subj-dld', 'dl-ch-num', 'Floating Point Representation', 'IEEE 754 floating point format, normalized mantissa, excess-127 biased exponent representation.', 3, true),
-
-  // --- Chapter 2: Karnaugh Maps & Logic Minimization ---
-  makeTopic('dl-ch-kmap', 'subj-dld', null, 'Karnaugh Maps & Logic Minimization', 'K-map grouping, prime implicants, essential prime implicants, and logic gates.', 2, true),
-  makeTopic('dl-2', 'subj-dld', 'dl-ch-kmap', 'K-Map Minimization', '2, 3, 4, 5 variable K-Maps, grouping rules, Prime Implicants, Essential Prime Implicants, dont cares.', 1, true),
-  makeTopic('dl-3', 'subj-dld', 'dl-ch-kmap', 'Logic Gates', 'AND, OR, NOT, NAND, NOR, XOR, XNOR truth tables, universal gates, XOR parity properties.', 2, true),
-
-  // --- Chapter 3: Combinational Circuits ---
-  makeTopic('dl-ch-circ', 'subj-dld', null, 'Combinational Circuits', 'Multiplexers, decoders, encoders, adders, subtractors, and carry lookahead adders.', 3, true),
-  makeTopic('dl-5', 'subj-dld', 'dl-ch-circ', 'Multiplexer', '2:1, 4:1, 8:1, 16:1 multiplexers, implementing boolean functions using MUX, Shannon expansion.', 1, true),
-  makeTopic('dl-10', 'subj-dld', 'dl-ch-circ', 'Adder & Subtractor Circuits', 'Half Adder, Full Adder, Ripple Carry Adder delay, Carry Look-Ahead Adder generation logic.', 2, true),
-  makeTopic('dl-sub-dec', 'subj-dld', 'dl-ch-circ', 'Decoder', 'Binary decoders with enable lines, 2-to-4, 3-to-8 decoder expansion, implementing logic with decoders.', 3, true),
-
-  // --- Chapter 4: Sequential Circuits & Flip-Flops ---
-  makeTopic('dl-ch-seq', 'subj-dld', null, 'Sequential Circuits & Flip-Flops', 'Flip-flops, characteristic equations, timing constraints, and race-around condition.', 4, true),
-  makeTopic('dl-11', 'subj-dld', 'dl-ch-seq', 'Flip-Flops & Timing', 'SR, JK, D, T Flip-Flops, race-around condition, Setup and Hold time constraints for max clock frequency.', 1, true),
-  makeTopic('dl-sub-ff', 'subj-dld', 'dl-ch-seq', 'Flip Flop', 'Flip-flop excitation tables, characteristic equations, flip-flop conversions (JK to D, T to JK).', 2, true),
-  makeTopic('dl-sub-fsm', 'subj-dld', 'dl-ch-seq', 'Finite State Machines', 'Mealy vs Moore synchronous sequential machine modeling, state diagrams, and state equations.', 3, true),
-
-  // --- Chapter 5: Counters & Shift Registers ---
-  makeTopic('dl-ch-cnt', 'subj-dld', null, 'Counters & Shift Registers', 'Synchronous & ripple counters, Mod-N counters, and shift registers.', 5, true),
-  makeTopic('dl-4', 'subj-dld', 'dl-ch-cnt', 'Digital Counter', 'Synchronous and Asynchronous (Ripple) counters, Mod-N counters, Up/Down counters, ring & Johnson counters.', 1, true),
-  makeTopic('dl-sub-shift', 'subj-dld', 'dl-ch-cnt', 'Shift Registers', 'SISO, SIPO, PISO, PIPO shift registers, bidirectional shift registers, and universal shift registers.', 2, true),
-
-  // =========================================================================
-  // 8. COMPUTER ORGANISATION & ARCHITECTURE (subj-coa)
-  // =========================================================================
-  // --- Chapter 1: Machine Instructions & Addressing Modes ---
-  makeTopic('coa-ch-inst', 'subj-coa', null, 'Machine Instructions & Addressing Modes', 'Instruction formats, opcode fields, addressing modes, and RISC/CISC paradigms.', 1, true),
-  makeTopic('coa-3', 'subj-coa', 'coa-ch-inst', 'Machine Instruction', 'Instruction execution cycles, opcode decoding, and register transfer operations.', 1, true),
-  makeTopic('coa-4', 'subj-coa', 'coa-ch-inst', 'Addressing Modes', 'Immediate, Direct, Indirect, Indexed, Base Register, and PC-Relative effective address calculations.', 2, true),
-  makeTopic('coa-6', 'subj-coa', 'coa-ch-inst', 'Instruction Format', '0, 1, 2, 3 address instruction formats, expanding opcodes, register and address bit constraints.', 3, true),
-  makeTopic('coa-sub-risc', 'subj-coa', 'coa-ch-inst', 'CISC RISC Architecture', 'Complex vs Reduced Instruction Set Computer architectures, load-store vs register-memory ISA.', 4, true),
-
-  // --- Chapter 2: CPU Control Unit & Datapath ---
-  makeTopic('coa-ch-cpu', 'subj-coa', null, 'CPU Control Unit & Datapath', 'Hardwired vs microprogrammed control unit, horizontal and vertical microprogramming, ALU and datapath design.', 2, true),
-  makeTopic('coa-5', 'subj-coa', 'coa-ch-cpu', 'Microprogramming', 'Horizontal vs vertical microinstructions, control store addressing, micro-program sequencing.', 1, true),
-  makeTopic('coa-10', 'subj-coa', 'coa-ch-cpu', 'Data Path', 'Single-cycle and multi-cycle datapath, ALU control signals, internal bus architectures.', 2, true),
-
-  // --- Chapter 3: Instruction Pipelining & Hazards ---
-  makeTopic('coa-ch-pipe', 'subj-coa', null, 'Instruction Pipelining & Hazards', 'Pipelined execution, speedup, structural, data (RAW/WAR/WAW) and control hazards, forwarding, and branch stalls.', 3, true),
-  makeTopic('coa-2', 'subj-coa', 'coa-ch-pipe', 'Pipelining', 'Instruction pipelining stages, throughput, pipeline register latency, ideal CPI.', 1, true),
-  makeTopic('coa-sub-speedup', 'subj-coa', 'coa-ch-pipe', 'Speedup', 'Pipeline speedup S = (n*k)/(k+n-1+stalls), efficiency, throughput formulas.', 2, true),
-  makeTopic('coa-sub-datahaz', 'subj-coa', 'coa-ch-pipe', 'Data Hazards', 'Read-After-Write (RAW), Write-After-Read (WAR), Write-After-Write (WAW) dependencies and operand forwarding.', 3, true),
-
-  // --- Chapter 4: Memory Hierarchy & Cache Memory ---
-  makeTopic('coa-ch-mem', 'subj-coa', null, 'Memory Hierarchy & Cache Memory', 'Cache direct/set-associative/fully-associative mapping, replacement policies, write policies, AMAT, and DRAM.', 4, true),
-  makeTopic('coa-1', 'subj-coa', 'coa-ch-mem', 'Cache Memory', 'Direct, Set-Associative, Fully Associative mapping, tag/set/offset bits, Write-Through vs Write-Back.', 1, true),
-  makeTopic('coa-sub-dir-map', 'subj-coa', 'coa-1', 'Direct Mapping', 'Direct mapped cache tag and line index partitioning, memory block modulo mapping.', 1, false),
-  makeTopic('coa-sub-amat', 'subj-coa', 'coa-1', 'Average Memory Access Time (AMAT)', 'AMAT = H1*T1 + (1-H1)*(H2*T2 + (1-H2)*Tm) hierarchical access calculations.', 2, false),
-  makeTopic('coa-sub-mem-int', 'subj-coa', 'coa-ch-mem', 'Memory Interfacing', 'Address decoding logic, chip select generation, memory capacity expansion (word/length).', 2, true),
-
-  // --- Chapter 5: I/O Organization & DMA ---
-  makeTopic('coa-ch-io', 'subj-coa', null, 'I/O Organization & DMA', 'Interrupt-driven I/O, DMA controller architecture, cycle stealing vs burst transfer modes.', 5, true),
-  makeTopic('coa-7', 'subj-coa', 'coa-ch-io', 'Interrupts', 'Vectored vs non-vectored interrupts, interrupt latency, priority interrupt controllers.', 1, true),
-  makeTopic('coa-8', 'subj-coa', 'coa-ch-io', 'DMA', 'DMA controller architecture, cycle stealing mode vs burst mode data transfer bandwidth.', 2, true),
-  makeTopic('coa-9', 'subj-coa', 'coa-ch-io', 'IO Handling', 'Programmed I/O, interrupt-driven I/O, memory-mapped I/O vs I/O-mapped I/O.', 3, true),
-
-  // =========================================================================
-  // 9. DATABASE MANAGEMENT SYSTEM (subj-db)
-  // =========================================================================
-  // --- Chapter 1: ER Model & Relational Algebra ---
-  makeTopic('db-ch-er', 'subj-db', null, 'ER Model & Relational Algebra', 'ER modeling, entity-relationship constraints, relational algebra operators, and calculus.', 1, true),
-  makeTopic('db-7', 'subj-db', 'db-ch-er', 'ER Diagram', 'Entities, relationships, participation constraints (total/partial), cardinality ratios, converting ER to tables.', 1, true),
-  makeTopic('db-4', 'subj-db', 'db-ch-er', 'Relational Algebra', 'Select, Project, Cartesian Product, Join (natural, outer), Division operator, tuple relational calculus.', 2, true),
-
-  // --- Chapter 2: SQL Queries ---
-  makeTopic('db-ch-sql', 'subj-db', null, 'SQL Queries', 'SQL DDL/DML, nested subqueries, joins, aggregation, grouping, and NULL value logic.', 2, true),
-  makeTopic('db-5', 'subj-db', 'db-ch-sql', 'SQL', 'SELECT queries, GROUP BY, HAVING, subqueries, correlated subqueries, INNER/OUTER JOINs, aggregates.', 1, true),
-
-  // --- Chapter 3: Functional Dependencies & Normalization ---
-  makeTopic('db-ch-norm', 'subj-db', null, 'Functional Dependencies & Normalization', 'Attribute closure, candidate keys, minimal cover, 1NF, 2NF, 3NF, BCNF, lossless decomposition.', 3, true),
-  makeTopic('db-3', 'subj-db', 'db-ch-norm', 'Functional Dependency', 'Armstrong axioms, attribute closure X+, finding candidate keys and superkeys, minimal cover of FDs.', 1, true),
-  makeTopic('db-6', 'subj-db', 'db-ch-norm', 'Normalization', '1NF, 2NF, 3NF, BCNF decomposition testing, lossless join property, and dependency preservation.', 2, true),
-
-  // --- Chapter 4: Transactions & Concurrency Control ---
-  makeTopic('db-ch-trans', 'subj-db', null, 'Transactions & Concurrency Control', 'ACID properties, conflict/view serializability, 2PL, recoverability, and timestamp ordering.', 4, true),
-  makeTopic('db-1', 'subj-db', 'db-ch-trans', 'Transactions', 'ACID properties, transaction states, dirty read, non-repeatable read, phantom read anomalies.', 1, true),
-  makeTopic('db-2', 'subj-db', 'db-ch-trans', 'Serializability', 'Conflict serializability, precedence graphs, view serializability, recoverable and cascadeless schedules.', 2, true),
-
-  // --- Chapter 5: Storage & B/B+ Trees ---
-  makeTopic('db-ch-index', 'subj-db', null, 'Storage & B/B+ Trees', 'File organization, primary/secondary/clustered index, B-Trees and B+ Trees order calculations.', 5, true),
-  makeTopic('db-8', 'subj-db', 'db-ch-index', 'B and B+ Tree', 'B-Tree & B+ Tree search, insertion node splitting, deletion, order constraints, block pointer capacity.', 1, true),
-  makeTopic('db-9', 'subj-db', 'db-ch-index', 'Indexing', 'Primary vs Secondary Indexing, Clustered vs Non-Clustered index, Dense vs Sparse index structures.', 2, true),
-
-  // =========================================================================
-  // 10. COMPUTER NETWORKS (subj-cn)
-  // =========================================================================
-  // --- Chapter 1: Data Link Layer & Framing ---
-  makeTopic('cn-ch-dll', 'subj-cn', null, 'Data Link Layer & Framing', 'Framing, CRC error detection, Hamming codes, Stop-and-Wait, Go-Back-N, Selective Repeat.', 1, true),
-  makeTopic('cn-3', 'subj-cn', 'cn-ch-dll', 'Sliding Window', 'Stop-and-Wait, Go-Back-N, Selective Repeat efficiency formulas eta = 1/(1+2a) and window sizing.', 1, true),
-  makeTopic('cn-10', 'subj-cn', 'cn-ch-dll', 'Error Detection', 'Cyclic Redundancy Check modulo-2 polynomial division, parity checks, Hamming distance.', 2, true),
-  makeTopic('cn-sub-sw', 'subj-cn', 'cn-3', 'Stop and Wait ARQ', 'Stop and wait flow control efficiency eta = 1/(1+2a), optimal frame length and timeout calculations.', 1, false),
-  makeTopic('cn-sub-gbn-sr', 'subj-cn', 'cn-3', 'Go-Back-N vs Selective Repeat', 'GBN sender window 2^k - 1, receiver 1; Selective Repeat sender and receiver 2^(k-1).', 2, false),
-
-  // --- Chapter 2: Medium Access Control & LANs ---
-  makeTopic('cn-ch-mac', 'subj-cn', null, 'Medium Access Control & LANs', 'ALOHA, CSMA/CD backoff, IEEE 802.3 Ethernet frame structure, and switching.', 2, true),
-  makeTopic('cn-sub-csmacd', 'subj-cn', 'cn-ch-mac', 'CSMA CD', 'Carrier Sense Multiple Access with Collision Detection, minimum frame size L >= 2 * B * T_prop.', 1, true),
-  makeTopic('cn-sub-aloha', 'subj-cn', 'cn-ch-mac', 'Aloha', 'Pure ALOHA (efficiency 18.4%) and Slotted ALOHA (efficiency 36.8%) throughput G*e^(-2G).', 2, true),
-  makeTopic('cn-sub-ethernet', 'subj-cn', 'cn-ch-mac', 'Ethernet', 'IEEE 802.3 Ethernet frame structure, preamble, MAC address format, 10Mbps/100Mbps Ethernet rules.', 3, true),
-
-  // --- Chapter 3: Network Layer, IP & Routing ---
-  makeTopic('cn-ch-net', 'subj-cn', null, 'Network Layer, IP & Routing', 'IPv4/IPv6 addressing, subnetting, CIDR, distance vector, link state routing, ARP, ICMP, NAT.', 3, true),
-  makeTopic('cn-1', 'subj-cn', 'cn-ch-net', 'IP Addressing', 'IPv4 classful and classless (CIDR) addressing, subnet mask, broadcast addresses, subnet calculations.', 1, true),
-  makeTopic('cn-2', 'subj-cn', 'cn-ch-net', 'Routing', 'Distance Vector Routing (Bellman-Ford count-to-infinity), Link State Routing (Dijkstra OSPF), BGP.', 2, true),
-  makeTopic('cn-5', 'subj-cn', 'cn-ch-net', 'IPv4 Datagram Header', 'IPv4 packet header fields, TTL, Header Checksum, Identification, Flags (DF/MF), Fragment Offset.', 3, true),
-  makeTopic('cn-7', 'subj-cn', 'cn-ch-net', 'Fragmentation', 'Maximum Transmission Unit (MTU) packet fragmentation calculations, fragment offset scaling.', 4, true),
-
-  // --- Chapter 4: Transport Layer & TCP/UDP ---
-  makeTopic('cn-ch-trans', 'subj-cn', null, 'Transport Layer & TCP/UDP', 'TCP 3-way handshake, flow control, congestion control, window scaling, and UDP.', 4, true),
-  makeTopic('cn-4', 'subj-cn', 'cn-ch-trans', 'TCP', 'TCP 3-way handshake connection establishment, sequence/ACK numbers, congestion window dynamics.', 1, true),
-  makeTopic('cn-6', 'subj-cn', 'cn-ch-trans', 'Congestion Control', 'Slow Start (exponential cwnd doubling), Congestion Avoidance (additive increase), Fast Retransmit.', 2, true),
-  makeTopic('cn-8', 'subj-cn', 'cn-ch-trans', 'UDP', 'User Datagram Protocol header format, connectionless unreliable delivery, port numbers.', 3, true),
-
-  // --- Chapter 5: Application Layer & Network Security ---
-  makeTopic('cn-ch-app', 'subj-cn', null, 'Application Layer & Network Security', 'DNS resolution, HTTP, sockets, RSA public key cryptography, Diffie-Hellman.', 5, true),
-  makeTopic('cn-9', 'subj-cn', 'cn-ch-app', 'Network Security', 'Symmetric vs Asymmetric encryption, RSA algorithm c = m^e mod n, Diffie-Hellman key exchange.', 1, true),
-  makeTopic('cn-sub-dns', 'subj-cn', 'cn-ch-app', 'DNS', 'Domain Name System hierarchical resolution, recursive vs iterative queries, DNS record types.', 2, true),
-  makeTopic('cn-sub-http', 'subj-cn', 'cn-ch-app', 'HTTP', 'HTTP/1.0 non-persistent vs HTTP/1.1 persistent connections, pipelining, request methods and status codes.', 3, true),
-  makeTopic('cn-sub-socket', 'subj-cn', 'cn-ch-app', 'Sockets', 'Socket API functions: socket(), bind(), listen(), accept(), connect(), send(), recv().', 4, true),
-
-  // =========================================================================
-  // 11. DISCRETE MATHEMATICS (subj-dm)
+  // DISCRETE MATHEMATICS (subj-dm)
   // =========================================================================
   // --- Chapter 1: Mathematical Logic ---
-  makeTopic('dm-ch-logic', 'subj-dm', null, 'Mathematical Logic', 'Propositional logic, truth tables, first-order predicate calculus, inference rules, and quantifiers.', 1, true),
-  makeTopic('dm-17', 'subj-dm', 'dm-ch-logic', 'Propositional Logic', 'Truth tables, logical equivalences, Tautology/Contradiction, CNF/DNF, inference rules.', 1, true),
-  makeTopic('dm-18', 'subj-dm', 'dm-ch-logic', 'First Order Logic', 'Predicate quantifiers (Forall, Exists), quantifier negation, scope, validity and satisfiability of formulas.', 2, true),
-  makeTopic('dm-19', 'subj-dm', 'dm-ch-logic', 'Logical Reasoning', 'Translating complex English statements to predicate calculus and logic deductions.', 3, true),
+  makeTopic('dm-ch-logic', 'subj-dm', null, 'Mathematical Logic', 'Propositional logic, first-order predicate logic, truth tables, and mathematical induction.', 1, true),
+  makeTopic('dm-sub-propositional-logic', 'subj-dm', 'dm-ch-logic', 'Propositional Logic', 'Core GATE CSE concepts and historical examination questions for Propositional Logic.', 1, true),
+  makeTopic('dm-sub-first-order-logic', 'subj-dm', 'dm-ch-logic', 'First Order Logic', 'Core GATE CSE concepts and historical examination questions for First Order Logic.', 2, true),
+  makeTopic('dm-sub-logical-reasoning', 'subj-dm', 'dm-ch-logic', 'Logical Reasoning', 'Core GATE CSE concepts and historical examination questions for Logical Reasoning.', 3, false),
+  makeTopic('dm-sub-mathematical-induction', 'subj-dm', 'dm-ch-logic', 'Mathematical Induction', 'Core GATE CSE concepts and historical examination questions for Mathematical Induction.', 4, false),
 
   // --- Chapter 2: Sets, Relations & Functions ---
-  makeTopic('dm-ch-set', 'subj-dm', null, 'Sets, Relations & Functions', 'Set operations, power sets, Cartesian products, equivalence relations, posets, and functions.', 2, true),
-  makeTopic('dm-23', 'subj-dm', 'dm-ch-set', 'Set Theory', 'Power sets, Cartesian products, set algebra laws, cardinality of sets, De Morgan laws.', 1, true),
-  makeTopic('dm-20', 'subj-dm', 'dm-ch-set', 'Relations', 'Reflexive, Symmetric, Anti-symmetric, Transitive properties, Equivalence classes, and closures.', 2, true),
-  makeTopic('dm-22', 'subj-dm', 'dm-ch-set', 'Functions', 'Injective (One-to-One), Surjective (Onto), Bijective functions, number of onto functions formulas.', 3, true),
-  makeTopic('dm-25', 'subj-dm', 'dm-ch-set', 'Partial Order & Posets', 'Posets, Hasse diagrams, Maximal/Minimal vs Greatest/Least elements, Topological sorting of Posets.', 4, true),
-  makeTopic('dm-24', 'subj-dm', 'dm-ch-set', 'Lattice & Boolean Algebra', 'Partially ordered sets as Lattices, Meet (GLB), Join (LUB), Distributive and Complemented Lattices.', 5, true),
-  makeTopic('dm-29', 'subj-dm', 'dm-ch-set', 'Countable & Uncountable Sets', 'Countably infinite sets (Integers, Rationals) vs Uncountable sets (Reals, Power set of Naturals).', 6, true),
+  makeTopic('dm-ch-set', 'subj-dm', null, 'Sets, Relations & Functions', 'Set operations, relations, equivalence relations, partial orders, lattices, and functions.', 2, true),
+  makeTopic('dm-sub-set-theory', 'subj-dm', 'dm-ch-set', 'Set Theory', 'Core GATE CSE concepts and historical examination questions for Set Theory.', 1, true),
+  makeTopic('dm-sub-relations', 'subj-dm', 'dm-ch-set', 'Relations', 'Core GATE CSE concepts and historical examination questions for Relations.', 2, true),
+  makeTopic('dm-sub-functions', 'subj-dm', 'dm-ch-set', 'Functions', 'Core GATE CSE concepts and historical examination questions for Functions.', 3, true),
+  makeTopic('dm-sub-partial-order', 'subj-dm', 'dm-ch-set', 'Partial Order', 'Core GATE CSE concepts and historical examination questions for Partial Order.', 4, true),
+  makeTopic('dm-sub-lattice', 'subj-dm', 'dm-ch-set', 'Lattice', 'Core GATE CSE concepts and historical examination questions for Lattice.', 5, true),
+  makeTopic('dm-sub-countable-uncountable-set', 'subj-dm', 'dm-ch-set', 'Countable Uncountable Set', 'Core GATE CSE concepts and historical examination questions for Countable Uncountable Set.', 6, false),
+  makeTopic('dm-sub-onto', 'subj-dm', 'dm-ch-set', 'Onto', 'Core GATE CSE concepts and historical examination questions for Onto.', 7, false),
+  makeTopic('dm-sub-identify-function', 'subj-dm', 'dm-ch-set', 'Identify Function', 'Core GATE CSE concepts and historical examination questions for Identify Function.', 8, false),
+  makeTopic('dm-sub-jaccard-coefficient', 'subj-dm', 'dm-ch-set', 'Jaccard Coefficient', 'Core GATE CSE concepts and historical examination questions for Jaccard Coefficient.', 9, false),
 
   // --- Chapter 3: Combinatorics & Counting ---
-  makeTopic('dm-ch-comb', 'subj-dm', null, 'Combinatorics & Counting', 'Permutations, combinations, balls in bins, pigeonhole principle, generating functions, and recurrences.', 3, true),
-  makeTopic('dm-1', 'subj-dm', 'dm-ch-comb', 'Combinatory', 'Permutations & Combinations, Binomial theorem, inclusion-exclusion principle.', 1, true),
-  makeTopic('dm-3', 'subj-dm', 'dm-ch-comb', 'Balls In Bins', 'Distributing distinct/identical objects into distinct/identical bins, stars and bars.', 2, true),
-  makeTopic('dm-sub-balls-dist', 'subj-dm', 'dm-3', 'Distinguishable Balls into Distinct Bins', 'Distributing n distinct items into k distinct boxes (Total: k^n, Injective: P(k,n), Surjective: k! * S(n,k)).', 1, false),
-  makeTopic('dm-sub-balls-indist', 'subj-dm', 'dm-3', 'Stars & Bars (Indistinguishable Balls)', 'Distributing n identical items into k distinct boxes C(n+k-1, k-1) and positive constraints C(n-1, k-1).', 2, false),
-  makeTopic('dm-sub-stirling', 'subj-dm', 'dm-3', 'Stirling Numbers of the 2nd Kind S(n,k)', 'Partitioning n distinct items into k non-empty identical subsets: S(n,k) = k*S(n-1,k) + S(n-1,k-1).', 3, false),
-  makeTopic('dm-sub-int-part', 'subj-dm', 'dm-3', 'Integer Partitions P(n,k)', 'Partitioning n identical items into k identical non-empty parts and generating functions.', 4, false),
-  makeTopic('dm-8', 'subj-dm', 'dm-ch-comb', 'Pigeonhole Principle', 'Generalized pigeonhole principle ceil(N/k), minimum elements to guarantee duplicates.', 3, true),
-  makeTopic('dm-5', 'subj-dm', 'dm-ch-comb', 'Generating Functions', 'Ordinary and exponential generating functions, closed forms for sequence generation.', 4, true),
-  makeTopic('dm-2', 'subj-dm', 'dm-ch-comb', 'Recurrence Relation', 'Solving linear homogeneous and non-homogeneous recurrence relations, characteristic roots.', 5, true),
-  makeTopic('dm-4', 'subj-dm', 'dm-ch-comb', 'Counting', 'Rule of sum, rule of product, combinatorial counting principles.', 6, true),
+  makeTopic('dm-ch-comb', 'subj-dm', null, 'Combinatorics & Counting', 'Permutations, combinations, Pigeonhole principle, generating functions, recurrence relations, and balls in bins.', 3, true),
+  makeTopic('dm-sub-combinatory', 'subj-dm', 'dm-ch-comb', 'Combinatory', 'Core GATE CSE concepts and historical examination questions for Combinatory.', 1, true),
+  makeTopic('dm-sub-counting', 'subj-dm', 'dm-ch-comb', 'Counting', 'Core GATE CSE concepts and historical examination questions for Counting.', 2, false),
+  makeTopic('dm-sub-recurrence-relation', 'subj-dm', 'dm-ch-comb', 'Recurrence Relation', 'Core GATE CSE concepts and historical examination questions for Recurrence Relation.', 3, false),
+  makeTopic('dm-sub-generating-functions', 'subj-dm', 'dm-ch-comb', 'Generating Functions', 'Core GATE CSE concepts and historical examination questions for Generating Functions.', 4, false),
+  makeTopic('dm-sub-balls-in-bins', 'subj-dm', 'dm-ch-comb', 'Balls In Bins', 'Core GATE CSE concepts and historical examination questions for Balls In Bins.', 5, false),
+  makeTopic('dm-sub-summation', 'subj-dm', 'dm-ch-comb', 'Summation', 'Core GATE CSE concepts and historical examination questions for Summation.', 6, false),
+  makeTopic('dm-sub-pigeonhole-principle', 'subj-dm', 'dm-ch-comb', 'Pigeonhole Principle', 'Core GATE CSE concepts and historical examination questions for Pigeonhole Principle.', 7, false),
 
   // --- Chapter 4: Graph Theory ---
-  makeTopic('dm-ch-graph', 'subj-dm', null, 'Graph Theory', 'Connectivity, degree sequences, planarity, coloring, isomorphism, and matching.', 4, true),
-  makeTopic('dm-10', 'subj-dm', 'dm-ch-graph', 'Degree of Graph', 'Handshaking Lemma (Sum of degrees = 2|E|), degree sequences, Havel-Hakimi theorem.', 1, true),
-  makeTopic('dm-9', 'subj-dm', 'dm-ch-graph', 'Graph Connectivity', 'Connected components, cut vertices, cut edges, bridges, Eulerian paths/circuits, Hamiltonian cycles.', 2, true),
-  makeTopic('dm-11', 'subj-dm', 'dm-ch-graph', 'Graph Planarity', 'Planar graphs, Euler formula V - E + F = 2, maximal planar graph edges E <= 3V - 6.', 3, true),
-  makeTopic('dm-12', 'subj-dm', 'dm-ch-graph', 'Graph Coloring', 'Vertex chromatic number chi(G), edge chromatic index, four-color theorem bounds, bipartite coloring.', 4, true),
-  makeTopic('dm-15', 'subj-dm', 'dm-ch-graph', 'Graph Matching', 'Maximal vs maximum matchings, Hall Marriage Theorem for bipartite graphs.', 5, true),
-  makeTopic('dm-13', 'subj-dm', 'dm-ch-graph', 'Graph Isomorphism', 'Graph invariant checks: vertex counts, degree multisets, adjacency matrix isomorphism.', 6, true),
+  makeTopic('dm-ch-graph', 'subj-dm', null, 'Graph Theory', 'Graph representations, connectivity, planarity, coloring, isomorphism, and matchings.', 4, true),
+  makeTopic('dm-sub-graph-connectivity', 'subj-dm', 'dm-ch-graph', 'Graph Connectivity', 'Core GATE CSE concepts and historical examination questions for Graph Connectivity.', 1, true),
+  makeTopic('dm-sub-degree-of-graph', 'subj-dm', 'dm-ch-graph', 'Degree of Graph', 'Core GATE CSE concepts and historical examination questions for Degree of Graph.', 2, true),
+  makeTopic('dm-sub-graph-planarity', 'subj-dm', 'dm-ch-graph', 'Graph Planarity', 'Core GATE CSE concepts and historical examination questions for Graph Planarity.', 3, true),
+  makeTopic('dm-sub-graph-coloring', 'subj-dm', 'dm-ch-graph', 'Graph Coloring', 'Core GATE CSE concepts and historical examination questions for Graph Coloring.', 4, true),
+  makeTopic('dm-sub-graph-isomorphism', 'subj-dm', 'dm-ch-graph', 'Graph Isomorphism', 'Core GATE CSE concepts and historical examination questions for Graph Isomorphism.', 5, false),
+  makeTopic('dm-sub-graph-matching', 'subj-dm', 'dm-ch-graph', 'Graph Matching', 'Core GATE CSE concepts and historical examination questions for Graph Matching.', 6, false),
+  makeTopic('dm-sub-graph-algorithms', 'subj-dm', 'dm-ch-graph', 'Graph Algorithms', 'Core GATE CSE concepts and historical examination questions for Graph Algorithms.', 7, false),
 
-  // --- Chapter 5: Group Theory & Abstract Algebra ---
-  makeTopic('dm-ch-algebra', 'subj-dm', null, 'Group Theory & Abstract Algebra', 'Groups, subgroups, cyclic groups, Lagrange theorem, modular arithmetic, and number theory.', 5, true),
-  makeTopic('dm-21', 'subj-dm', 'dm-ch-algebra', 'Group Theory', 'Groups, Abelian Groups, Subgroups, Cyclic groups, Order of elements, Lagrange Theorem.', 1, true),
-  makeTopic('dm-27', 'subj-dm', 'dm-ch-algebra', 'Number Theory', 'GCD, Euclidean algorithm, prime numbers, Euler Totient function phi(n).', 2, true),
-  makeTopic('dm-7', 'subj-dm', 'dm-ch-algebra', 'Modular Arithmetic', 'Fermat Little Theorem, modular inverses, Chinese Remainder Theorem basics.', 3, true),
+  // --- Chapter 5: Algebraic Structures & Number Theory ---
+  makeTopic('dm-ch-algebra', 'subj-dm', null, 'Algebraic Structures & Number Theory', 'Groups, subgroups, Lagrange theorem, binary operations, modular arithmetic, and polynomial rings.', 5, true),
+  makeTopic('dm-sub-group-theory', 'subj-dm', 'dm-ch-algebra', 'Group Theory', 'Core GATE CSE concepts and historical examination questions for Group Theory.', 1, true),
+  makeTopic('dm-sub-binary-operation', 'subj-dm', 'dm-ch-algebra', 'Binary Operation', 'Core GATE CSE concepts and historical examination questions for Binary Operation.', 2, false),
+  makeTopic('dm-sub-number-theory', 'subj-dm', 'dm-ch-algebra', 'Number Theory', 'Core GATE CSE concepts and historical examination questions for Number Theory.', 3, false),
+  makeTopic('dm-sub-polynomials', 'subj-dm', 'dm-ch-algebra', 'Polynomials', 'Core GATE CSE concepts and historical examination questions for Polynomials.', 4, false),
+  makeTopic('dm-sub-modular-arithmetic', 'subj-dm', 'dm-ch-algebra', 'Modular Arithmetic', 'Core GATE CSE concepts and historical examination questions for Modular Arithmetic.', 5, false),
 
   // =========================================================================
-  // 12. ENGINEERING MATHEMATICS (subj-em)
+  // ENGINEERING MATHEMATICS (subj-em)
   // =========================================================================
   // --- Chapter 1: Linear Algebra ---
-  makeTopic('em-ch-la', 'subj-em', null, 'Linear Algebra', 'Eigenvalues, eigenvectors, matrix operations, determinants, rank, vector spaces, and linear systems.', 1, true),
-  makeTopic('em-1', 'subj-em', 'em-ch-la', 'Eigen Value', 'Characteristic equation |A - lambda*I| = 0, properties of eigenvalues (trace, det), Cayley-Hamilton Theorem.', 1, true),
-  makeTopic('em-2', 'subj-em', 'em-ch-la', 'Matrix', 'Matrix multiplication, Transpose, Symmetric, Skew-Symmetric, Orthogonal, Unitary, and Nilpotent matrices.', 2, true),
-  makeTopic('em-3', 'subj-em', 'em-ch-la', 'System of Equations', 'Matrix equation AX = B, augmented matrix [A|B], consistency test (Rank(A) vs Rank(A|B)), unique/infinite/no solution.', 3, true),
-  makeTopic('em-4', 'subj-em', 'em-ch-la', 'Determinant', 'Properties of determinants, row/column expansion, inverse matrix formula A^-1 = adj(A)/det(A).', 4, true),
-  makeTopic('em-5', 'subj-em', 'em-ch-la', 'Rank of Matrix', 'Echelon form, row operations, linearly independent rows/columns, Rank-Nullity Theorem.', 5, true),
+  makeTopic('em-ch-la', 'subj-em', null, 'Linear Algebra', 'Matrices, determinants, systems of linear equations, rank, eigenvalues, eigenvectors, and vector spaces.', 1, true),
+  makeTopic('em-sub-eigen-value', 'subj-em', 'em-ch-la', 'Eigen Value', 'Core GATE CSE concepts and historical examination questions for Eigen Value.', 1, true),
+  makeTopic('em-sub-matrix', 'subj-em', 'em-ch-la', 'Matrix', 'Core GATE CSE concepts and historical examination questions for Matrix.', 2, true),
+  makeTopic('em-sub-system-of-equations', 'subj-em', 'em-ch-la', 'System of Equations', 'Core GATE CSE concepts and historical examination questions for System of Equations.', 3, true),
+  makeTopic('em-sub-determinant', 'subj-em', 'em-ch-la', 'Determinant', 'Core GATE CSE concepts and historical examination questions for Determinant.', 4, true),
+  makeTopic('em-sub-rank-of-matrix', 'subj-em', 'em-ch-la', 'Rank of Matrix', 'Core GATE CSE concepts and historical examination questions for Rank of Matrix.', 5, false),
+  makeTopic('em-sub-vector-space', 'subj-em', 'em-ch-la', 'Vector Space', 'Core GATE CSE concepts and historical examination questions for Vector Space.', 6, false),
+  makeTopic('em-sub-lu-decomposition', 'subj-em', 'em-ch-la', 'Lu Decomposition', 'Core GATE CSE concepts and historical examination questions for Lu Decomposition.', 7, false),
+  makeTopic('em-sub-orthonormality', 'subj-em', 'em-ch-la', 'Orthonormality', 'Core GATE CSE concepts and historical examination questions for Orthonormality.', 8, false),
+  makeTopic('em-sub-singular-value-decomposition', 'subj-em', 'em-ch-la', 'Singular Value Decomposition', 'Core GATE CSE concepts and historical examination questions for Singular Value Decomposition.', 9, false),
+  makeTopic('em-sub-gaussian-elimination', 'subj-em', 'em-ch-la', 'Gaussian Elimination', 'Core GATE CSE concepts and historical examination questions for Gaussian Elimination.', 10, false),
+  makeTopic('em-sub-subspace', 'subj-em', 'em-ch-la', 'Subspace', 'Core GATE CSE concepts and historical examination questions for Subspace.', 11, false),
+  makeTopic('em-sub-multiplicity', 'subj-em', 'em-ch-la', 'Multiplicity', 'Core GATE CSE concepts and historical examination questions for Multiplicity.', 12, false),
+  makeTopic('em-sub-square-invariant', 'subj-em', 'em-ch-la', 'Square Invariant', 'Core GATE CSE concepts and historical examination questions for Square Invariant.', 13, false),
 
   // --- Chapter 2: Calculus ---
-  makeTopic('em-ch-calc', 'subj-em', null, 'Calculus', 'Limits, continuity, differentiability, maxima/minima, partial derivatives, and integrals.', 2, true),
-  makeTopic('em-21', 'subj-em', 'em-ch-calc', 'Limits', 'Evaluation of limits, L\'Hopital Rule for 0/0 and inf/inf indeterminate forms.', 1, true),
-  makeTopic('em-22', 'subj-em', 'em-ch-calc', 'Maxima Minima', 'First derivative test, Second derivative test, multivariable extrema using Hessian matrix.', 2, true),
-  makeTopic('em-23', 'subj-em', 'em-ch-calc', 'Continuity', 'Left-hand limit = Right-hand limit = Function value at point, intermediate value theorem.', 3, true),
-  makeTopic('em-24', 'subj-em', 'em-ch-calc', 'Differentiation', 'Chain rule, product rule, partial derivatives, directional derivatives, gradient.', 4, true),
-  makeTopic('em-26', 'subj-em', 'em-ch-calc', 'Definite Integral', 'Fundamental Theorem of Calculus, properties of definite integrals.', 5, true),
+  makeTopic('em-ch-calc', 'subj-em', null, 'Calculus', 'Limits, continuity, differentiability, maxima/minima, mean value theorem, and integration.', 2, true),
+  makeTopic('em-sub-maxima-minima', 'subj-em', 'em-ch-calc', 'Maxima Minima', 'Core GATE CSE concepts and historical examination questions for Maxima Minima.', 1, true),
+  makeTopic('em-sub-limits', 'subj-em', 'em-ch-calc', 'Limits', 'Core GATE CSE concepts and historical examination questions for Limits.', 2, true),
+  makeTopic('em-sub-differentiation', 'subj-em', 'em-ch-calc', 'Differentiation', 'Core GATE CSE concepts and historical examination questions for Differentiation.', 3, true),
+  makeTopic('em-sub-integration', 'subj-em', 'em-ch-calc', 'Integration', 'Core GATE CSE concepts and historical examination questions for Integration.', 4, true),
+  makeTopic('em-sub-continuity', 'subj-em', 'em-ch-calc', 'Continuity', 'Core GATE CSE concepts and historical examination questions for Continuity.', 5, true),
+  makeTopic('em-sub-definite-integral', 'subj-em', 'em-ch-calc', 'Definite Integral', 'Core GATE CSE concepts and historical examination questions for Definite Integral.', 6, false),
+  makeTopic('em-sub-absolute-value', 'subj-em', 'em-ch-calc', 'Absolute Value', 'Core GATE CSE concepts and historical examination questions for Absolute Value.', 7, false),
+  makeTopic('em-sub-contour-plots', 'subj-em', 'em-ch-calc', 'Contour Plots', 'Core GATE CSE concepts and historical examination questions for Contour Plots.', 8, false),
 
   // --- Chapter 3: Probability & Statistics ---
-  makeTopic('em-ch-prob', 'subj-em', null, 'Probability & Statistics', 'Axioms of probability, Bayes theorem, discrete & continuous random variables, and distributions.', 3, true),
-  makeTopic('em-11', 'subj-em', 'em-ch-prob', 'Probability', 'Axioms of probability, sample spaces, mutually exclusive events, addition rule.', 1, true),
-  makeTopic('em-13', 'subj-em', 'em-ch-prob', 'Conditional Probability', 'P(A|B) = P(A cap B) / P(B), Total Probability Theorem, Bayes Rule for posterior probability.', 2, true),
-  makeTopic('em-12', 'subj-em', 'em-ch-prob', 'Expectation', 'Expected value E[X], Variance Var(X) = E[X^2] - (E[X])^2, linearity of expectation.', 3, true),
-  makeTopic('em-15', 'subj-em', 'em-ch-prob', 'Random Variable', 'Discrete and Continuous random variables, cumulative distribution functions (CDF).', 4, true),
-  makeTopic('em-16', 'subj-em', 'em-ch-prob', 'Binomial Distribution', 'P(X = k) = C(n,k) p^k (1-p)^(n-k), Mean = n*p, Variance = n*p*(1-p).', 5, true),
-  makeTopic('em-19', 'subj-em', 'em-ch-prob', 'Poisson Distribution', 'P(X = k) = e^-lambda * lambda^k / k!, Mean = lambda, Variance = lambda.', 6, true),
-  makeTopic('em-20', 'subj-em', 'em-ch-prob', 'Normal Distribution', 'Gaussian bell curve, standard normal distribution Z = (X - mu) / sigma, symmetry properties.', 7, true),
-  makeTopic('em-17', 'subj-em', 'em-ch-prob', 'Exponential Distribution', 'Probability density f(x) = lambda*e^(-lambda*x), memoryless property P(X > s+t | X > s) = P(X > t).', 8, true),
+  makeTopic('em-ch-prob', 'subj-em', null, 'Probability & Statistics', 'Axioms of probability, conditional probability, Bayes theorem, random variables, expectation, and distributions.', 3, true),
+  makeTopic('em-sub-probability', 'subj-em', 'em-ch-prob', 'Probability', 'Core GATE CSE concepts and historical examination questions for Probability.', 1, true),
+  makeTopic('em-sub-expectation', 'subj-em', 'em-ch-prob', 'Expectation', 'Core GATE CSE concepts and historical examination questions for Expectation.', 2, true),
+  makeTopic('em-sub-conditional-probability', 'subj-em', 'em-ch-prob', 'Conditional Probability', 'Core GATE CSE concepts and historical examination questions for Conditional Probability.', 3, true),
+  makeTopic('em-sub-uniform-distribution', 'subj-em', 'em-ch-prob', 'Uniform Distribution', 'Core GATE CSE concepts and historical examination questions for Uniform Distribution.', 4, true),
+  makeTopic('em-sub-random-variable', 'subj-em', 'em-ch-prob', 'Random Variable', 'Core GATE CSE concepts and historical examination questions for Random Variable.', 5, true),
+  makeTopic('em-sub-binomial-distribution', 'subj-em', 'em-ch-prob', 'Binomial Distribution', 'Core GATE CSE concepts and historical examination questions for Binomial Distribution.', 6, false),
+  makeTopic('em-sub-exponential-distribution', 'subj-em', 'em-ch-prob', 'Exponential Distribution', 'Core GATE CSE concepts and historical examination questions for Exponential Distribution.', 7, false),
+  makeTopic('em-sub-independent-events', 'subj-em', 'em-ch-prob', 'Independent Events', 'Core GATE CSE concepts and historical examination questions for Independent Events.', 8, false),
+  makeTopic('em-sub-poisson-distribution', 'subj-em', 'em-ch-prob', 'Poisson Distribution', 'Core GATE CSE concepts and historical examination questions for Poisson Distribution.', 9, false),
+  makeTopic('em-sub-statistics', 'subj-em', 'em-ch-prob', 'Statistics', 'Core GATE CSE concepts and historical examination questions for Statistics.', 10, false),
+  makeTopic('em-sub-bayes-theorem', 'subj-em', 'em-ch-prob', 'Bayes Theorem', 'Core GATE CSE concepts and historical examination questions for Bayes Theorem.', 11, false),
+  makeTopic('em-sub-normal-distribution', 'subj-em', 'em-ch-prob', 'Normal Distribution', 'Core GATE CSE concepts and historical examination questions for Normal Distribution.', 12, false),
+  makeTopic('em-sub-bayesian-network', 'subj-em', 'em-ch-prob', 'Bayesian Network', 'Core GATE CSE concepts and historical examination questions for Bayesian Network.', 13, false),
+  makeTopic('em-sub-bernoulli-distribution', 'subj-em', 'em-ch-prob', 'Bernoulli Distribution', 'Core GATE CSE concepts and historical examination questions for Bernoulli Distribution.', 14, false),
+  makeTopic('em-sub-variance', 'subj-em', 'em-ch-prob', 'Variance', 'Core GATE CSE concepts and historical examination questions for Variance.', 15, false),
+  makeTopic('em-sub-chi-square-distribution', 'subj-em', 'em-ch-prob', 'Chi Square Distribution', 'Core GATE CSE concepts and historical examination questions for Chi Square Distribution.', 16, false),
+  makeTopic('em-sub-continuous-distribution', 'subj-em', 'em-ch-prob', 'Continuous Distribution', 'Core GATE CSE concepts and historical examination questions for Continuous Distribution.', 17, false),
+  makeTopic('em-sub-probability-density-function', 'subj-em', 'em-ch-prob', 'Probability Density Function', 'Core GATE CSE concepts and historical examination questions for Probability Density Function.', 18, false),
+  makeTopic('em-sub-probability-distribution', 'subj-em', 'em-ch-prob', 'Probability Distribution', 'Core GATE CSE concepts and historical examination questions for Probability Distribution.', 19, false),
+
+  // --- Chapter 4: Numerical Methods & Applied Mathematics ---
+  makeTopic('em-ch-num', 'subj-em', null, 'Numerical Methods & Applied Mathematics', 'Numerical computation, sequences, series, geometry, coordinate math, and equations.', 4, true),
+  makeTopic('em-sub-numerical-computation', 'subj-em', 'em-ch-num', 'Numerical Computation', 'Core GATE CSE concepts and historical examination questions for Numerical Computation.', 1, false),
+  makeTopic('em-sub-logical-reasoning', 'subj-em', 'em-ch-num', 'Logical Reasoning', 'Core GATE CSE concepts and historical examination questions for Logical Reasoning.', 2, true),
+  makeTopic('em-sub-sequence-series', 'subj-em', 'em-ch-num', 'Sequence Series', 'Core GATE CSE concepts and historical examination questions for Sequence Series.', 3, false),
+  makeTopic('em-sub-statements-follow', 'subj-em', 'em-ch-num', 'Statements Follow', 'Core GATE CSE concepts and historical examination questions for Statements Follow.', 4, false),
+  makeTopic('em-sub-ratio-proportion', 'subj-em', 'em-ch-num', 'Ratio Proportion', 'Core GATE CSE concepts and historical examination questions for Ratio Proportion.', 5, false),
+  makeTopic('em-sub-direction-sense', 'subj-em', 'em-ch-num', 'Direction Sense', 'Core GATE CSE concepts and historical examination questions for Direction Sense.', 6, false),
+  makeTopic('em-sub-permutation-and-combination', 'subj-em', 'em-ch-num', 'Permutation and Combination', 'Core GATE CSE concepts and historical examination questions for Permutation and Combination.', 7, false),
+  makeTopic('em-sub-pie-chart', 'subj-em', 'em-ch-num', 'Pie Chart', 'Core GATE CSE concepts and historical examination questions for Pie Chart.', 8, false),
+  makeTopic('em-sub-quadratic-equations', 'subj-em', 'em-ch-num', 'Quadratic Equations', 'Core GATE CSE concepts and historical examination questions for Quadratic Equations.', 9, false),
+  makeTopic('em-sub-tabular-data', 'subj-em', 'em-ch-num', 'Tabular Data', 'Core GATE CSE concepts and historical examination questions for Tabular Data.', 10, false),
+  makeTopic('em-sub-venn-diagram', 'subj-em', 'em-ch-num', 'Venn Diagram', 'Core GATE CSE concepts and historical examination questions for Venn Diagram.', 11, false),
+  makeTopic('em-sub-cartesian-coordinates', 'subj-em', 'em-ch-num', 'Cartesian Coordinates', 'Core GATE CSE concepts and historical examination questions for Cartesian Coordinates.', 12, false),
+  makeTopic('em-sub-circle', 'subj-em', 'em-ch-num', 'Circle', 'Core GATE CSE concepts and historical examination questions for Circle.', 13, false),
+  makeTopic('em-sub-number-system', 'subj-em', 'em-ch-num', 'Number System', 'Core GATE CSE concepts and historical examination questions for Number System.', 14, false),
+  makeTopic('em-sub-percentage', 'subj-em', 'em-ch-num', 'Percentage', 'Core GATE CSE concepts and historical examination questions for Percentage.', 15, false),
+  makeTopic('em-sub-triangles', 'subj-em', 'em-ch-num', 'Triangles', 'Core GATE CSE concepts and historical examination questions for Triangles.', 16, false),
+  makeTopic('em-sub-code-words', 'subj-em', 'em-ch-num', 'Code Words', 'Core GATE CSE concepts and historical examination questions for Code Words.', 17, false),
+  makeTopic('em-sub-passage-reading', 'subj-em', 'em-ch-num', 'Passage Reading', 'Core GATE CSE concepts and historical examination questions for Passage Reading.', 18, false),
+  makeTopic('em-sub-combinatory', 'subj-em', 'em-ch-num', 'Combinatory', 'Core GATE CSE concepts and historical examination questions for Combinatory.', 19, false),
+  makeTopic('em-sub-number-series', 'subj-em', 'em-ch-num', 'Number Series', 'Core GATE CSE concepts and historical examination questions for Number Series.', 20, false),
+  makeTopic('em-sub-profit-loss', 'subj-em', 'em-ch-num', 'Profit Loss', 'Core GATE CSE concepts and historical examination questions for Profit Loss.', 21, false),
+  makeTopic('em-sub-analogy', 'subj-em', 'em-ch-num', 'Analogy', 'Core GATE CSE concepts and historical examination questions for Analogy.', 22, false),
+  makeTopic('em-sub-coding-decoding', 'subj-em', 'em-ch-num', 'Coding Decoding', 'Core GATE CSE concepts and historical examination questions for Coding Decoding.', 23, false),
+  makeTopic('em-sub-family-relationship', 'subj-em', 'em-ch-num', 'Family Relationship', 'Core GATE CSE concepts and historical examination questions for Family Relationship.', 24, false),
+  makeTopic('em-sub-logical-inference', 'subj-em', 'em-ch-num', 'Logical Inference', 'Core GATE CSE concepts and historical examination questions for Logical Inference.', 25, false),
+  makeTopic('em-sub-number-relations', 'subj-em', 'em-ch-num', 'Number Relations', 'Core GATE CSE concepts and historical examination questions for Number Relations.', 26, false),
+  makeTopic('em-sub-odd-one', 'subj-em', 'em-ch-num', 'Odd One', 'Core GATE CSE concepts and historical examination questions for Odd One.', 27, false),
+  makeTopic('em-sub-round-table-arrangement', 'subj-em', 'em-ch-num', 'Round Table Arrangement', 'Core GATE CSE concepts and historical examination questions for Round Table Arrangement.', 28, false),
+  makeTopic('em-sub-seating-arrangement', 'subj-em', 'em-ch-num', 'Seating Arrangement', 'Core GATE CSE concepts and historical examination questions for Seating Arrangement.', 29, false),
+  makeTopic('em-sub-no-classified-topic', 'subj-em', 'em-ch-num', 'No Classified Topic', 'Core GATE CSE concepts and historical examination questions for No Classified Topic.', 30, false),
+  makeTopic('em-sub-clock-time', 'subj-em', 'em-ch-num', 'Clock Time', 'Core GATE CSE concepts and historical examination questions for Clock Time.', 31, false),
+  makeTopic('em-sub-compound-interest', 'subj-em', 'em-ch-num', 'Compound Interest', 'Core GATE CSE concepts and historical examination questions for Compound Interest.', 32, false),
+  makeTopic('em-sub-mensuration', 'subj-em', 'em-ch-num', 'Mensuration', 'Core GATE CSE concepts and historical examination questions for Mensuration.', 33, false),
+  makeTopic('em-sub-number-representation', 'subj-em', 'em-ch-num', 'Number Representation', 'Core GATE CSE concepts and historical examination questions for Number Representation.', 34, false),
+  makeTopic('em-sub-number-theory', 'subj-em', 'em-ch-num', 'Number Theory', 'Core GATE CSE concepts and historical examination questions for Number Theory.', 35, false),
+  makeTopic('em-sub-polynomials', 'subj-em', 'em-ch-num', 'Polynomials', 'Core GATE CSE concepts and historical examination questions for Polynomials.', 36, false),
+  makeTopic('em-sub-powers', 'subj-em', 'em-ch-num', 'Powers', 'Core GATE CSE concepts and historical examination questions for Powers.', 37, false),
+  makeTopic('em-sub-prime-numbers', 'subj-em', 'em-ch-num', 'Prime Numbers', 'Core GATE CSE concepts and historical examination questions for Prime Numbers.', 38, false),
+  makeTopic('em-sub-shortest-path', 'subj-em', 'em-ch-num', 'Shortest Path', 'Core GATE CSE concepts and historical examination questions for Shortest Path.', 39, false),
+  makeTopic('em-sub-speed-time-distance', 'subj-em', 'em-ch-num', 'Speed Time Distance', 'Core GATE CSE concepts and historical examination questions for Speed Time Distance.', 40, false),
+  makeTopic('em-sub-tables', 'subj-em', 'em-ch-num', 'Tables', 'Core GATE CSE concepts and historical examination questions for Tables.', 41, false),
+  makeTopic('em-sub-volume', 'subj-em', 'em-ch-num', 'Volume', 'Core GATE CSE concepts and historical examination questions for Volume.', 42, false),
 
   // =========================================================================
-  // 13. GENERAL APTITUDE (subj-ga)
+  // ALGORITHMS (subj-algo)
   // =========================================================================
-  // --- Chapter 1: Quantitative Aptitude ---
-  makeTopic('ga-ch-quant', 'subj-ga', null, 'Quantitative Aptitude', 'Permutations, combinations, time & work, speed time distance, percentages, geometry, and probability.', 1, true),
-  makeTopic('ga-sub-time-work', 'subj-ga', 'ga-ch-quant', 'Time & Work', 'Work rate, combined worker efficiency, pipes and cisterns, alternating work schedules.', 1, true),
-  makeTopic('ga-sub-spd', 'subj-ga', 'ga-ch-quant', 'Speed Time & Distance', 'Average speed, relative speed, trains crossing objects, upstream and downstream boat speed.', 2, true),
-  makeTopic('ga-sub-perm-comb', 'subj-ga', 'ga-ch-quant', 'Permutations & Combinations', 'Fundamental counting principle, linear/circular permutations, selection combinations, probability.', 3, true),
-  makeTopic('ga-sub-geom', 'subj-ga', 'ga-ch-quant', 'Geometry & Mensuration', 'Triangles, Pythagoras theorem, circles, tangent properties, 2D/3D area and volume formulas.', 4, true),
-  makeTopic('ga-1', 'subj-ga', 'ga-ch-quant', 'Probability', 'Basic probability calculations, dice, cards, coins, and event combinations.', 5, true),
-  makeTopic('ga-2', 'subj-ga', 'ga-ch-quant', 'Ratio Proportion', 'Direct and inverse proportions, mixtures and alligations, partnership profit sharing.', 6, true),
-  makeTopic('ga-3', 'subj-ga', 'ga-ch-quant', 'Percentage', 'Percentage increase/decrease, successive percentage changes, marks and population problems.', 7, true),
-  makeTopic('ga-4', 'subj-ga', 'ga-ch-quant', 'Profit Loss', 'Cost price, selling price, marked price, discount, profit/loss percentage formulas.', 8, true),
+  // --- Chapter 1: Asymptotic Analysis & Recurrences ---
+  makeTopic('alg-ch-asymp', 'subj-algo', null, 'Asymptotic Analysis & Recurrences', 'Big-O, Big-Omega, Big-Theta notation, Master theorem, recursion trees, and algorithm time complexity.', 1, true),
+  makeTopic('alg-sub-asymptotic-analysis', 'subj-algo', 'alg-ch-asymp', 'Asymptotic Analysis', 'Core GATE CSE concepts and historical examination questions for Asymptotic Analysis.', 1, false),
+  makeTopic('alg-sub-recursion-recurrence', 'subj-algo', 'alg-ch-asymp', 'Recursion & Recurrence', 'Core GATE CSE concepts and historical examination questions for Recursion & Recurrence.', 2, false),
+  makeTopic('alg-sub-time-complexity', 'subj-algo', 'alg-ch-asymp', 'Time Complexity', 'Core GATE CSE concepts and historical examination questions for Time Complexity.', 3, true),
+  makeTopic('alg-sub-algorithm-design', 'subj-algo', 'alg-ch-asymp', 'Algorithm Design', 'Core GATE CSE concepts and historical examination questions for Algorithm Design.', 4, false),
+  makeTopic('alg-sub-space-complexity', 'subj-algo', 'alg-ch-asymp', 'Space Complexity', 'Core GATE CSE concepts and historical examination questions for Space Complexity.', 5, false),
+  makeTopic('alg-sub-asymptotic-notations', 'subj-algo', 'alg-ch-asymp', 'Asymptotic Notations', 'Core GATE CSE concepts and historical examination questions for Asymptotic Notations.', 6, true),
+  makeTopic('alg-sub-recurrence-relation', 'subj-algo', 'alg-ch-asymp', 'Recurrence Relation', 'Core GATE CSE concepts and historical examination questions for Recurrence Relation.', 7, true),
+  makeTopic('alg-sub-recursion', 'subj-algo', 'alg-ch-asymp', 'Recursion', 'Core GATE CSE concepts and historical examination questions for Recursion.', 8, true),
 
-  // --- Chapter 2: Verbal Aptitude ---
-  makeTopic('ga-ch-verbal', 'subj-ga', null, 'Verbal Aptitude', 'Grammar, sentence completion, reading comprehension, vocabulary, synonyms, and antonyms.', 2, true),
-  makeTopic('ga-11', 'subj-ga', 'ga-ch-verbal', 'Most Appropriate Word', 'Contextual word selection, vocabulary usage, and sentence completion.', 1, true),
-  makeTopic('ga-12', 'subj-ga', 'ga-ch-verbal', 'Passage Reading', 'Reading comprehension, central theme, author tone, and factual deduction from text.', 2, true),
-  makeTopic('ga-13', 'subj-ga', 'ga-ch-verbal', 'Verbal Reasoning', 'Sentence arrangement, paragraph jumbles, logical coherence, and argument analysis.', 3, true),
-  makeTopic('ga-14', 'subj-ga', 'ga-ch-verbal', 'Word Pairs', 'Analogy word pairs, semantic relationships between pairs of English words.', 4, true),
-  makeTopic('ga-15', 'subj-ga', 'ga-ch-verbal', 'Synonyms', 'Vocabulary synonyms, closest meaning words in context.', 5, true),
-  makeTopic('ga-16', 'subj-ga', 'ga-ch-verbal', 'Antonyms', 'Vocabulary antonyms, opposite meaning words in context.', 6, true),
-  makeTopic('ga-17', 'subj-ga', 'ga-ch-verbal', 'Grammar', 'Subject-verb agreement, tense consistency, prepositions, articles, and modifier placement.', 7, true),
+  // --- Chapter 2: Divide and Conquer & Sorting ---
+  makeTopic('alg-ch-dc', 'subj-algo', null, 'Divide and Conquer & Sorting', 'Merge sort, quick sort, binary search, counting inversions, and lower bounds for comparison sorting.', 2, true),
+  makeTopic('alg-sub-divide-and-conquer', 'subj-algo', 'alg-ch-dc', 'Divide and Conquer', 'Core GATE CSE concepts and historical examination questions for Divide and Conquer.', 1, false),
+  makeTopic('alg-sub-sorting-algorithms', 'subj-algo', 'alg-ch-dc', 'Sorting Algorithms', 'Core GATE CSE concepts and historical examination questions for Sorting Algorithms.', 2, false),
+  makeTopic('alg-sub-binary-search', 'subj-algo', 'alg-ch-dc', 'Binary Search', 'Core GATE CSE concepts and historical examination questions for Binary Search.', 3, false),
+  makeTopic('alg-sub-inversion', 'subj-algo', 'alg-ch-dc', 'Inversion', 'Core GATE CSE concepts and historical examination questions for Inversion.', 4, false),
+  makeTopic('alg-sub-merging', 'subj-algo', 'alg-ch-dc', 'Merging', 'Core GATE CSE concepts and historical examination questions for Merging.', 5, false),
+  makeTopic('alg-sub-bubble-sort', 'subj-algo', 'alg-ch-dc', 'Bubble Sort', 'Core GATE CSE concepts and historical examination questions for Bubble Sort.', 6, false),
+  makeTopic('alg-sub-selection-sort', 'subj-algo', 'alg-ch-dc', 'Selection Sort', 'Core GATE CSE concepts and historical examination questions for Selection Sort.', 7, false),
+  makeTopic('alg-sub-number-of-swap', 'subj-algo', 'alg-ch-dc', 'Number of Swap', 'Core GATE CSE concepts and historical examination questions for Number of Swap.', 8, false),
+  makeTopic('alg-sub-maximum-minimum', 'subj-algo', 'alg-ch-dc', 'Maximum Minimum', 'Core GATE CSE concepts and historical examination questions for Maximum Minimum.', 9, false),
+  makeTopic('alg-sub-quick-sort', 'subj-algo', 'alg-ch-dc', 'Quick Sort', 'Core GATE CSE concepts and historical examination questions for Quick Sort.', 10, true),
+  makeTopic('alg-sub-merge-sort', 'subj-algo', 'alg-ch-dc', 'Merge Sort', 'Core GATE CSE concepts and historical examination questions for Merge Sort.', 11, false),
+  makeTopic('alg-sub-insertion-sort', 'subj-algo', 'alg-ch-dc', 'Insertion Sort', 'Core GATE CSE concepts and historical examination questions for Insertion Sort.', 12, false),
+  makeTopic('alg-sub-heap-sort', 'subj-algo', 'alg-ch-dc', 'Heap Sort', 'Core GATE CSE concepts and historical examination questions for Heap Sort.', 13, false),
+  makeTopic('alg-sub-sorting', 'subj-algo', 'alg-ch-dc', 'Sorting', 'Core GATE CSE concepts and historical examination questions for Sorting.', 14, true),
+  makeTopic('alg-sub-searching', 'subj-algo', 'alg-ch-dc', 'Searching', 'Core GATE CSE concepts and historical examination questions for Searching.', 15, false),
+  makeTopic('alg-sub-algorithm-design-techniques', 'subj-algo', 'alg-ch-dc', 'Algorithm Design Techniques', 'Core GATE CSE concepts and historical examination questions for Algorithm Design Techniques.', 16, false),
 
-  // --- Chapter 3: Analytical Aptitude ---
-  makeTopic('ga-ch-analytical', 'subj-ga', null, 'Analytical Aptitude', 'Logical reasoning, syllogisms, seating arrangements, blood relations, series, and direction sense.', 3, true),
-  makeTopic('ga-21', 'subj-ga', 'ga-ch-analytical', 'Logical Reasoning', 'Deductive reasoning, condition evaluations, truth-tellers and liars logic puzzles.', 1, true),
-  makeTopic('ga-22', 'subj-ga', 'ga-ch-analytical', 'Statements Follow', 'Syllogisms, statements and conclusions, logical validity of deduction statements.', 2, true),
-  makeTopic('ga-23', 'subj-ga', 'ga-ch-analytical', 'Direction Sense', 'Compass direction navigation, turn angles, shortest distance displacements.', 3, true),
-  makeTopic('ga-sub-blood', 'subj-ga', 'ga-ch-analytical', 'Blood Relations & Family Tree', 'Family tree generation mapping, maternal/paternal relationships, coded blood relations.', 4, true),
-  makeTopic('ga-24', 'subj-ga', 'ga-ch-analytical', 'Sequence Series', 'Arithmetic, geometric, alternating, and alphanumeric series pattern identification.', 5, true),
-  makeTopic('ga-25', 'subj-ga', 'ga-ch-analytical', 'Data Interpretation', 'Bar charts, pie charts, tables, line graphs, and percentage comparison questions.', 6, true),
+  // --- Chapter 3: Greedy Algorithms & Dynamic Programming ---
+  makeTopic('alg-ch-greedy', 'subj-algo', null, 'Greedy Algorithms & Dynamic Programming', 'Greedy choice property, optimal substructure, Huffman coding, Knapsack, Matrix chain, LCS, and LIS.', 3, true),
+  makeTopic('alg-sub-dynamic-programming', 'subj-algo', 'alg-ch-greedy', 'Dynamic Programming', 'Core GATE CSE concepts and historical examination questions for Dynamic Programming.', 1, true),
+  makeTopic('alg-sub-greedy-algorithms', 'subj-algo', 'alg-ch-greedy', 'Greedy Algorithms', 'Core GATE CSE concepts and historical examination questions for Greedy Algorithms.', 2, false),
+  makeTopic('alg-sub-huffman-coding', 'subj-algo', 'alg-ch-greedy', 'Huffman Coding', 'Core GATE CSE concepts and historical examination questions for Huffman Coding.', 3, false),
+  makeTopic('alg-sub-0-1-knapsack-subset-sum', 'subj-algo', 'alg-ch-greedy', '0/1 Knapsack & Subset Sum', 'Core GATE CSE concepts and historical examination questions for 0/1 Knapsack & Subset Sum.', 4, false),
+  makeTopic('alg-sub-longest-common-subsequence', 'subj-algo', 'alg-ch-greedy', 'Longest Common Subsequence', 'Core GATE CSE concepts and historical examination questions for Longest Common Subsequence.', 5, false),
+  makeTopic('alg-sub-matrix-chain-multiplication', 'subj-algo', 'alg-ch-greedy', 'Matrix Chain Multiplication', 'Core GATE CSE concepts and historical examination questions for Matrix Chain Multiplication.', 6, false),
+  makeTopic('alg-sub-huffman-code', 'subj-algo', 'alg-ch-greedy', 'Huffman Code', 'Core GATE CSE concepts and historical examination questions for Huffman Code.', 7, false),
+  makeTopic('alg-sub-matrix-chain-ordering', 'subj-algo', 'alg-ch-greedy', 'Matrix Chain Ordering', 'Core GATE CSE concepts and historical examination questions for Matrix Chain Ordering.', 8, false),
 
-  // --- Chapter 4: Spatial Aptitude ---
-  makeTopic('ga-ch-spatial', 'subj-ga', null, 'Spatial Aptitude', 'Visual and spatial reasoning: folding, rotation, 3D structures, mirror images.', 4, true),
-  makeTopic('ga-29', 'subj-ga', 'ga-ch-spatial', 'Paper Folding', 'Visualizing crease patterns and holes upon unfolding paper.', 1, true),
-  makeTopic('ga-30', 'subj-ga', 'ga-ch-spatial', 'Patterns In Two Dimensions', '2D geometric transformations, pattern completion, tessellations.', 2, true),
-  makeTopic('ga-31', 'subj-ga', 'ga-ch-spatial', 'Image Rotation', 'Clockwise and counter-clockwise 2D/3D angular rotations.', 3, true),
-  makeTopic('ga-32', 'subj-ga', 'ga-ch-spatial', 'Patterns In Three Dimensions', 'Cube surface unrolling, dice net representations.', 4, true),
-  makeTopic('ga-33', 'subj-ga', 'ga-ch-spatial', '3D Structure', 'Combining 3D polyhedra, orthographic front/side/top views.', 5, true),
-  makeTopic('ga-34', 'subj-ga', 'ga-ch-spatial', 'Assembling', 'Mental assembly of disjointed 2D/3D parts.', 6, true),
-  makeTopic('ga-35', 'subj-ga', 'ga-ch-spatial', 'Assembling Pieces', 'Fitting irregular pieces together to form complete shapes.', 7, true),
-  makeTopic('ga-36', 'subj-ga', 'ga-ch-spatial', 'Mirror Image', 'Lateral inversion reflections along horizontal and vertical axes.', 8, true),
+  // --- Chapter 4: Graph Algorithms & Traversals ---
+  makeTopic('alg-ch-graph-alg', 'subj-algo', null, 'Graph Algorithms & Traversals', 'BFS, DFS, topological sorting, Dijkstra, Bellman-Ford, Floyd-Warshall, Prim, and Kruskal MST.', 4, true),
+  makeTopic('alg-sub-shortest-path', 'subj-algo', 'alg-ch-graph-alg', 'Shortest Path', 'Core GATE CSE concepts and historical examination questions for Shortest Path.', 1, false),
+  makeTopic('alg-sub-minimum-spanning-tree', 'subj-algo', 'alg-ch-graph-alg', 'Minimum Spanning Tree', 'Core GATE CSE concepts and historical examination questions for Minimum Spanning Tree.', 2, true),
+  makeTopic('alg-sub-graph-search-bfs-dfs', 'subj-algo', 'alg-ch-graph-alg', 'Graph Search BFS DFS', 'Core GATE CSE concepts and historical examination questions for Graph Search BFS DFS.', 3, false),
+  makeTopic('alg-sub-bellman-ford', 'subj-algo', 'alg-ch-graph-alg', 'Bellman Ford', 'Core GATE CSE concepts and historical examination questions for Bellman Ford.', 4, false),
+  makeTopic('alg-sub-prims-algorithm', 'subj-algo', 'alg-ch-graph-alg', 'Prims Algorithm', 'Core GATE CSE concepts and historical examination questions for Prims Algorithm.', 5, false),
+  makeTopic('alg-sub-breadth-first-search', 'subj-algo', 'alg-ch-graph-alg', 'Breadth First Search', 'Core GATE CSE concepts and historical examination questions for Breadth First Search.', 6, false),
+  makeTopic('alg-sub-depth-first-search', 'subj-algo', 'alg-ch-graph-alg', 'Depth First Search', 'Core GATE CSE concepts and historical examination questions for Depth First Search.', 7, false),
+  makeTopic('alg-sub-directed-acyclic-graph', 'subj-algo', 'alg-ch-graph-alg', 'Directed Acyclic Graph', 'Core GATE CSE concepts and historical examination questions for Directed Acyclic Graph.', 8, false),
+  makeTopic('alg-sub-dijkstras-algorithm', 'subj-algo', 'alg-ch-graph-alg', 'Dijkstras Algorithm', 'Core GATE CSE concepts and historical examination questions for Dijkstras Algorithm.', 9, false),
+  makeTopic('alg-sub-graph-search', 'subj-algo', 'alg-ch-graph-alg', 'Graph Search', 'Core GATE CSE concepts and historical examination questions for Graph Search.', 10, true),
+  makeTopic('alg-sub-strongly-connected-components', 'subj-algo', 'alg-ch-graph-alg', 'Strongly Connected Components', 'Core GATE CSE concepts and historical examination questions for Strongly Connected Components.', 11, false),
+  makeTopic('alg-sub-topological-sort', 'subj-algo', 'alg-ch-graph-alg', 'Topological Sort', 'Core GATE CSE concepts and historical examination questions for Topological Sort.', 12, false),
+  makeTopic('alg-sub-graph-algorithms', 'subj-algo', 'alg-ch-graph-alg', 'Graph Algorithms', 'Core GATE CSE concepts and historical examination questions for Graph Algorithms.', 13, true),
+
+  // --- Chapter 5: NP-Completeness, Heaps & Hashing ---
+  makeTopic('alg-ch-np-hash', 'subj-algo', null, 'NP-Completeness, Heaps & Hashing', 'Classes P, NP, NP-Complete, NP-Hard, polynomial-time reductions, heaps, and hashing.', 5, true),
+  makeTopic('alg-sub-np-completeness', 'subj-algo', 'alg-ch-np-hash', 'NP Completeness', 'Core GATE CSE concepts and historical examination questions for NP Completeness.', 1, false),
+  makeTopic('alg-sub-heap-priority-queue', 'subj-algo', 'alg-ch-np-hash', 'Heap & Priority Queue', 'Core GATE CSE concepts and historical examination questions for Heap & Priority Queue.', 2, false),
+  makeTopic('alg-sub-hashing', 'subj-algo', 'alg-ch-np-hash', 'Hashing', 'Core GATE CSE concepts and historical examination questions for Hashing.', 3, true),
+  makeTopic('alg-sub-binary-heap', 'subj-algo', 'alg-ch-np-hash', 'Binary Heap', 'Core GATE CSE concepts and historical examination questions for Binary Heap.', 4, false),
+  makeTopic('alg-sub-binary-tree', 'subj-algo', 'alg-ch-np-hash', 'Binary Tree', 'Core GATE CSE concepts and historical examination questions for Binary Tree.', 5, false),
+  makeTopic('alg-sub-tree-traversal', 'subj-algo', 'alg-ch-np-hash', 'Tree Traversal', 'Core GATE CSE concepts and historical examination questions for Tree Traversal.', 6, false),
+  makeTopic('alg-sub-uniform-hashing', 'subj-algo', 'alg-ch-np-hash', 'Uniform Hashing', 'Core GATE CSE concepts and historical examination questions for Uniform Hashing.', 7, false),
+  makeTopic('alg-sub-abstract-syntax-tree', 'subj-algo', 'alg-ch-np-hash', 'Abstract Syntax Tree', 'Core GATE CSE concepts and historical examination questions for Abstract Syntax Tree.', 8, false),
+  makeTopic('alg-sub-ambiguous-grammar', 'subj-algo', 'alg-ch-np-hash', 'Ambiguous Grammar', 'Core GATE CSE concepts and historical examination questions for Ambiguous Grammar.', 9, false),
+  makeTopic('alg-sub-strings', 'subj-algo', 'alg-ch-np-hash', 'Strings', 'Core GATE CSE concepts and historical examination questions for Strings.', 10, false),
+  makeTopic('alg-sub-runtime-environment', 'subj-algo', 'alg-ch-np-hash', 'Runtime Environment', 'Core GATE CSE concepts and historical examination questions for Runtime Environment.', 11, false),
+  makeTopic('alg-sub-binary-search-tree', 'subj-algo', 'alg-ch-np-hash', 'Binary Search Tree', 'Core GATE CSE concepts and historical examination questions for Binary Search Tree.', 12, false),
+  makeTopic('alg-sub-linear-probing', 'subj-algo', 'alg-ch-np-hash', 'Linear Probing', 'Core GATE CSE concepts and historical examination questions for Linear Probing.', 13, false),
+  makeTopic('alg-sub-double-hashing', 'subj-algo', 'alg-ch-np-hash', 'Double Hashing', 'Core GATE CSE concepts and historical examination questions for Double Hashing.', 14, false),
+  makeTopic('alg-sub-identify-function', 'subj-algo', 'alg-ch-np-hash', 'Identify Function', 'Core GATE CSE concepts and historical examination questions for Identify Function.', 15, true),
+
+  // =========================================================================
+  // DATA STRUCTURES (subj-ds)
+  // =========================================================================
+  // --- Chapter 1: Linear Data Structures ---
+  makeTopic('ds-ch-linear', 'subj-ds', null, 'Linear Data Structures', 'Arrays, singly/doubly linked lists, circular linked lists, stacks, queues, and infix-prefix expressions.', 1, true),
+  makeTopic('ds-sub-array', 'subj-ds', 'ds-ch-linear', 'Array', 'Core GATE CSE concepts and historical examination questions for Array.', 1, true),
+  makeTopic('ds-sub-linked-list', 'subj-ds', 'ds-ch-linear', 'Linked List', 'Core GATE CSE concepts and historical examination questions for Linked List.', 2, true),
+  makeTopic('ds-sub-stack', 'subj-ds', 'ds-ch-linear', 'Stack', 'Core GATE CSE concepts and historical examination questions for Stack.', 3, true),
+  makeTopic('ds-sub-queue', 'subj-ds', 'ds-ch-linear', 'Queue', 'Core GATE CSE concepts and historical examination questions for Queue.', 4, true),
+  makeTopic('ds-sub-infix-prefix', 'subj-ds', 'ds-ch-linear', 'Infix Prefix', 'Core GATE CSE concepts and historical examination questions for Infix Prefix.', 5, false),
+  makeTopic('ds-sub-abstract-data-type', 'subj-ds', 'ds-ch-linear', 'Abstract Data Type', 'Core GATE CSE concepts and historical examination questions for Abstract Data Type.', 6, false),
+
+  // --- Chapter 2: Trees & Binary Search Trees (BST) ---
+  makeTopic('ds-ch-tree', 'subj-ds', null, 'Trees & Binary Search Trees (BST)', 'Binary trees, BST insertions/deletions, AVL self-balancing rotations, and tree traversals.', 2, true),
+  makeTopic('ds-sub-binary-tree', 'subj-ds', 'ds-ch-tree', 'Binary Tree', 'Core GATE CSE concepts and historical examination questions for Binary Tree.', 1, true),
+  makeTopic('ds-sub-binary-search-tree', 'subj-ds', 'ds-ch-tree', 'Binary Search Tree', 'Core GATE CSE concepts and historical examination questions for Binary Search Tree.', 2, true),
+  makeTopic('ds-sub-avl-tree', 'subj-ds', 'ds-ch-tree', 'AVL Tree', 'Core GATE CSE concepts and historical examination questions for AVL Tree.', 3, false),
+  makeTopic('ds-sub-tree', 'subj-ds', 'ds-ch-tree', 'Tree', 'Core GATE CSE concepts and historical examination questions for Tree.', 4, true),
+  makeTopic('ds-sub-tree-traversal', 'subj-ds', 'ds-ch-tree', 'Tree Traversal', 'Core GATE CSE concepts and historical examination questions for Tree Traversal.', 5, false),
+
+  // --- Chapter 3: Priority Queues & Binary Heaps ---
+  makeTopic('ds-ch-heap', 'subj-ds', null, 'Priority Queues & Binary Heaps', 'Binary heaps, priority queues, heap operations, and applications.', 3, true),
+  makeTopic('ds-sub-binary-heap', 'subj-ds', 'ds-ch-heap', 'Binary Heap', 'Core GATE CSE concepts and historical examination questions for Binary Heap.', 1, true),
+  makeTopic('ds-sub-priority-queue', 'subj-ds', 'ds-ch-heap', 'Priority Queue', 'Core GATE CSE concepts and historical examination questions for Priority Queue.', 2, false),
+
+  // --- Chapter 4: Advanced & Applied Data Structures ---
+  makeTopic('ds-ch-misc', 'subj-ds', null, 'Advanced & Applied Data Structures', 'Hashing, variable scope, time complexity, and data structure applications.', 4, true),
+  makeTopic('ds-sub-data-structures', 'subj-ds', 'ds-ch-misc', 'Data Structures', 'Core GATE CSE concepts and historical examination questions for Data Structures.', 1, false),
+  makeTopic('ds-sub-uniform-hashing', 'subj-ds', 'ds-ch-misc', 'Uniform Hashing', 'Core GATE CSE concepts and historical examination questions for Uniform Hashing.', 2, false),
+  makeTopic('ds-sub-variable-scope', 'subj-ds', 'ds-ch-misc', 'Variable Scope', 'Core GATE CSE concepts and historical examination questions for Variable Scope.', 3, false),
+  makeTopic('ds-sub-functions', 'subj-ds', 'ds-ch-misc', 'Functions', 'Core GATE CSE concepts and historical examination questions for Functions.', 4, false),
+  makeTopic('ds-sub-time-complexity', 'subj-ds', 'ds-ch-misc', 'Time Complexity', 'Core GATE CSE concepts and historical examination questions for Time Complexity.', 5, false),
+  makeTopic('ds-sub-output', 'subj-ds', 'ds-ch-misc', 'Output', 'Core GATE CSE concepts and historical examination questions for Output.', 6, false),
+  makeTopic('ds-sub-viable-prefix', 'subj-ds', 'ds-ch-misc', 'Viable Prefix', 'Core GATE CSE concepts and historical examination questions for Viable Prefix.', 7, false),
+
+  // =========================================================================
+  // C-PROGRAMMING (subj-prog)
+  // =========================================================================
+  // --- Chapter 1: Pointers & Dynamic Memory ---
+  makeTopic('pr-ch-ptr', 'subj-prog', null, 'Pointers & Dynamic Memory', 'Pointers, pointer arithmetic, arrays of pointers, double pointers, malloc/free, and aliasing.', 1, true),
+  makeTopic('pr-sub-pointers', 'subj-prog', 'pr-ch-ptr', 'Pointers', 'Core GATE CSE concepts and historical examination questions for Pointers.', 1, true),
+  makeTopic('pr-sub-aliasing', 'subj-prog', 'pr-ch-ptr', 'Aliasing', 'Core GATE CSE concepts and historical examination questions for Aliasing.', 2, false),
+  makeTopic('pr-sub-variable-binding', 'subj-prog', 'pr-ch-ptr', 'Variable Binding', 'Core GATE CSE concepts and historical examination questions for Variable Binding.', 3, false),
+
+  // --- Chapter 2: Functions & Recursion ---
+  makeTopic('pr-ch-func', 'subj-prog', null, 'Functions & Recursion', 'Function prototypes, call-by-value vs call-by-reference, recursion stack tracing, and static variables.', 2, true),
+  makeTopic('pr-sub-recursion', 'subj-prog', 'pr-ch-func', 'Recursion', 'Core GATE CSE concepts and historical examination questions for Recursion.', 1, false),
+  makeTopic('pr-sub-functions', 'subj-prog', 'pr-ch-func', 'Functions', 'Core GATE CSE concepts and historical examination questions for Functions.', 2, false),
+  makeTopic('pr-sub-variable-scope', 'subj-prog', 'pr-ch-func', 'Variable Scope', 'Core GATE CSE concepts and historical examination questions for Variable Scope.', 3, false),
+
+  // --- Chapter 3: Control Structures & Types ---
+  makeTopic('pr-ch-ctrl', 'subj-prog', null, 'Control Structures & Types', 'Operators precedence, loops, switch-case, arrays, strings, structs, and unions.', 3, true),
+  makeTopic('pr-sub-control-structures', 'subj-prog', 'pr-ch-ctrl', 'Control Structures', 'Core GATE CSE concepts and historical examination questions for Control Structures.', 1, false),
+  makeTopic('pr-sub-arrays-and-strings', 'subj-prog', 'pr-ch-ctrl', 'Arrays and Strings', 'Core GATE CSE concepts and historical examination questions for Arrays and Strings.', 2, false),
+  makeTopic('pr-sub-operators-and-expressions', 'subj-prog', 'pr-ch-ctrl', 'Operators and Expressions', 'Core GATE CSE concepts and historical examination questions for Operators and Expressions.', 3, false),
+  makeTopic('pr-sub-structures-and-unions', 'subj-prog', 'pr-ch-ctrl', 'Structures and Unions', 'Core GATE CSE concepts and historical examination questions for Structures and Unions.', 4, false),
+  makeTopic('pr-sub-switch-case', 'subj-prog', 'pr-ch-ctrl', 'Switch Case', 'Core GATE CSE concepts and historical examination questions for Switch Case.', 5, false),
+  makeTopic('pr-sub-type-checking', 'subj-prog', 'pr-ch-ctrl', 'Type Checking', 'Core GATE CSE concepts and historical examination questions for Type Checking.', 6, false),
+  makeTopic('pr-sub-programming-constructs', 'subj-prog', 'pr-ch-ctrl', 'Programming Constructs', 'Core GATE CSE concepts and historical examination questions for Programming Constructs.', 7, false),
+  makeTopic('pr-sub-goto', 'subj-prog', 'pr-ch-ctrl', 'Goto', 'Core GATE CSE concepts and historical examination questions for Goto.', 8, false),
+  makeTopic('pr-sub-closure-property', 'subj-prog', 'pr-ch-ctrl', 'Closure Property', 'Core GATE CSE concepts and historical examination questions for Closure Property.', 9, false),
+  makeTopic('pr-sub-context-free-grammar', 'subj-prog', 'pr-ch-ctrl', 'Context Free Grammar', 'Core GATE CSE concepts and historical examination questions for Context Free Grammar.', 10, false),
+  makeTopic('pr-sub-loop-invariants', 'subj-prog', 'pr-ch-ctrl', 'Loop Invariants', 'Core GATE CSE concepts and historical examination questions for Loop Invariants.', 11, false),
+  makeTopic('pr-sub-output', 'subj-prog', 'pr-ch-ctrl', 'Output', 'Core GATE CSE concepts and historical examination questions for Output.', 12, false),
+  makeTopic('pr-sub-programming-in-c', 'subj-prog', 'pr-ch-ctrl', 'Programming In C', 'Core GATE CSE concepts and historical examination questions for Programming In C.', 13, true),
+  makeTopic('pr-sub-programming-paradigms', 'subj-prog', 'pr-ch-ctrl', 'Programming Paradigms', 'Core GATE CSE concepts and historical examination questions for Programming Paradigms.', 14, false),
+  makeTopic('pr-sub-strings', 'subj-prog', 'pr-ch-ctrl', 'Strings', 'Core GATE CSE concepts and historical examination questions for Strings.', 15, false),
+  makeTopic('pr-sub-structure', 'subj-prog', 'pr-ch-ctrl', 'Structure', 'Core GATE CSE concepts and historical examination questions for Structure.', 16, false),
+  makeTopic('pr-sub-union', 'subj-prog', 'pr-ch-ctrl', 'Union', 'Core GATE CSE concepts and historical examination questions for Union.', 17, false),
+
+  // =========================================================================
+  // THEORY OF COMPUTATION (subj-toc)
+  // =========================================================================
+  // --- Chapter 1: Finite Automata & Regular Languages ---
+  makeTopic('toc-ch-reg', 'subj-toc', null, 'Finite Automata & Regular Languages', 'DFA, NFA, regex, state minimization, pumping lemma, and regular grammar equivalence.', 1, true),
+  makeTopic('toc-sub-finite-automata', 'subj-toc', 'toc-ch-reg', 'Finite Automata', 'Core GATE CSE concepts and historical examination questions for Finite Automata.', 1, true),
+  makeTopic('toc-sub-regular-language', 'subj-toc', 'toc-ch-reg', 'Regular Language', 'Core GATE CSE concepts and historical examination questions for Regular Language.', 2, true),
+  makeTopic('toc-sub-regular-expression', 'subj-toc', 'toc-ch-reg', 'Regular Expression', 'Core GATE CSE concepts and historical examination questions for Regular Expression.', 3, true),
+  makeTopic('toc-sub-minimal-state-automata', 'subj-toc', 'toc-ch-reg', 'Minimal State Automata', 'Core GATE CSE concepts and historical examination questions for Minimal State Automata.', 4, true),
+  makeTopic('toc-sub-non-determinism', 'subj-toc', 'toc-ch-reg', 'Non Determinism', 'Core GATE CSE concepts and historical examination questions for Non Determinism.', 5, false),
+  makeTopic('toc-sub-number-of-states', 'subj-toc', 'toc-ch-reg', 'Number of States', 'Core GATE CSE concepts and historical examination questions for Number of States.', 6, false),
+  makeTopic('toc-sub-regular-grammar', 'subj-toc', 'toc-ch-reg', 'Regular Grammar', 'Core GATE CSE concepts and historical examination questions for Regular Grammar.', 7, false),
+  makeTopic('toc-sub-pumping-lemma', 'subj-toc', 'toc-ch-reg', 'Pumping Lemma', 'Core GATE CSE concepts and historical examination questions for Pumping Lemma.', 8, false),
+  makeTopic('toc-sub-finite-state-machines', 'subj-toc', 'toc-ch-reg', 'Finite State Machines', 'Core GATE CSE concepts and historical examination questions for Finite State Machines.', 9, false),
+  makeTopic('toc-sub-medium', 'subj-toc', 'toc-ch-reg', 'Medium', 'Core GATE CSE concepts and historical examination questions for Medium.', 10, false),
+
+  // --- Chapter 2: Context-Free Languages & Pushdown Automata ---
+  makeTopic('toc-ch-cfl', 'subj-toc', null, 'Context-Free Languages & Pushdown Automata', 'Context-free grammars, derivations, Chomsky Normal Form, deterministic and non-deterministic PDA.', 2, true),
+  makeTopic('toc-sub-context-free-language', 'subj-toc', 'toc-ch-cfl', 'Context Free Language', 'Core GATE CSE concepts and historical examination questions for Context Free Language.', 1, true),
+  makeTopic('toc-sub-pushdown-automata', 'subj-toc', 'toc-ch-cfl', 'Pushdown Automata', 'Core GATE CSE concepts and historical examination questions for Pushdown Automata.', 2, true),
+  makeTopic('toc-sub-dpda', 'subj-toc', 'toc-ch-cfl', 'Dpda', 'Core GATE CSE concepts and historical examination questions for Dpda.', 3, false),
+
+  // --- Chapter 3: Language Hierarchy & Closure Properties ---
+  makeTopic('toc-ch-class', 'subj-toc', null, 'Language Hierarchy & Closure Properties', 'Chomsky hierarchy (Regular, DCFL, CFL, CSL, Recursive, REL), closure properties, and set countability.', 3, true),
+  makeTopic('toc-sub-identify-class-language', 'subj-toc', 'toc-ch-class', 'Identify Class Language', 'Core GATE CSE concepts and historical examination questions for Identify Class Language.', 1, true),
+  makeTopic('toc-sub-closure-property', 'subj-toc', 'toc-ch-class', 'Closure Property', 'Core GATE CSE concepts and historical examination questions for Closure Property.', 2, false),
+  makeTopic('toc-sub-countable-uncountable-set', 'subj-toc', 'toc-ch-class', 'Countable Uncountable Set', 'Core GATE CSE concepts and historical examination questions for Countable Uncountable Set.', 3, false),
+
+  // --- Chapter 4: Turing Machines, Decidability & Undecidability ---
+  makeTopic('toc-ch-dec', 'subj-toc', null, 'Turing Machines, Decidability & Undecidability', 'Turing machines, recursive/RE languages, Halting problem, Rice theorem, and reductions.', 4, true),
+  makeTopic('toc-sub-decidability', 'subj-toc', 'toc-ch-dec', 'Decidability', 'Core GATE CSE concepts and historical examination questions for Decidability.', 1, true),
+  makeTopic('toc-sub-recursive-and-recursively-enumerable-languages', 'subj-toc', 'toc-ch-dec', 'Recursive and Recursively Enumerable Languages', 'Core GATE CSE concepts and historical examination questions for Recursive and Recursively Enumerable Languages.', 2, true),
+  makeTopic('toc-sub-turing-machine', 'subj-toc', 'toc-ch-dec', 'Turing Machine', 'Core GATE CSE concepts and historical examination questions for Turing Machine.', 3, false),
+  makeTopic('toc-sub-reduction', 'subj-toc', 'toc-ch-dec', 'Reduction', 'Core GATE CSE concepts and historical examination questions for Reduction.', 4, false),
+
+  // =========================================================================
+  // COMPILER DESIGN (subj-cd)
+  // =========================================================================
+  // --- Chapter 1: Lexical Analysis & Compilation Phases ---
+  makeTopic('cd-ch-lex', 'subj-cd', null, 'Lexical Analysis & Compilation Phases', 'Phases of compiler, token generation, symbol tables, assemblers, linkers, and lexical analysis.', 1, true),
+  makeTopic('cd-sub-compilation-phases', 'subj-cd', 'cd-ch-lex', 'Compilation Phases', 'Core GATE CSE concepts and historical examination questions for Compilation Phases.', 1, true),
+  makeTopic('cd-sub-lexical-analysis', 'subj-cd', 'cd-ch-lex', 'Lexical Analysis', 'Core GATE CSE concepts and historical examination questions for Lexical Analysis.', 2, false),
+  makeTopic('cd-sub-compiler-tokenization', 'subj-cd', 'cd-ch-lex', 'Compiler tokenization', 'Core GATE CSE concepts and historical examination questions for Compiler tokenization.', 3, false),
+  makeTopic('cd-sub-symbol-table', 'subj-cd', 'cd-ch-lex', 'Symbol Table', 'Core GATE CSE concepts and historical examination questions for Symbol Table.', 4, false),
+  makeTopic('cd-sub-assembler', 'subj-cd', 'cd-ch-lex', 'Assembler', 'Core GATE CSE concepts and historical examination questions for Assembler.', 5, false),
+  makeTopic('cd-sub-linker', 'subj-cd', 'cd-ch-lex', 'Linker', 'Core GATE CSE concepts and historical examination questions for Linker.', 6, false),
+  makeTopic('cd-sub-macros', 'subj-cd', 'cd-ch-lex', 'Macros', 'Core GATE CSE concepts and historical examination questions for Macros.', 7, false),
+
+  // --- Chapter 2: Syntax Analysis & Parsing ---
+  makeTopic('cd-ch-parse', 'subj-cd', null, 'Syntax Analysis & Parsing', 'Context-free grammars, derivations, LL(1), LR(0), SLR(1), LALR(1), CLR(1), and operator precedence.', 2, true),
+  makeTopic('cd-sub-parsing', 'subj-cd', 'cd-ch-parse', 'Parsing', 'Core GATE CSE concepts and historical examination questions for Parsing.', 1, true),
+  makeTopic('cd-sub-grammar', 'subj-cd', 'cd-ch-parse', 'Grammar', 'Core GATE CSE concepts and historical examination questions for Grammar.', 2, true),
+  makeTopic('cd-sub-lr-parser', 'subj-cd', 'cd-ch-parse', 'LR Parser', 'Core GATE CSE concepts and historical examination questions for LR Parser.', 3, true),
+  makeTopic('cd-sub-first-and-follow', 'subj-cd', 'cd-ch-parse', 'First and Follow', 'Core GATE CSE concepts and historical examination questions for First and Follow.', 4, false),
+  makeTopic('cd-sub-ll-parser', 'subj-cd', 'cd-ch-parse', 'Ll Parser', 'Core GATE CSE concepts and historical examination questions for Ll Parser.', 5, false),
+  makeTopic('cd-sub-operator-precedence', 'subj-cd', 'cd-ch-parse', 'Operator Precedence', 'Core GATE CSE concepts and historical examination questions for Operator Precedence.', 6, false),
+  makeTopic('cd-sub-ambiguous-grammar', 'subj-cd', 'cd-ch-parse', 'Ambiguous Grammar', 'Core GATE CSE concepts and historical examination questions for Ambiguous Grammar.', 7, false),
+
+  // --- Chapter 3: Syntax-Directed Translation & Intermediate Code ---
+  makeTopic('cd-ch-sdt', 'subj-cd', null, 'Syntax-Directed Translation & Intermediate Code', 'S-attributed and L-attributed SDDs, 3AC quadruples/triples, DAGs, and backpatching.', 3, true),
+  makeTopic('cd-sub-syntax-directed-translation', 'subj-cd', 'cd-ch-sdt', 'Syntax Directed Translation', 'Core GATE CSE concepts and historical examination questions for Syntax Directed Translation.', 1, true),
+  makeTopic('cd-sub-intermediate-code', 'subj-cd', 'cd-ch-sdt', 'Intermediate Code', 'Core GATE CSE concepts and historical examination questions for Intermediate Code.', 2, true),
+  makeTopic('cd-sub-expression-evaluation', 'subj-cd', 'cd-ch-sdt', 'Expression Evaluation', 'Core GATE CSE concepts and historical examination questions for Expression Evaluation.', 3, false),
+  makeTopic('cd-sub-directed-acyclic-graph', 'subj-cd', 'cd-ch-sdt', 'Directed Acyclic Graph', 'Core GATE CSE concepts and historical examination questions for Directed Acyclic Graph.', 4, false),
+  makeTopic('cd-sub-backpatching', 'subj-cd', 'cd-ch-sdt', 'Backpatching', 'Core GATE CSE concepts and historical examination questions for Backpatching.', 5, false),
+
+  // --- Chapter 4: Runtime Environments & Parameter Passing ---
+  makeTopic('cd-ch-runtime', 'subj-cd', null, 'Runtime Environments & Parameter Passing', 'Activation records, stack allocation, parameter passing mechanisms, and storage allocation.', 4, true),
+  makeTopic('cd-sub-runtime-environment', 'subj-cd', 'cd-ch-runtime', 'Runtime Environment', 'Core GATE CSE concepts and historical examination questions for Runtime Environment.', 1, true),
+  makeTopic('cd-sub-parameter-passing', 'subj-cd', 'cd-ch-runtime', 'Parameter Passing', 'Core GATE CSE concepts and historical examination questions for Parameter Passing.', 2, true),
+
+  // --- Chapter 5: Code Optimization & Code Generation ---
+  makeTopic('cd-ch-opt', 'subj-cd', null, 'Code Optimization & Code Generation', 'Basic blocks, flow graphs, loop optimizations, live variable analysis, and register allocation.', 5, true),
+  makeTopic('cd-sub-code-optimization', 'subj-cd', 'cd-ch-opt', 'Code Optimization', 'Core GATE CSE concepts and historical examination questions for Code Optimization.', 1, false),
+  makeTopic('cd-sub-basic-blocks', 'subj-cd', 'cd-ch-opt', 'Basic Blocks', 'Core GATE CSE concepts and historical examination questions for Basic Blocks.', 2, false),
+  makeTopic('cd-sub-live-variable-analysis', 'subj-cd', 'cd-ch-opt', 'Live Variable Analysis', 'Core GATE CSE concepts and historical examination questions for Live Variable Analysis.', 3, false),
+  makeTopic('cd-sub-register-allocation', 'subj-cd', 'cd-ch-opt', 'Register Allocation', 'Core GATE CSE concepts and historical examination questions for Register Allocation.', 4, false),
+  makeTopic('cd-sub-static-single-assignment', 'subj-cd', 'cd-ch-opt', 'Static Single Assignment', 'Core GATE CSE concepts and historical examination questions for Static Single Assignment.', 5, false),
+
+  // =========================================================================
+  // OPERATING SYSTEMS (subj-os)
+  // =========================================================================
+  // --- Chapter 1: Processes, Threads & System Calls ---
+  makeTopic('os-ch-proc', 'subj-os', null, 'Processes, Threads & System Calls', 'Process states, PCB, threads, fork/exec system calls, context switching, and IPC.', 1, true),
+  makeTopic('os-sub-process', 'subj-os', 'os-ch-proc', 'Process', 'Core GATE CSE concepts and historical examination questions for Process.', 1, false),
+  makeTopic('os-sub-threads', 'subj-os', 'os-ch-proc', 'Threads', 'Core GATE CSE concepts and historical examination questions for Threads.', 2, true),
+  makeTopic('os-sub-fork-system-call', 'subj-os', 'os-ch-proc', 'Fork System Call', 'Core GATE CSE concepts and historical examination questions for Fork System Call.', 3, false),
+  makeTopic('os-sub-context-switch', 'subj-os', 'os-ch-proc', 'Context Switch', 'Core GATE CSE concepts and historical examination questions for Context Switch.', 4, false),
+  makeTopic('os-sub-inter-process-communication', 'subj-os', 'os-ch-proc', 'Inter Process Communication', 'Core GATE CSE concepts and historical examination questions for Inter Process Communication.', 5, false),
+  makeTopic('os-sub-system-calls', 'subj-os', 'os-ch-proc', 'System Calls', 'Core GATE CSE concepts and historical examination questions for System Calls.', 6, false),
+  makeTopic('os-sub-os-protection', 'subj-os', 'os-ch-proc', 'OS Protection', 'Core GATE CSE concepts and historical examination questions for OS Protection.', 7, false),
+
+  // --- Chapter 2: CPU Scheduling ---
+  makeTopic('os-ch-sched', 'subj-os', null, 'CPU Scheduling', 'Process scheduling algorithms, Gantt charts, turnaround/waiting time, Round Robin, and SRTF.', 2, true),
+  makeTopic('os-sub-process-scheduling', 'subj-os', 'os-ch-sched', 'Process Scheduling', 'Core GATE CSE concepts and historical examination questions for Process Scheduling.', 1, true),
+  makeTopic('os-sub-round-robin-scheduling', 'subj-os', 'os-ch-sched', 'Round Robin Scheduling', 'Core GATE CSE concepts and historical examination questions for Round Robin Scheduling.', 2, false),
+  makeTopic('os-sub-srtf', 'subj-os', 'os-ch-sched', 'Srtf', 'Core GATE CSE concepts and historical examination questions for Srtf.', 3, false),
+
+  // --- Chapter 3: Process Synchronization & Concurrency ---
+  makeTopic('os-ch-sync', 'subj-os', null, 'Process Synchronization & Concurrency', 'Critical section problem, Peterson algorithm, semaphores, and precedence graphs.', 3, true),
+  makeTopic('os-sub-process-synchronization', 'subj-os', 'os-ch-sync', 'Process Synchronization', 'Core GATE CSE concepts and historical examination questions for Process Synchronization.', 1, true),
+  makeTopic('os-sub-semaphore', 'subj-os', 'os-ch-sync', 'Semaphore', 'Core GATE CSE concepts and historical examination questions for Semaphore.', 2, true),
+  makeTopic('os-sub-precedence-graph', 'subj-os', 'os-ch-sync', 'Precedence Graph', 'Core GATE CSE concepts and historical examination questions for Precedence Graph.', 3, false),
+
+  // --- Chapter 4: Deadlocks & Resource Allocation ---
+  makeTopic('os-ch-deadlock', 'subj-os', null, 'Deadlocks & Resource Allocation', 'Deadlock conditions, Resource Allocation Graphs, Banker algorithm, and deadlock prevention.', 4, true),
+  makeTopic('os-sub-resource-allocation', 'subj-os', 'os-ch-deadlock', 'Resource Allocation', 'Core GATE CSE concepts and historical examination questions for Resource Allocation.', 1, true),
+  makeTopic('os-sub-bankers-algorithm', 'subj-os', 'os-ch-deadlock', 'Bankers Algorithm', 'Core GATE CSE concepts and historical examination questions for Bankers Algorithm.', 2, false),
+  makeTopic('os-sub-deadlock-prevention-avoidance-detection', 'subj-os', 'os-ch-deadlock', 'Deadlock Prevention Avoidance Detection', 'Core GATE CSE concepts and historical examination questions for Deadlock Prevention Avoidance Detection.', 3, false),
+  makeTopic('os-sub-resource-allocation-graph', 'subj-os', 'os-ch-deadlock', 'Resource Allocation Graph', 'Core GATE CSE concepts and historical examination questions for Resource Allocation Graph.', 4, false),
+
+  // --- Chapter 5: Memory Management & Virtual Memory ---
+  makeTopic('os-ch-mem', 'subj-os', null, 'Memory Management & Virtual Memory', 'Paging, multi-level page tables, TLB, page replacement, demand paging, and LRU.', 5, true),
+  makeTopic('os-sub-memory-management', 'subj-os', 'os-ch-mem', 'Memory Management', 'Core GATE CSE concepts and historical examination questions for Memory Management.', 1, false),
+  makeTopic('os-sub-page-replacement', 'subj-os', 'os-ch-mem', 'Page Replacement', 'Core GATE CSE concepts and historical examination questions for Page Replacement.', 2, true),
+  makeTopic('os-sub-translation-lookaside-buffer', 'subj-os', 'os-ch-mem', 'Translation Lookaside Buffer', 'Core GATE CSE concepts and historical examination questions for Translation Lookaside Buffer.', 3, false),
+  makeTopic('os-sub-demand-paging', 'subj-os', 'os-ch-mem', 'Demand Paging', 'Core GATE CSE concepts and historical examination questions for Demand Paging.', 4, false),
+  makeTopic('os-sub-least-recently-used', 'subj-os', 'os-ch-mem', 'Least Recently Used', 'Core GATE CSE concepts and historical examination questions for Least Recently Used.', 5, false),
+  makeTopic('os-sub-multilevel-paging', 'subj-os', 'os-ch-mem', 'Multilevel Paging', 'Core GATE CSE concepts and historical examination questions for Multilevel Paging.', 6, false),
+
+  // --- Chapter 6: Storage, File Systems & Disk Management ---
+  makeTopic('os-ch-storage', 'subj-os', null, 'Storage, File Systems & Disk Management', 'Disk geometry, disk scheduling algorithms, Unix Inodes, and file systems.', 6, true),
+  makeTopic('os-sub-disk', 'subj-os', 'os-ch-storage', 'Disk', 'Core GATE CSE concepts and historical examination questions for Disk.', 1, true),
+  makeTopic('os-sub-disk-scheduling', 'subj-os', 'os-ch-storage', 'Disk Scheduling', 'Core GATE CSE concepts and historical examination questions for Disk Scheduling.', 2, true),
+  makeTopic('os-sub-file-system', 'subj-os', 'os-ch-storage', 'File System', 'Core GATE CSE concepts and historical examination questions for File System.', 3, false),
+
+  // =========================================================================
+  // DATABASE MANAGEMENT SYSTEM (subj-db)
+  // =========================================================================
+  // --- Chapter 1: SQL & Query Languages ---
+  makeTopic('db-ch-sql', 'subj-db', null, 'SQL & Query Languages', 'SQL SELECT, WHERE, GROUP BY, HAVING, subqueries, natural/outer joins, and relational queries.', 1, true),
+  makeTopic('db-sub-sql', 'subj-db', 'db-ch-sql', 'SQL', 'Core GATE CSE concepts and historical examination questions for SQL.', 1, true),
+  makeTopic('db-sub-joins', 'subj-db', 'db-ch-sql', 'Joins', 'Core GATE CSE concepts and historical examination questions for Joins.', 2, false),
+  makeTopic('db-sub-natural-join', 'subj-db', 'db-ch-sql', 'Natural Join', 'Core GATE CSE concepts and historical examination questions for Natural Join.', 3, false),
+  makeTopic('db-sub-query', 'subj-db', 'db-ch-sql', 'Query', 'Core GATE CSE concepts and historical examination questions for Query.', 4, false),
+  makeTopic('db-sub-safe-query', 'subj-db', 'db-ch-sql', 'Safe Query', 'Core GATE CSE concepts and historical examination questions for Safe Query.', 5, false),
+
+  // --- Chapter 2: Relational Database Design & Normalization ---
+  makeTopic('db-ch-norm', 'subj-db', null, 'Relational Database Design & Normalization', 'Functional dependencies, candidate keys, 1NF, 2NF, 3NF, BCNF, lossless join, and dependency preservation.', 2, true),
+  makeTopic('db-sub-database-normalization', 'subj-db', 'db-ch-norm', 'Database Normalization', 'Core GATE CSE concepts and historical examination questions for Database Normalization.', 1, true),
+  makeTopic('db-sub-candidate-key', 'subj-db', 'db-ch-norm', 'Candidate Key', 'Core GATE CSE concepts and historical examination questions for Candidate Key.', 2, false),
+  makeTopic('db-sub-referential-integrity', 'subj-db', 'db-ch-norm', 'Referential Integrity', 'Core GATE CSE concepts and historical examination questions for Referential Integrity.', 3, false),
+  makeTopic('db-sub-functional-dependency', 'subj-db', 'db-ch-norm', 'Functional Dependency', 'Core GATE CSE concepts and historical examination questions for Functional Dependency.', 4, false),
+  makeTopic('db-sub-decomposition', 'subj-db', 'db-ch-norm', 'Decomposition', 'Core GATE CSE concepts and historical examination questions for Decomposition.', 5, false),
+  makeTopic('db-sub-multivalued-dependency-4nf', 'subj-db', 'db-ch-norm', 'Multivalued Dependency 4nf', 'Core GATE CSE concepts and historical examination questions for Multivalued Dependency 4nf.', 6, false),
+  makeTopic('db-sub-normal-forms', 'subj-db', 'db-ch-norm', 'Normal Forms', 'Core GATE CSE concepts and historical examination questions for Normal Forms.', 7, false),
+  makeTopic('db-sub-super-key', 'subj-db', 'db-ch-norm', 'Super Key', 'Core GATE CSE concepts and historical examination questions for Super Key.', 8, false),
+  makeTopic('db-sub-database-design', 'subj-db', 'db-ch-norm', 'Database Design', 'Core GATE CSE concepts and historical examination questions for Database Design.', 9, false),
+  makeTopic('db-sub-database-schema', 'subj-db', 'db-ch-norm', 'Database Schema', 'Core GATE CSE concepts and historical examination questions for Database Schema.', 10, false),
+
+  // --- Chapter 3: Relational Model & Relational Algebra ---
+  makeTopic('db-ch-rel-alg', 'subj-db', null, 'Relational Model & Relational Algebra', 'Relational model, selection, projection, Cartesian product, division, and TRC/DRC.', 3, true),
+  makeTopic('db-sub-relational-algebra', 'subj-db', 'db-ch-rel-alg', 'Relational Algebra', 'Core GATE CSE concepts and historical examination questions for Relational Algebra.', 1, true),
+  makeTopic('db-sub-relational-calculus', 'subj-db', 'db-ch-rel-alg', 'Relational Calculus', 'Core GATE CSE concepts and historical examination questions for Relational Calculus.', 2, true),
+  makeTopic('db-sub-tuple-relational-calculus', 'subj-db', 'db-ch-rel-alg', 'Tuple Relational Calculus', 'Core GATE CSE concepts and historical examination questions for Tuple Relational Calculus.', 3, false),
+  makeTopic('db-sub-relational-model', 'subj-db', 'db-ch-rel-alg', 'Relational Model', 'Core GATE CSE concepts and historical examination questions for Relational Model.', 4, false),
+
+  // --- Chapter 4: Transactions & Concurrency Control ---
+  makeTopic('db-ch-trans', 'subj-db', null, 'Transactions & Concurrency Control', 'ACID properties, serializability, conflict serializability, 2PL, and timestamp ordering.', 4, true),
+  makeTopic('db-sub-transaction-and-concurrency', 'subj-db', 'db-ch-trans', 'Transaction and Concurrency', 'Core GATE CSE concepts and historical examination questions for Transaction and Concurrency.', 1, true),
+  makeTopic('db-sub-conflict-serializable', 'subj-db', 'db-ch-trans', 'Conflict Serializable', 'Core GATE CSE concepts and historical examination questions for Conflict Serializable.', 2, true),
+  makeTopic('db-sub-two-phase-locking-protocol', 'subj-db', 'db-ch-trans', 'Two Phase Locking Protocol', 'Core GATE CSE concepts and historical examination questions for Two Phase Locking Protocol.', 3, false),
+  makeTopic('db-sub-timestamp-ordering', 'subj-db', 'db-ch-trans', 'Timestamp Ordering', 'Core GATE CSE concepts and historical examination questions for Timestamp Ordering.', 4, false),
+
+  // --- Chapter 5: Storage, Indexing & B/B+ Trees ---
+  makeTopic('db-ch-index', 'subj-db', null, 'Storage, Indexing & B/B+ Trees', 'Primary/secondary/clustering indices, B-Trees, B+ Trees order, node splitting, and block access.', 5, true),
+  makeTopic('db-sub-b-tree', 'subj-db', 'db-ch-index', 'B Tree', 'Core GATE CSE concepts and historical examination questions for B Tree.', 1, true),
+  makeTopic('db-sub-indexing', 'subj-db', 'db-ch-index', 'Indexing', 'Core GATE CSE concepts and historical examination questions for Indexing.', 2, true),
+
+  // --- Chapter 6: ER Model & Conceptual Design ---
+  makeTopic('db-ch-er', 'subj-db', null, 'ER Model & Conceptual Design', 'Entity-Relationship diagrams, entity sets, weak entities, relationships, and table conversion.', 6, true),
+  makeTopic('db-sub-er-diagram', 'subj-db', 'db-ch-er', 'ER Diagram', 'Core GATE CSE concepts and historical examination questions for ER Diagram.', 1, true),
+
+  // =========================================================================
+  // COMPUTER ORGANISATION & ARCHITECTURE (subj-coa)
+  // =========================================================================
+  // --- Chapter 1: Memory Hierarchy & Cache Organisation ---
+  makeTopic('coa-ch-mem-hier', 'subj-coa', null, 'Memory Hierarchy & Cache Organisation', 'Direct, Set-Associative, Fully Associative cache mapping, AMAT, hit ratio, DRAM, and virtual memory.', 1, true),
+  makeTopic('coa-sub-cache-memory', 'subj-coa', 'coa-ch-mem-hier', 'Cache Memory', 'Core GATE CSE concepts and historical examination questions for Cache Memory.', 1, true),
+  makeTopic('coa-sub-virtual-memory', 'subj-coa', 'coa-ch-mem-hier', 'Virtual Memory', 'Core GATE CSE concepts and historical examination questions for Virtual Memory.', 2, true),
+  makeTopic('coa-sub-memory-interfacing', 'subj-coa', 'coa-ch-mem-hier', 'Memory Interfacing', 'Core GATE CSE concepts and historical examination questions for Memory Interfacing.', 3, true),
+  makeTopic('coa-sub-direct-mapping', 'subj-coa', 'coa-ch-mem-hier', 'Direct Mapping', 'Core GATE CSE concepts and historical examination questions for Direct Mapping.', 4, false),
+  makeTopic('coa-sub-average-memory-access-time', 'subj-coa', 'coa-ch-mem-hier', 'Average Memory Access Time', 'Core GATE CSE concepts and historical examination questions for Average Memory Access Time.', 5, false),
+  makeTopic('coa-sub-runtime-environment', 'subj-coa', 'coa-ch-mem-hier', 'Runtime Environment', 'Core GATE CSE concepts and historical examination questions for Runtime Environment.', 6, false),
+  makeTopic('coa-sub-conflict-misses', 'subj-coa', 'coa-ch-mem-hier', 'Conflict Misses', 'Core GATE CSE concepts and historical examination questions for Conflict Misses.', 7, false),
+  makeTopic('coa-sub-dram', 'subj-coa', 'coa-ch-mem-hier', 'DRAM', 'Core GATE CSE concepts and historical examination questions for DRAM.', 8, false),
+
+  // --- Chapter 2: Instruction Pipelining & Hazards ---
+  makeTopic('coa-ch-pipe', 'subj-coa', null, 'Instruction Pipelining & Hazards', 'Pipeline stages, throughput, speedup, structural, data, and branch hazards.', 2, true),
+  makeTopic('coa-sub-pipelining', 'subj-coa', 'coa-ch-pipe', 'Pipelining', 'Core GATE CSE concepts and historical examination questions for Pipelining.', 1, true),
+  makeTopic('coa-sub-speedup', 'subj-coa', 'coa-ch-pipe', 'Speedup', 'Core GATE CSE concepts and historical examination questions for Speedup.', 2, false),
+  makeTopic('coa-sub-data-dependency', 'subj-coa', 'coa-ch-pipe', 'Data Dependency', 'Core GATE CSE concepts and historical examination questions for Data Dependency.', 3, false),
+  makeTopic('coa-sub-data-hazards', 'subj-coa', 'coa-ch-pipe', 'Data Hazards', 'Core GATE CSE concepts and historical examination questions for Data Hazards.', 4, false),
+  makeTopic('coa-sub-hazards', 'subj-coa', 'coa-ch-pipe', 'Hazards', 'Core GATE CSE concepts and historical examination questions for Hazards.', 5, false),
+  makeTopic('coa-sub-stall', 'subj-coa', 'coa-ch-pipe', 'Stall', 'Core GATE CSE concepts and historical examination questions for Stall.', 6, false),
+
+  // --- Chapter 3: Machine Instructions & Addressing Modes ---
+  makeTopic('coa-ch-isa', 'subj-coa', null, 'Machine Instructions & Addressing Modes', 'Instruction formats, opcode expansion, addressing modes, instruction execution, and CISC/RISC.', 3, true),
+  makeTopic('coa-sub-machine-instruction', 'subj-coa', 'coa-ch-isa', 'Machine Instruction', 'Core GATE CSE concepts and historical examination questions for Machine Instruction.', 1, true),
+  makeTopic('coa-sub-addressing-modes', 'subj-coa', 'coa-ch-isa', 'Addressing Modes', 'Core GATE CSE concepts and historical examination questions for Addressing Modes.', 2, true),
+  makeTopic('coa-sub-instruction-format', 'subj-coa', 'coa-ch-isa', 'Instruction Format', 'Core GATE CSE concepts and historical examination questions for Instruction Format.', 3, true),
+  makeTopic('coa-sub-instruction-execution', 'subj-coa', 'coa-ch-isa', 'Instruction Execution', 'Core GATE CSE concepts and historical examination questions for Instruction Execution.', 4, false),
+  makeTopic('coa-sub-cisc-risc-architecture', 'subj-coa', 'coa-ch-isa', 'CISC RISC Architecture', 'Core GATE CSE concepts and historical examination questions for CISC RISC Architecture.', 5, false),
+  makeTopic('coa-sub-instruction-set-architecture', 'subj-coa', 'coa-ch-isa', 'Instruction Set Architecture', 'Core GATE CSE concepts and historical examination questions for Instruction Set Architecture.', 6, false),
+
+  // --- Chapter 4: I/O Organization & Interfacing ---
+  makeTopic('coa-ch-io', 'subj-coa', null, 'I/O Organization & Interfacing', 'Interrupts, I/O handling, DMA controller, memory-mapped I/O, and hardware interfaces.', 4, true),
+  makeTopic('coa-sub-interrupts', 'subj-coa', 'coa-ch-io', 'Interrupts', 'Core GATE CSE concepts and historical examination questions for Interrupts.', 1, true),
+  makeTopic('coa-sub-io-handling', 'subj-coa', 'coa-ch-io', 'IO Handling', 'Core GATE CSE concepts and historical examination questions for IO Handling.', 2, true),
+  makeTopic('coa-sub-dma', 'subj-coa', 'coa-ch-io', 'DMA', 'Core GATE CSE concepts and historical examination questions for DMA.', 3, false),
+  makeTopic('coa-sub-application-layer-protocols', 'subj-coa', 'coa-ch-io', 'Application Layer Protocols', 'Core GATE CSE concepts and historical examination questions for Application Layer Protocols.', 4, false),
+  makeTopic('coa-sub-arp', 'subj-coa', 'coa-ch-io', 'Arp', 'Core GATE CSE concepts and historical examination questions for Arp.', 5, false),
+  makeTopic('coa-sub-bit-stuffing', 'subj-coa', 'coa-ch-io', 'Bit Stuffing', 'Core GATE CSE concepts and historical examination questions for Bit Stuffing.', 6, false),
+  makeTopic('coa-sub-bit-vector', 'subj-coa', 'coa-ch-io', 'Bit Vector', 'Core GATE CSE concepts and historical examination questions for Bit Vector.', 7, false),
+  makeTopic('coa-sub-disk', 'subj-coa', 'coa-ch-io', 'Disk', 'Core GATE CSE concepts and historical examination questions for Disk.', 8, false),
+  makeTopic('coa-sub-input-output', 'subj-coa', 'coa-ch-io', 'Input Output', 'Core GATE CSE concepts and historical examination questions for Input Output.', 9, false),
+  makeTopic('coa-sub-linked-allocation', 'subj-coa', 'coa-ch-io', 'Linked Allocation', 'Core GATE CSE concepts and historical examination questions for Linked Allocation.', 10, false),
+
+  // --- Chapter 5: Control Unit Design & Datapath ---
+  makeTopic('coa-ch-cu', 'subj-coa', null, 'Control Unit Design & Datapath', 'Hardwired vs Microprogrammed control units, horizontal/vertical microinstructions, datapath ALU.', 5, true),
+  makeTopic('coa-sub-microprogramming', 'subj-coa', 'coa-ch-cu', 'Microprogramming', 'Core GATE CSE concepts and historical examination questions for Microprogramming.', 1, true),
+  makeTopic('coa-sub-data-path', 'subj-coa', 'coa-ch-cu', 'Data Path', 'Core GATE CSE concepts and historical examination questions for Data Path.', 2, false),
+  makeTopic('coa-sub-control-unit', 'subj-coa', 'coa-ch-cu', 'Control Unit', 'Core GATE CSE concepts and historical examination questions for Control Unit.', 3, false),
+  makeTopic('coa-sub-min-no-gates', 'subj-coa', 'coa-ch-cu', 'Min No Gates', 'Core GATE CSE concepts and historical examination questions for Min No Gates.', 4, false),
+  makeTopic('coa-sub-min-products-of-sum-form', 'subj-coa', 'coa-ch-cu', 'Min Products of Sum Form', 'Core GATE CSE concepts and historical examination questions for Min Products of Sum Form.', 5, false),
+
+  // =========================================================================
+  // COMPUTER NETWORKS (subj-cn)
+  // =========================================================================
+  // --- Chapter 1: Transport Layer & Congestion Control ---
+  makeTopic('cn-ch-trans', 'subj-cn', null, 'Transport Layer & Congestion Control', 'TCP, UDP, sliding window flow control, sequence numbers, congestion control, and token bucket.', 1, true),
+  makeTopic('cn-sub-tcp-ip-and-flow-control', 'subj-cn', 'cn-ch-trans', 'TCP IP and Flow Control', 'Core GATE CSE concepts and historical examination questions for TCP IP and Flow Control.', 1, false),
+  makeTopic('cn-sub-congestion-control', 'subj-cn', 'cn-ch-trans', 'Congestion Control', 'Core GATE CSE concepts and historical examination questions for Congestion Control.', 2, false),
+  makeTopic('cn-sub-token-bucket', 'subj-cn', 'cn-ch-trans', 'Token Bucket', 'Core GATE CSE concepts and historical examination questions for Token Bucket.', 3, false),
+  makeTopic('cn-sub-wrap-around-time', 'subj-cn', 'cn-ch-trans', 'Wrap Around Time', 'Core GATE CSE concepts and historical examination questions for Wrap Around Time.', 4, false),
+  makeTopic('cn-sub-channel-utilization', 'subj-cn', 'cn-ch-trans', 'Channel Utilization', 'Core GATE CSE concepts and historical examination questions for Channel Utilization.', 5, false),
+  makeTopic('cn-sub-probability', 'subj-cn', 'cn-ch-trans', 'Probability', 'Core GATE CSE concepts and historical examination questions for Probability.', 6, false),
+  makeTopic('cn-sub-tcp', 'subj-cn', 'cn-ch-trans', 'TCP', 'Core GATE CSE concepts and historical examination questions for TCP.', 7, true),
+  makeTopic('cn-sub-udp', 'subj-cn', 'cn-ch-trans', 'UDP', 'Core GATE CSE concepts and historical examination questions for UDP.', 8, false),
+  makeTopic('cn-sub-sliding-window', 'subj-cn', 'cn-ch-trans', 'Sliding Window', 'Core GATE CSE concepts and historical examination questions for Sliding Window.', 9, true),
+  makeTopic('cn-sub-sockets', 'subj-cn', 'cn-ch-trans', 'Sockets', 'Core GATE CSE concepts and historical examination questions for Sockets.', 10, false),
+
+  // --- Chapter 2: Network Layer, IPv4 & Routing ---
+  makeTopic('cn-ch-net', 'subj-cn', null, 'Network Layer, IPv4 & Routing', 'IPv4 header, CIDR subnetting, packet fragmentation, distance vector, link state, and ICMP.', 2, true),
+  makeTopic('cn-sub-ipv4-and-subnetting', 'subj-cn', 'cn-ch-net', 'IPv4 and Subnetting', 'Core GATE CSE concepts and historical examination questions for IPv4 and Subnetting.', 1, false),
+  makeTopic('cn-sub-routing-algorithms', 'subj-cn', 'cn-ch-net', 'Routing Algorithms', 'Core GATE CSE concepts and historical examination questions for Routing Algorithms.', 2, false),
+  makeTopic('cn-sub-ip-packet', 'subj-cn', 'cn-ch-net', 'IP Packet', 'Core GATE CSE concepts and historical examination questions for IP Packet.', 3, true),
+  makeTopic('cn-sub-subnetting', 'subj-cn', 'cn-ch-net', 'Subnetting', 'Core GATE CSE concepts and historical examination questions for Subnetting.', 4, true),
+  makeTopic('cn-sub-distance-vector-routing', 'subj-cn', 'cn-ch-net', 'Distance Vector Routing', 'Core GATE CSE concepts and historical examination questions for Distance Vector Routing.', 5, false),
+  makeTopic('cn-sub-icmp', 'subj-cn', 'cn-ch-net', 'Icmp', 'Core GATE CSE concepts and historical examination questions for Icmp.', 6, false),
+  makeTopic('cn-sub-network-layer', 'subj-cn', 'cn-ch-net', 'Network Layer', 'Core GATE CSE concepts and historical examination questions for Network Layer.', 7, false),
+  makeTopic('cn-sub-routing-protocols', 'subj-cn', 'cn-ch-net', 'Routing Protocols', 'Core GATE CSE concepts and historical examination questions for Routing Protocols.', 8, false),
+  makeTopic('cn-sub-network-flow', 'subj-cn', 'cn-ch-net', 'Network Flow', 'Core GATE CSE concepts and historical examination questions for Network Flow.', 9, false),
+  makeTopic('cn-sub-network-switching', 'subj-cn', 'cn-ch-net', 'Network Switching', 'Core GATE CSE concepts and historical examination questions for Network Switching.', 10, false),
+  makeTopic('cn-sub-ip-addressing', 'subj-cn', 'cn-ch-net', 'IP Addressing', 'Core GATE CSE concepts and historical examination questions for IP Addressing.', 11, false),
+  makeTopic('cn-sub-routing', 'subj-cn', 'cn-ch-net', 'Routing', 'Core GATE CSE concepts and historical examination questions for Routing.', 12, true),
+  makeTopic('cn-sub-fragmentation', 'subj-cn', 'cn-ch-net', 'Fragmentation', 'Core GATE CSE concepts and historical examination questions for Fragmentation.', 13, false),
+
+  // --- Chapter 3: Data Link Layer & MAC Protocols ---
+  makeTopic('cn-ch-dl', 'subj-cn', null, 'Data Link Layer & MAC Protocols', 'Framing, byte/bit stuffing, CRC, Hamming codes, Stop-and-Wait, CSMA/CD, and Ethernet.', 3, true),
+  makeTopic('cn-sub-data-link-layer-and-framing', 'subj-cn', 'cn-ch-dl', 'Data Link Layer and Framing', 'Core GATE CSE concepts and historical examination questions for Data Link Layer and Framing.', 1, false),
+  makeTopic('cn-sub-mac-protocols-and-csma-cd', 'subj-cn', 'cn-ch-dl', 'MAC Protocols and CSMA CD', 'Core GATE CSE concepts and historical examination questions for MAC Protocols and CSMA CD.', 2, false),
+  makeTopic('cn-sub-hamming-code', 'subj-cn', 'cn-ch-dl', 'Hamming Code', 'Core GATE CSE concepts and historical examination questions for Hamming Code.', 3, false),
+  makeTopic('cn-sub-crc-polynomial', 'subj-cn', 'cn-ch-dl', 'CRC Polynomial', 'Core GATE CSE concepts and historical examination questions for CRC Polynomial.', 4, false),
+  makeTopic('cn-sub-stop-and-wait', 'subj-cn', 'cn-ch-dl', 'Stop and Wait', 'Core GATE CSE concepts and historical examination questions for Stop and Wait.', 5, false),
+  makeTopic('cn-sub-bit-stuffing', 'subj-cn', 'cn-ch-dl', 'Bit Stuffing', 'Core GATE CSE concepts and historical examination questions for Bit Stuffing.', 6, false),
+  makeTopic('cn-sub-pure-aloha', 'subj-cn', 'cn-ch-dl', 'Pure Aloha', 'Core GATE CSE concepts and historical examination questions for Pure Aloha.', 7, false),
+  makeTopic('cn-sub-slotted-aloha', 'subj-cn', 'cn-ch-dl', 'Slotted Aloha', 'Core GATE CSE concepts and historical examination questions for Slotted Aloha.', 8, false),
+  makeTopic('cn-sub-bridges', 'subj-cn', 'cn-ch-dl', 'Bridges', 'Core GATE CSE concepts and historical examination questions for Bridges.', 9, false),
+  makeTopic('cn-sub-lan-technologies', 'subj-cn', 'cn-ch-dl', 'LAN Technologies', 'Core GATE CSE concepts and historical examination questions for LAN Technologies.', 10, false),
+  makeTopic('cn-sub-mac-protocol', 'subj-cn', 'cn-ch-dl', 'MAC Protocol', 'Core GATE CSE concepts and historical examination questions for MAC Protocol.', 11, false),
+  makeTopic('cn-sub-data-communication', 'subj-cn', 'cn-ch-dl', 'Data Communication', 'Core GATE CSE concepts and historical examination questions for Data Communication.', 12, false),
+  makeTopic('cn-sub-communication', 'subj-cn', 'cn-ch-dl', 'Communication', 'Core GATE CSE concepts and historical examination questions for Communication.', 13, false),
+  makeTopic('cn-sub-csma-cd', 'subj-cn', 'cn-ch-dl', 'CSMA CD', 'Core GATE CSE concepts and historical examination questions for CSMA CD.', 14, false),
+  makeTopic('cn-sub-ethernet', 'subj-cn', 'cn-ch-dl', 'Ethernet', 'Core GATE CSE concepts and historical examination questions for Ethernet.', 15, false),
+  makeTopic('cn-sub-error-detection', 'subj-cn', 'cn-ch-dl', 'Error Detection', 'Core GATE CSE concepts and historical examination questions for Error Detection.', 16, false),
+
+  // --- Chapter 4: Application Layer, OSI Model & Network Security ---
+  makeTopic('cn-ch-app-sec', 'subj-cn', null, 'Application Layer, OSI Model & Network Security', 'HTTP, DNS, SMTP, FTP, OSI 7-layer model, cryptography, RSA, and digital signatures.', 4, true),
+  makeTopic('cn-sub-application-layer-protocols', 'subj-cn', 'cn-ch-app-sec', 'Application Layer Protocols', 'Core GATE CSE concepts and historical examination questions for Application Layer Protocols.', 1, true),
+  makeTopic('cn-sub-network-security', 'subj-cn', 'cn-ch-app-sec', 'Network Security', 'Core GATE CSE concepts and historical examination questions for Network Security.', 2, false),
+  makeTopic('cn-sub-osi-model', 'subj-cn', 'cn-ch-app-sec', 'Osi Model', 'Core GATE CSE concepts and historical examination questions for Osi Model.', 3, false),
+  makeTopic('cn-sub-network-protocols', 'subj-cn', 'cn-ch-app-sec', 'Network Protocols', 'Core GATE CSE concepts and historical examination questions for Network Protocols.', 4, true),
+  makeTopic('cn-sub-armstrong-axioms', 'subj-cn', 'cn-ch-app-sec', 'Armstrong Axioms', 'Core GATE CSE concepts and historical examination questions for Armstrong Axioms.', 5, false),
+
+  // =========================================================================
+  // DIGITAL LOGIC (subj-dld)
+  // =========================================================================
+  // --- Chapter 1: Number Systems & Representations ---
+  makeTopic('dl-ch-num', 'subj-dld', null, 'Number Systems & Representations', 'Binary, octal, hex, 1s/2s complement, IEEE 754 floating point, and Booth algorithm.', 1, true),
+  makeTopic('dl-sub-number-representation', 'subj-dld', 'dl-ch-num', 'Number Representation', 'Core GATE CSE concepts and historical examination questions for Number Representation.', 1, true),
+  makeTopic('dl-sub-ieee-representation', 'subj-dld', 'dl-ch-num', 'IEEE Representation', 'Core GATE CSE concepts and historical examination questions for IEEE Representation.', 2, true),
+  makeTopic('dl-sub-floating-point-representation', 'subj-dld', 'dl-ch-num', 'Floating Point Representation', 'Core GATE CSE concepts and historical examination questions for Floating Point Representation.', 3, false),
+  makeTopic('dl-sub-booths-algorithm', 'subj-dld', 'dl-ch-num', 'Booths Algorithm', 'Core GATE CSE concepts and historical examination questions for Booths Algorithm.', 4, false),
+  makeTopic('dl-sub-fixed-point-representation', 'subj-dld', 'dl-ch-num', 'Fixed Point Representation', 'Core GATE CSE concepts and historical examination questions for Fixed Point Representation.', 5, false),
+  makeTopic('dl-sub-number-system', 'subj-dld', 'dl-ch-num', 'Number System', 'Core GATE CSE concepts and historical examination questions for Number System.', 6, false),
+  makeTopic('dl-sub-binary-codes', 'subj-dld', 'dl-ch-num', 'Binary Codes', 'Core GATE CSE concepts and historical examination questions for Binary Codes.', 7, false),
+  makeTopic('dl-sub-little-endian-big-endian', 'subj-dld', 'dl-ch-num', 'Little Endian Big Endian', 'Core GATE CSE concepts and historical examination questions for Little Endian Big Endian.', 8, false),
+
+  // --- Chapter 2: Boolean Algebra & Logic Gates ---
+  makeTopic('dl-ch-bool', 'subj-dld', null, 'Boolean Algebra & Logic Gates', 'Boolean laws, SOP/POS minimization, K-Maps, prime implicants, functional completeness, and logic gates.', 2, true),
+  makeTopic('dl-sub-boolean-algebra', 'subj-dld', 'dl-ch-bool', 'Boolean Algebra', 'Core GATE CSE concepts and historical examination questions for Boolean Algebra.', 1, true),
+  makeTopic('dl-sub-k-map', 'subj-dld', 'dl-ch-bool', 'K Map', 'Core GATE CSE concepts and historical examination questions for K Map.', 2, true),
+  makeTopic('dl-sub-min-sum-of-products-form', 'subj-dld', 'dl-ch-bool', 'Min Sum of Products Form', 'Core GATE CSE concepts and historical examination questions for Min Sum of Products Form.', 3, true),
+  makeTopic('dl-sub-canonical-normal-form', 'subj-dld', 'dl-ch-bool', 'Canonical Normal Form', 'Core GATE CSE concepts and historical examination questions for Canonical Normal Form.', 4, true),
+  makeTopic('dl-sub-functional-completeness', 'subj-dld', 'dl-ch-bool', 'Functional Completeness', 'Core GATE CSE concepts and historical examination questions for Functional Completeness.', 5, false),
+  makeTopic('dl-sub-min-no-gates', 'subj-dld', 'dl-ch-bool', 'Min No Gates', 'Core GATE CSE concepts and historical examination questions for Min No Gates.', 6, false),
+  makeTopic('dl-sub-prime-implicants', 'subj-dld', 'dl-ch-bool', 'Prime Implicants', 'Core GATE CSE concepts and historical examination questions for Prime Implicants.', 7, false),
+  makeTopic('dl-sub-min-products-of-sum-form', 'subj-dld', 'dl-ch-bool', 'Min Products of Sum Form', 'Core GATE CSE concepts and historical examination questions for Min Products of Sum Form.', 8, false),
+  makeTopic('dl-sub-conjunctive-normal-form', 'subj-dld', 'dl-ch-bool', 'Conjunctive Normal Form', 'Core GATE CSE concepts and historical examination questions for Conjunctive Normal Form.', 9, false),
+  makeTopic('dl-sub-dual-function', 'subj-dld', 'dl-ch-bool', 'Dual Function', 'Core GATE CSE concepts and historical examination questions for Dual Function.', 10, false),
+  makeTopic('dl-sub-static-hazard', 'subj-dld', 'dl-ch-bool', 'Static Hazard', 'Core GATE CSE concepts and historical examination questions for Static Hazard.', 11, false),
+
+  // --- Chapter 3: Combinational Circuits ---
+  makeTopic('dl-ch-circ', 'subj-dld', null, 'Combinational Circuits', 'Multiplexers, decoders, encoders, half/full adders, CLA, and ROMs.', 3, true),
+  makeTopic('dl-sub-circuit-output', 'subj-dld', 'dl-ch-circ', 'Circuit Output', 'Core GATE CSE concepts and historical examination questions for Circuit Output.', 1, true),
+  makeTopic('dl-sub-multiplexer', 'subj-dld', 'dl-ch-circ', 'Multiplexer', 'Core GATE CSE concepts and historical examination questions for Multiplexer.', 2, true),
+  makeTopic('dl-sub-adder', 'subj-dld', 'dl-ch-circ', 'Adder', 'Core GATE CSE concepts and historical examination questions for Adder.', 3, false),
+  makeTopic('dl-sub-digital-circuits', 'subj-dld', 'dl-ch-circ', 'Digital Circuits', 'Core GATE CSE concepts and historical examination questions for Digital Circuits.', 4, false),
+  makeTopic('dl-sub-rom', 'subj-dld', 'dl-ch-circ', 'ROM', 'Core GATE CSE concepts and historical examination questions for ROM.', 5, false),
+  makeTopic('dl-sub-decoder', 'subj-dld', 'dl-ch-circ', 'Decoder', 'Core GATE CSE concepts and historical examination questions for Decoder.', 6, false),
+  makeTopic('dl-sub-combinational-circuit', 'subj-dld', 'dl-ch-circ', 'Combinational Circuit', 'Core GATE CSE concepts and historical examination questions for Combinational Circuit.', 7, false),
+  makeTopic('dl-sub-array-multiplier', 'subj-dld', 'dl-ch-circ', 'Array Multiplier', 'Core GATE CSE concepts and historical examination questions for Array Multiplier.', 8, false),
+  makeTopic('dl-sub-carry-generator', 'subj-dld', 'dl-ch-circ', 'Carry Generator', 'Core GATE CSE concepts and historical examination questions for Carry Generator.', 9, false),
+
+  // --- Chapter 4: Sequential Circuits & Counters ---
+  makeTopic('dl-ch-seq', 'subj-dld', null, 'Sequential Circuits & Counters', 'Flip-flops (SR, JK, D, T), synchronous/asynchronous counters, FSMs, and shift registers.', 4, true),
+  makeTopic('dl-sub-digital-counter', 'subj-dld', 'dl-ch-seq', 'Digital Counter', 'Core GATE CSE concepts and historical examination questions for Digital Counter.', 1, true),
+  makeTopic('dl-sub-flip-flop', 'subj-dld', 'dl-ch-seq', 'Flip Flop', 'Core GATE CSE concepts and historical examination questions for Flip Flop.', 2, false),
+  makeTopic('dl-sub-finite-state-machines', 'subj-dld', 'dl-ch-seq', 'Finite State Machines', 'Core GATE CSE concepts and historical examination questions for Finite State Machines.', 3, false),
+  makeTopic('dl-sub-synchronous-asynchronous-circuits', 'subj-dld', 'dl-ch-seq', 'Synchronous Asynchronous Circuits', 'Core GATE CSE concepts and historical examination questions for Synchronous Asynchronous Circuits.', 4, false),
+  makeTopic('dl-sub-shift-registers', 'subj-dld', 'dl-ch-seq', 'Shift Registers', 'Core GATE CSE concepts and historical examination questions for Shift Registers.', 5, false),
+  makeTopic('dl-sub-ripple-counter-operation', 'subj-dld', 'dl-ch-seq', 'Ripple Counter Operation', 'Core GATE CSE concepts and historical examination questions for Ripple Counter Operation.', 6, false),
+  makeTopic('dl-sub-reduction', 'subj-dld', 'dl-ch-seq', 'Reduction', 'Core GATE CSE concepts and historical examination questions for Reduction.', 7, false),
+  makeTopic('dl-sub-deadlock-prevention-avoidance-detection', 'subj-dld', 'dl-ch-seq', 'Deadlock Prevention Avoidance Detection', 'Core GATE CSE concepts and historical examination questions for Deadlock Prevention Avoidance Detection.', 8, false),
+  makeTopic('dl-sub-demand-paging', 'subj-dld', 'dl-ch-seq', 'Demand Paging', 'Core GATE CSE concepts and historical examination questions for Demand Paging.', 9, false),
+  makeTopic('dl-sub-bankers-algorithm', 'subj-dld', 'dl-ch-seq', 'Bankers Algorithm', 'Core GATE CSE concepts and historical examination questions for Bankers Algorithm.', 10, false),
+  makeTopic('dl-sub-best-fit', 'subj-dld', 'dl-ch-seq', 'Best Fit', 'Core GATE CSE concepts and historical examination questions for Best Fit.', 11, false),
+  makeTopic('dl-sub-context-switch', 'subj-dld', 'dl-ch-seq', 'Context Switch', 'Core GATE CSE concepts and historical examination questions for Context Switch.', 12, false),
+
+  // =========================================================================
+  // GENERAL APTITUDE (subj-ga)
+  // =========================================================================
+  // --- Chapter 1: Verbal Aptitude ---
+  makeTopic('ga-ch-verbal', 'subj-ga', null, 'Verbal Aptitude', 'Vocabulary, grammar, reading comprehension, sentence completion, synonyms, antonyms, and verbal reasoning.', 1, true),
+  makeTopic('ga-sub-most-appropriate-word', 'subj-ga', 'ga-ch-verbal', 'Most Appropriate Word', 'Core GATE CSE concepts and historical examination questions for Most Appropriate Word.', 1, true),
+  makeTopic('ga-sub-passage-reading', 'subj-ga', 'ga-ch-verbal', 'Passage Reading', 'Core GATE CSE concepts and historical examination questions for Passage Reading.', 2, true),
+  makeTopic('ga-sub-verbal-reasoning', 'subj-ga', 'ga-ch-verbal', 'Verbal Reasoning', 'Core GATE CSE concepts and historical examination questions for Verbal Reasoning.', 3, true),
+  makeTopic('ga-sub-word-pairs', 'subj-ga', 'ga-ch-verbal', 'Word Pairs', 'Core GATE CSE concepts and historical examination questions for Word Pairs.', 4, false),
+  makeTopic('ga-sub-synonyms', 'subj-ga', 'ga-ch-verbal', 'Synonyms', 'Core GATE CSE concepts and historical examination questions for Synonyms.', 5, false),
+  makeTopic('ga-sub-antonyms', 'subj-ga', 'ga-ch-verbal', 'Antonyms', 'Core GATE CSE concepts and historical examination questions for Antonyms.', 6, false),
+  makeTopic('ga-sub-english-grammar', 'subj-ga', 'ga-ch-verbal', 'English Grammar', 'Core GATE CSE concepts and historical examination questions for English Grammar.', 7, false),
+  makeTopic('ga-sub-phrase-meaning', 'subj-ga', 'ga-ch-verbal', 'Phrase Meaning', 'Core GATE CSE concepts and historical examination questions for Phrase Meaning.', 8, false),
+  makeTopic('ga-sub-tenses', 'subj-ga', 'ga-ch-verbal', 'Tenses', 'Core GATE CSE concepts and historical examination questions for Tenses.', 9, false),
+  makeTopic('ga-sub-word-meaning', 'subj-ga', 'ga-ch-verbal', 'Word Meaning', 'Core GATE CSE concepts and historical examination questions for Word Meaning.', 10, false),
+  makeTopic('ga-sub-grammatical-error', 'subj-ga', 'ga-ch-verbal', 'Grammatical Error', 'Core GATE CSE concepts and historical examination questions for Grammatical Error.', 11, false),
+  makeTopic('ga-sub-articles', 'subj-ga', 'ga-ch-verbal', 'Articles', 'Core GATE CSE concepts and historical examination questions for Articles.', 12, false),
+  makeTopic('ga-sub-comparative-forms', 'subj-ga', 'ga-ch-verbal', 'Comparative Forms', 'Core GATE CSE concepts and historical examination questions for Comparative Forms.', 13, false),
+  makeTopic('ga-sub-sentence-ordering', 'subj-ga', 'ga-ch-verbal', 'Sentence Ordering', 'Core GATE CSE concepts and historical examination questions for Sentence Ordering.', 14, false),
+  makeTopic('ga-sub-incorrect-sentence-part', 'subj-ga', 'ga-ch-verbal', 'Incorrect Sentence Part', 'Core GATE CSE concepts and historical examination questions for Incorrect Sentence Part.', 15, false),
+  makeTopic('ga-sub-narrative-sequencing', 'subj-ga', 'ga-ch-verbal', 'Narrative Sequencing', 'Core GATE CSE concepts and historical examination questions for Narrative Sequencing.', 16, false),
+  makeTopic('ga-sub-prepositions', 'subj-ga', 'ga-ch-verbal', 'Prepositions', 'Core GATE CSE concepts and historical examination questions for Prepositions.', 17, false),
+
+  // --- Chapter 2: Quantitative Aptitude ---
+  makeTopic('ga-ch-quant', 'subj-ga', null, 'Quantitative Aptitude', 'Arithmetic, algebra, geometry, percentages, profit-loss, time-work, speed-distance, and ratios.', 2, true),
+  makeTopic('ga-sub-functions', 'subj-ga', 'ga-ch-quant', 'Functions', 'Core GATE CSE concepts and historical examination questions for Functions.', 1, false),
+  makeTopic('ga-sub-geometry', 'subj-ga', 'ga-ch-quant', 'Geometry', 'Core GATE CSE concepts and historical examination questions for Geometry.', 2, false),
+  makeTopic('ga-sub-logarithms', 'subj-ga', 'ga-ch-quant', 'Logarithms', 'Core GATE CSE concepts and historical examination questions for Logarithms.', 3, false),
+  makeTopic('ga-sub-cost-market-price', 'subj-ga', 'ga-ch-quant', 'Cost Market Price', 'Core GATE CSE concepts and historical examination questions for Cost Market Price.', 4, false),
+  makeTopic('ga-sub-work-time', 'subj-ga', 'ga-ch-quant', 'Work Time', 'Core GATE CSE concepts and historical examination questions for Work Time.', 5, false),
+  makeTopic('ga-sub-arithmetic-series', 'subj-ga', 'ga-ch-quant', 'Arithmetic Series', 'Core GATE CSE concepts and historical examination questions for Arithmetic Series.', 6, false),
+  makeTopic('ga-sub-factors', 'subj-ga', 'ga-ch-quant', 'Factors', 'Core GATE CSE concepts and historical examination questions for Factors.', 7, false),
+  makeTopic('ga-sub-age-relation', 'subj-ga', 'ga-ch-quant', 'Age Relation', 'Core GATE CSE concepts and historical examination questions for Age Relation.', 8, false),
+  makeTopic('ga-sub-alligation-mixture', 'subj-ga', 'ga-ch-quant', 'Alligation Mixture', 'Core GATE CSE concepts and historical examination questions for Alligation Mixture.', 9, false),
+  makeTopic('ga-sub-area', 'subj-ga', 'ga-ch-quant', 'Area', 'Core GATE CSE concepts and historical examination questions for Area.', 10, false),
+  makeTopic('ga-sub-average', 'subj-ga', 'ga-ch-quant', 'Average', 'Core GATE CSE concepts and historical examination questions for Average.', 11, false),
+  makeTopic('ga-sub-fractions', 'subj-ga', 'ga-ch-quant', 'Fractions', 'Core GATE CSE concepts and historical examination questions for Fractions.', 12, false),
+  makeTopic('ga-sub-number-series', 'subj-ga', 'ga-ch-quant', 'Number Series', 'Core GATE CSE concepts and historical examination questions for Number Series.', 13, false),
+  makeTopic('ga-sub-sequence-series', 'subj-ga', 'ga-ch-quant', 'Sequence Series', 'Core GATE CSE concepts and historical examination questions for Sequence Series.', 14, false),
+  makeTopic('ga-sub-speed-time-distance', 'subj-ga', 'ga-ch-quant', 'Speed Time Distance', 'Core GATE CSE concepts and historical examination questions for Speed Time Distance.', 15, false),
+
+  // --- Chapter 3: Spatial Aptitude ---
+  makeTopic('ga-ch-spatial', 'subj-ga', null, 'Spatial Aptitude', 'Paper folding, 2D/3D transformations, pattern recognition, mirror images, cubes, and shape assembling.', 3, true),
+  makeTopic('ga-sub-paper-folding', 'subj-ga', 'ga-ch-spatial', 'Paper Folding', 'Core GATE CSE concepts and historical examination questions for Paper Folding.', 1, false),
+  makeTopic('ga-sub-patterns-in-two-dimensions', 'subj-ga', 'ga-ch-spatial', 'Patterns In Two Dimensions', 'Core GATE CSE concepts and historical examination questions for Patterns In Two Dimensions.', 2, false),
+  makeTopic('ga-sub-image-rotation', 'subj-ga', 'ga-ch-spatial', 'Image Rotation', 'Core GATE CSE concepts and historical examination questions for Image Rotation.', 3, false),
+  makeTopic('ga-sub-patterns-in-three-dimensions', 'subj-ga', 'ga-ch-spatial', 'Patterns In Three Dimensions', 'Core GATE CSE concepts and historical examination questions for Patterns In Three Dimensions.', 4, false),
+  makeTopic('ga-sub-cubes', 'subj-ga', 'ga-ch-spatial', 'Cubes', 'Core GATE CSE concepts and historical examination questions for Cubes.', 5, false),
+  makeTopic('ga-sub-d-structure', 'subj-ga', 'ga-ch-spatial', 'd Structure', 'Core GATE CSE concepts and historical examination questions for d Structure.', 6, false),
+  makeTopic('ga-sub-assembling', 'subj-ga', 'ga-ch-spatial', 'Assembling', 'Core GATE CSE concepts and historical examination questions for Assembling.', 7, false),
+  makeTopic('ga-sub-assembling-pieces', 'subj-ga', 'ga-ch-spatial', 'Assembling Pieces', 'Core GATE CSE concepts and historical examination questions for Assembling Pieces.', 8, false),
+  makeTopic('ga-sub-mirror-image', 'subj-ga', 'ga-ch-spatial', 'Mirror Image', 'Core GATE CSE concepts and historical examination questions for Mirror Image.', 9, false),
+  makeTopic('ga-sub-maps', 'subj-ga', 'ga-ch-spatial', 'Maps', 'Core GATE CSE concepts and historical examination questions for Maps.', 10, false),
+  makeTopic('ga-sub-digital-image-processing', 'subj-ga', 'ga-ch-spatial', 'Digital Image Processing', 'Core GATE CSE concepts and historical examination questions for Digital Image Processing.', 11, false),
+
+  // --- Chapter 4: Analytical & Data Interpretation ---
+  makeTopic('ga-ch-analytical', 'subj-ga', null, 'Analytical & Data Interpretation', 'Data interpretation from bar graphs, line graphs, tables, statement sufficiency, and Venn diagrams.', 4, true),
+  makeTopic('ga-sub-bar-graph', 'subj-ga', 'ga-ch-analytical', 'Bar Graph', 'Core GATE CSE concepts and historical examination questions for Bar Graph.', 1, false),
+  makeTopic('ga-sub-data-interpretation', 'subj-ga', 'ga-ch-analytical', 'Data Interpretation', 'Core GATE CSE concepts and historical examination questions for Data Interpretation.', 2, false),
+  makeTopic('ga-sub-line-graph', 'subj-ga', 'ga-ch-analytical', 'Line Graph', 'Core GATE CSE concepts and historical examination questions for Line Graph.', 3, false),
+  makeTopic('ga-sub-statement-sufficiency', 'subj-ga', 'ga-ch-analytical', 'Statement Sufficiency', 'Core GATE CSE concepts and historical examination questions for Statement Sufficiency.', 4, false),
+  makeTopic('ga-sub-statements-follow', 'subj-ga', 'ga-ch-analytical', 'Statements Follow', 'Core GATE CSE concepts and historical examination questions for Statements Follow.', 5, false),
+  makeTopic('ga-sub-venn-diagram', 'subj-ga', 'ga-ch-analytical', 'Venn Diagram', 'Core GATE CSE concepts and historical examination questions for Venn Diagram.', 6, false),
+  makeTopic('ga-sub-graph-coloring', 'subj-ga', 'ga-ch-analytical', 'Graph Coloring', 'Core GATE CSE concepts and historical examination questions for Graph Coloring.', 7, false),
+
 ];
 
 export const INITIAL_SCHEDULES: Schedule[] = [
@@ -639,36 +866,28 @@ export const INITIAL_SCHEDULES: Schedule[] = [
     id: 'sched-today',
     Schedule_Date: new Date().toISOString().split('T')[0],
     Schedule_Hours: 6,
-    Schedule_Subjects: ['subj-coa', 'subj-os', 'subj-db'],
+    Schedule_Subjects: ['subj-os', 'subj-algo', 'subj-dm'],
     Schedule_Tag_Filters: ['Star'],
     Subject_Allocations: {
-      'subj-coa': 120,
       'subj-os': 120,
-      'subj-db': 120,
+      'subj-algo': 120,
+      'subj-dm': 120,
     },
     Allocated_Topics: [
       {
-        topic_id: 'coa-1',
-        subject_id: 'subj-coa',
-        topic_name: 'Cache Memory',
-        subject_name: 'Computer Organisation & Architecture',
-        allocated_minutes: 120,
-        completed: false,
-      },
-      {
-        topic_id: 'os-2',
+        topic_id: 'os-sub-process-synchronization',
         subject_id: 'subj-os',
-        topic_name: 'Process Scheduling',
+        topic_name: 'Process Synchronization',
         subject_name: 'Operating Systems',
-        allocated_minutes: 120,
+        allocated_minutes: 60,
         completed: false,
       },
       {
-        topic_id: 'db-5',
-        subject_id: 'subj-db',
-        topic_name: 'SQL',
-        subject_name: 'Database Management System',
-        allocated_minutes: 120,
+        topic_id: 'alg-sub-dynamic-programming',
+        subject_id: 'subj-algo',
+        topic_name: 'Dynamic Programming',
+        subject_name: 'Algorithms',
+        allocated_minutes: 60,
         completed: false,
       },
     ],

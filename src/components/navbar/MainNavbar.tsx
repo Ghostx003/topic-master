@@ -11,6 +11,7 @@ import {
   X,
   BarChart3,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTopicMaster } from '../../context/TopicMasterContext';
@@ -43,9 +44,15 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
     },
     {
       to: '/pyqs',
-      label: 'PYQ Analyzer',
+      label: 'PYQ Practice',
       icon: BarChart3,
       count: `${(totalPYQs / 1000).toFixed(1)}k`,
+    },
+    {
+      to: '/analytics',
+      label: 'Analytics Hub',
+      icon: Sparkles,
+      count: 'Pro',
     },
     {
       to: '/scheduler',

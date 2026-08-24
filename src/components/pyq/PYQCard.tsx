@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { PYQQuestion, PYQItemProgress, PYQDifficultyStatus } from '../../types/pyq';
 import {
   CheckCircle2,
@@ -95,7 +95,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
           {question.year && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-mono font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-500/40 shadow-sm">
               <Calendar className="w-3 h-3 text-indigo-400" />
-              <span>GATE {question.year}</span>
+              <span>{question.year.startsWith('GATE') ? question.year : `GATE ${question.year}`}</span>
             </span>
           )}
 

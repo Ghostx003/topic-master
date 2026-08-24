@@ -100,7 +100,16 @@ export const PYQModal: React.FC<PYQModalProps> = ({
       if (yA !== yB) {
         return sortOrder === 'newest' ? yB - yA : yA - yB;
       }
-      return a.questionNumber - b.questionNumber;
+      const numA =
+        typeof a.questionNumber === 'number'
+          ? a.questionNumber
+          : parseFloat(String(a.questionNumber).replace(/[^0-9.]/g, '')) || 0;
+      const numB =
+        typeof b.questionNumber === 'number'
+          ? b.questionNumber
+          : parseFloat(String(b.questionNumber).replace(/[^0-9.]/g, '')) || 0;
+      if (numA !== numB) return sortOrder === 'newest' ? numB - numA : numA - numB;
+      return String(a.questionNumber).localeCompare(String(b.questionNumber));
     });
     return sorted;
   }, [yearFilteredQuestions, sortOrder]);

@@ -11,10 +11,13 @@ export type PYQYearFilter =
 export interface PYQQuestion {
   id: string; // GateOverflow question ID (e.g. "80194")
   subject: string; // Subject name (e.g. "Computer Organisation & Architecture")
-  chapter: string; // Chapter name (e.g. "Addressing Modes")
+  chapter: string; // Chapter / Topic name (e.g. "Addressing Modes")
+  topic?: string; // Topic name alias
   link: string; // Full GateOverflow URL
-  year: string; // e.g. "1987", "2024"
-  questionNumber: number; // 1, 2, 3...
+  year: string; // e.g. "GATE CSE 1999" or "1987"
+  questionNumber: number | string; // 1, 2, 3... or "1.3", "1-V"
+  question_number?: string;
+  text?: string; // e.g. "Balls In Bins: GATE CSE 1999 | Question: 1.3"
 }
 
 export interface PYQItemProgress {

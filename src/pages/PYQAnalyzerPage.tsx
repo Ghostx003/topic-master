@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTopicMaster } from '../context/TopicMasterContext';
 import { TopicTagBadge } from '../components/common/TopicTagBadge';
 import { getAuthoritativeTopicPYQ } from '../utils/pyqUtils';
@@ -30,6 +30,8 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
+import { useNavigate } from 'react-router-dom';
+
 const YEAR_FILTER_OPTIONS: { id: PYQYearFilter; label: string; desc: string }[] = [
   { id: 'all', label: 'All Years', desc: 'All historical GATE CSE questions' },
   { id: 'last_5_years', label: 'Last 5 Years', desc: '2020 – 2026 questions' },
@@ -40,6 +42,7 @@ const YEAR_FILTER_OPTIONS: { id: PYQYearFilter; label: string; desc: string }[] 
 ];
 
 export const PYQAnalyzerPage: React.FC = () => {
+  const navigate = useNavigate();
   const {
     subjects,
     topics,
@@ -207,6 +210,16 @@ export const PYQAnalyzerPage: React.FC = () => {
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={() => navigate('/analytics')}
+            className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 text-white font-bold text-xs shadow-glow hover:shadow-glow-lg transition-all active:scale-95"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Open Full Analytics Dashboard</span>
+          </button>
         </div>
       </div>
 
