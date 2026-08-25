@@ -12,6 +12,7 @@ import { useTopicMaster } from '../../context/TopicMasterContext';
 import { formatDate } from '../../utils/timeUtils';
 import { INITIAL_TOPICS } from '../../utils/sampleData';
 import { getAuthoritativeTopicPYQ, getPyqBadgeStyle } from '../../utils/pyqUtils';
+import { getQuestionsForTopic } from '../../services/pyqService';
 import {
   Check,
   Star,
@@ -172,7 +173,21 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState<string>('all');
 
   const initialTopicMap = useMemo(() => new Map(INITIAL_TOPICS.map((t) => [t.id, t])), []);
-  const subjectsMap = new Map(subjects.map((s) => [s.id, s]));
+  const subjectsMap = useMemo(() => new Map(subjects.map((s) => [s.id, s])), [subjects]);
+
+  const topicMarksMap = useMemo(() => {
+    const map = new Map<string, number>();
+    topicsList.forEach((t) => {
+      const subj = subjectsMap.get(t.Subject_Id);
+      const subtopicNames = topicsList
+        .filter((child) => child.Parent_Id === t.id)
+        .map((c) => c.Topic_Name);
+      const qs = getQuestionsForTopic(subj?.Subject_Name || '', t.Topic_Name, subtopicNames);
+      const marks = qs.reduce((acc, q) => acc + (q.marks || 1), 0);
+      map.set(t.id, marks);
+    });
+    return map;
+  }, [topicsList, subjectsMap]);
 
   const getTopicPYQ = (topic: Topic): number => {
     return getAuthoritativeTopicPYQ(topic, topicsList);
@@ -517,11 +532,17 @@ export const AdminTopicMatrix: React.FC<AdminTopicMatrixProps> = ({
                           )}
                           {pyqs > 0 && (() => {
                             const badge = getPyqBadgeStyle(pyqs);
+                            const marks = topicMarksMap.get(topic.id) || 0;
                             return (
-                              <span className={`flex items-center gap-0.5 text-[9px] font-mono font-bold px-1.5 rounded border ${badge.wrapper}`}>
-                                <Flame className={`w-2.5 h-2.5 ${badge.icon}`} />
-                                <span className={badge.label}>{pyqs} PYQs</span>
-                              </span>
+                              <>
+                                <span className={`flex items-center gap-0.5 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border ${badge.wrapper}`}>
+                                  <Flame className={`w-2.5 h-2.5 ${badge.icon}`} />
+                                  <span className={badge.label}>{pyqs} PYQs</span>
+                                </span>
+                                <span className="flex items-center gap-0.5 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border bg-emerald-950/70 border-emerald-500/50 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.2)]">
+                                  <span>{marks} Marks</span>
+                                </span>
+                              </>
                             );
                           })()}
                         </div>

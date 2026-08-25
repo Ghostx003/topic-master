@@ -4,6 +4,7 @@ import { useTopicMaster } from '../../context/TopicMasterContext';
 import { TopicTagBadge } from '../common/TopicTagBadge';
 import { getAllDescendantIds } from '../../utils/hierarchyUtils';
 import { getAuthoritativeTopicPYQ, getPyqBadgeStyle } from '../../utils/pyqUtils';
+import { getQuestionsForTopic, filterQuestionsByYear } from '../../services/pyqService';
 import {
   ChevronRight,
   ChevronDown,
@@ -533,6 +534,9 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                   if (pyqCount <= 0 && yearFilter === 'all') return null;
                   const badge = getPyqBadgeStyle(pyqCount);
                   const subtopicNames = node.children?.map((c) => c.Topic_Name) || [];
+                  const qs = getQuestionsForTopic(currentSubject?.Subject_Name || '', node.Topic_Name, subtopicNames);
+                  const filtered = filterQuestionsByYear(qs, yearFilter);
+                  const marks = filtered.reduce((acc, q) => acc + (q.marks || 1), 0);
                   return (
                     <button
                       type="button"
@@ -545,11 +549,14 @@ export const TopicTreeNode: React.FC<TopicTreeNodeProps> = ({
                           subtopicNames
                         );
                       }}
-                      className={`flex items-center gap-1 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-xl shrink-0 border ${badge.wrapper} hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm`}
-                      title={`Click to solve ${pyqCount} Previous Year Questions for ${node.Topic_Name}`}
+                      className={`flex items-center gap-1.5 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-xl shrink-0 border ${badge.wrapper} hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-sm`}
+                      title={`Click to solve ${pyqCount} Previous Year Questions (${marks} Marks) for ${node.Topic_Name}`}
                     >
                       <Flame className={`w-3 h-3 ${badge.icon}`} />
                       <span className={badge.label}>{pyqCount} PYQs</span>
+                      <span className="px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 text-[10px]">
+                        {marks} Marks
+                      </span>
                     </button>
                   );
                 })()}
