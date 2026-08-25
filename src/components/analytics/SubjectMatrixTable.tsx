@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { SubjectMatrixResult } from '../../services/analyticsService';
+import { SubjectMatrixResult, SubjectYearTopicStat } from '../../services/analyticsService';
 import {
   Crown,
   CheckSquare,
@@ -12,6 +12,8 @@ import {
   Info,
   Trophy,
   Table as TableIcon,
+  Play,
+  Sparkles,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -28,6 +30,7 @@ interface SubjectMatrixTableProps {
   onToggleSubject: (subjectName: string) => void;
   onSelectAllSubjects: () => void;
   onDeselectAllSubjects: () => void;
+  onPracticeTopic?: (topicName: string, subjectName: string) => void;
 }
 
 export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
@@ -35,6 +38,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
   onToggleSubject,
   onSelectAllSubjects,
   onDeselectAllSubjects,
+  onPracticeTopic,
 }) => {
   // 1. View Type: 'annual_ranked' (Arranged highest to lowest in each specific year) or 'subject_grid'
   const [viewType, setViewType] = useState<MatrixViewType>('annual_ranked');
@@ -42,6 +46,19 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
   const [sortMode, setSortMode] = useState<SubjectMatrixSortMode>('highest_to_lowest');
   const [activeSortYear, setActiveSortYear] = useState<number | null>(null);
   const [yearSortDir, setYearSortDir] = useState<'desc' | 'asc'>('desc');
+
+  // 2. Hover Tooltip Popover State
+  const [hoveredCellData, setHoveredCellData] = useState<{
+    subjectName: string;
+    subjectColor: string;
+    year: number;
+    count: number;
+    percentage: number;
+    isMvp: boolean;
+    topTopics: SubjectYearTopicStat[];
+    otherTopicsCount: number;
+    rect: { top: number; left: number; right: number; bottom: number };
+  } | null>(null);
 
   const { years, rows, yearTotals, yearMvps, grandTotal } = matrixResult;
 
@@ -106,6 +123,8 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
         percentage: number;
         isMvp: boolean;
         rangeTotal: number;
+        topTopics: SubjectYearTopicStat[];
+        otherTopicsCount: number;
       }>
     > = {};
 
@@ -121,6 +140,8 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
             percentage: cell ? cell.percentage : 0,
             isMvp: cell ? cell.isMvp : false,
             rangeTotal: r.rangeTotal,
+            topTopics: cell?.topTopics || [],
+            otherTopicsCount: cell?.otherTopicsCount || 0,
           };
         })
         .sort((a, b) => {
@@ -142,8 +163,41 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
       .sort((a, b) => b.rangeTotal - a.rangeTotal);
   }, [rows]);
 
+  const handleCellMouseEnter = (
+    e: React.MouseEvent<HTMLElement>,
+    data: {
+      subjectName: string;
+      subjectColor: string;
+      year: number;
+      count: number;
+      percentage: number;
+      isMvp: boolean;
+      topTopics: SubjectYearTopicStat[];
+      otherTopicsCount: number;
+    }
+  ) => {
+    if (data.count === 0) {
+      setHoveredCellData(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoveredCellData({
+      ...data,
+      rect: {
+        top: rect.top,
+        left: rect.left,
+        right: rect.right,
+        bottom: rect.bottom,
+      },
+    });
+  };
+
+  const handleCellMouseLeave = () => {
+    setHoveredCellData(null);
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 relative">
       {/* Table Top Controls & Info Bar */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl">
         <div className="flex items-center gap-3">
@@ -158,9 +212,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
               </span>
             </h3>
             <p className="text-xs text-slate-400">
-              {viewType === 'annual_ranked'
-                ? 'Every year column is arranged strictly from Highest to Lowest questions asked in that specific year.'
-                : 'Subject grid matrix with full horizontal question trends across all years.'}
+              💡 <strong>Hover over any subject cell</strong> to see the top 4–5 topics asked in that subject in that year.
             </p>
           </div>
         </div>
@@ -461,9 +513,22 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                         return (
                           <td
                             key={`cell-ranked-${year}-${rankNumber}`}
+                            onMouseEnter={(e) =>
+                              handleCellMouseEnter(e, {
+                                subjectName: item.subjectName,
+                                subjectColor: item.subjectColor,
+                                year,
+                                count: item.count,
+                                percentage: item.percentage,
+                                isMvp,
+                                topTopics: item.topTopics,
+                                otherTopicsCount: item.otherTopicsCount,
+                              })
+                            }
+                            onMouseLeave={handleCellMouseLeave}
                             className={clsx(
-                              'px-3 py-2.5 border-r border-slate-800/60 font-mono transition-all',
-                              isMvp ? 'bg-amber-950/20 ring-1 ring-inset ring-amber-500/30' : 'hover:bg-slate-850/60'
+                              'px-3 py-2.5 border-r border-slate-800/60 font-mono transition-all cursor-pointer select-none',
+                              isMvp ? 'bg-amber-950/20 ring-1 ring-inset ring-amber-500/30' : 'hover:bg-slate-850/80 hover:ring-1 hover:ring-brand-500/40'
                             )}
                           >
                             <div className="space-y-1">
@@ -750,8 +815,21 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                         return (
                           <td
                             key={`cell-${row.subjectName}-${year}`}
+                            onMouseEnter={(e) =>
+                              handleCellMouseEnter(e, {
+                                subjectName: row.subjectName,
+                                subjectColor: row.subjectColor,
+                                year,
+                                count,
+                                percentage: pct,
+                                isMvp,
+                                topTopics: cell?.topTopics || [],
+                                otherTopicsCount: cell?.otherTopicsCount || 0,
+                              })
+                            }
+                            onMouseLeave={handleCellMouseLeave}
                             className={clsx(
-                              'px-2.5 py-3 text-center border-r border-slate-800/60 font-mono transition-all',
+                              'px-2.5 py-3 text-center border-r border-slate-800/60 font-mono transition-all cursor-pointer select-none',
                               isMvp && isIncluded && 'ring-1 ring-amber-500/40',
                               activeSortYear === year && 'bg-brand-950/30'
                             )}
@@ -763,7 +841,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                                   {isMvp && (
                                     <div className="flex items-center justify-center gap-1 text-[9px] font-black text-amber-400 uppercase tracking-tighter">
                                       <Crown className="w-2.5 h-2.5 fill-current text-amber-400" />
-                                      <span>{yearMvps[year]?.isTie ? 'Co-MVP' : 'MVP'}</span>
+                                      <span>MVP</span>
                                     </div>
                                   )}
                                   {(displayMode === 'both' || displayMode === 'count') && (
@@ -860,6 +938,133 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                 </tr>
               </tfoot>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* ================= RICH INTERACTIVE HOVER POPOVER (TOP 4-5 TOPICS IN THAT YEAR) ================= */}
+      {hoveredCellData && (
+        <div
+          className="fixed z-50 p-4 rounded-2xl bg-slate-950/95 border border-brand-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.8)] backdrop-blur-2xl text-xs space-y-3 w-80 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150 ring-1 ring-white/10"
+          style={{
+            top: Math.min(
+              window.innerHeight - 340,
+              Math.max(15, hoveredCellData.rect.bottom + 10)
+            ),
+            left: Math.min(
+              window.innerWidth - 350,
+              Math.max(15, hoveredCellData.rect.left - 40)
+            ),
+          }}
+          onMouseEnter={() => {}}
+          onMouseLeave={() => setHoveredCellData(null)}
+        >
+          {/* Header */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-800">
+              <div className="flex items-center gap-2 truncate">
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
+                  style={{ backgroundColor: hoveredCellData.subjectColor }}
+                />
+                <span className="font-black text-white text-sm truncate">
+                  {hoveredCellData.subjectName}
+                </span>
+              </div>
+              <span className="font-mono text-xs font-black text-brand-300 bg-brand-950/80 px-2 py-0.5 rounded-lg border border-brand-500/40 shrink-0">
+                {hoveredCellData.year}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] font-mono text-slate-300 pt-0.5">
+              <span>
+                <strong className="text-white">{hoveredCellData.count} Questions</strong> ({hoveredCellData.percentage}% of {hoveredCellData.year} Exam)
+              </span>
+              {hoveredCellData.isMvp && (
+                <span className="text-amber-400 font-black flex items-center gap-1 text-[10px] bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-500/40">
+                  <Crown className="w-2.5 h-2.5 fill-current" />
+                  MVP
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Top Topics Breakdown */}
+          <div className="space-y-2 pt-1 border-t border-slate-850">
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <span className="flex items-center gap-1 text-brand-300">
+                <Sparkles className="w-3 h-3 text-brand-400" />
+                <span>Top Topics in {hoveredCellData.year}</span>
+              </span>
+              <span>Weight</span>
+            </div>
+
+            {hoveredCellData.topTopics.length === 0 ? (
+              <div className="text-slate-500 text-[11px] italic py-1">
+                No specific topic breakdown available.
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {hoveredCellData.topTopics.map((topic, idx) => (
+                  <div
+                    key={`hover-topic-${topic.topicName}-${idx}`}
+                    className="p-2 rounded-xl bg-slate-900/90 border border-slate-800/80 hover:border-brand-500/50 hover:bg-slate-850/90 transition-all group"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className="text-[10px] font-mono text-slate-500 font-bold shrink-0">
+                          #{idx + 1}
+                        </span>
+                        <span className="font-bold text-slate-200 text-xs truncate group-hover:text-brand-300 transition-colors">
+                          {topic.topicName}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 font-mono text-xs">
+                        <span className="font-black text-white">
+                          {topic.count} {topic.count === 1 ? 'Q' : 'Qs'}
+                        </span>
+                        <span className="text-[10px] text-brand-300 font-bold">
+                          {topic.percentageOfSubjectYear}%
+                        </span>
+
+                        {onPracticeTopic && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onPracticeTopic(topic.topicName, hoveredCellData.subjectName);
+                            }}
+                            className="p-1 rounded-md bg-brand-500/20 hover:bg-brand-500/40 text-brand-300 transition-all opacity-0 group-hover:opacity-100"
+                            title={`Practice ${topic.topicName}`}
+                          >
+                            <Play className="w-2.5 h-2.5 fill-current" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Proportional visual bar */}
+                    <div className="w-full h-1 bg-slate-800 rounded-full mt-1.5 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{
+                          width: `${Math.min(100, topic.percentageOfSubjectYear)}%`,
+                          backgroundColor: hoveredCellData.subjectColor,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {hoveredCellData.otherTopicsCount > 0 && (
+              <div className="text-center pt-1">
+                <span className="text-[10px] text-slate-500 font-mono">
+                  + {hoveredCellData.otherTopicsCount} more question(s) from other chapters
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}

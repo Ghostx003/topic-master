@@ -1,6 +1,12 @@
 import { ALL_PYQ_QUESTIONS, extractYearNumber } from './pyqService';
 import { PYQQuestion } from '../types/pyq';
 
+export interface SubjectYearTopicStat {
+  topicName: string;
+  count: number;
+  percentageOfSubjectYear: number;
+}
+
 export interface SubjectMatrixCell {
   subjectName: string;
   year: number;
@@ -8,6 +14,8 @@ export interface SubjectMatrixCell {
   yearTotal: number;
   percentage: number; // % of questions in that year
   isMvp: boolean; // True if this subject had the highest count in this year
+  topTopics: SubjectYearTopicStat[];
+  otherTopicsCount: number;
 }
 
 export interface SubjectMatrixRow {
@@ -204,10 +212,13 @@ export function getSubjectYearMatrix(
     years.push(y);
   }
 
-  // Pre-index questions in range by subject and year
+  // Pre-index questions in range by subject, year, and chapter
   const countsBySubjYear = new Map<string, Map<number, number>>();
+  const countsBySubjYearChapter = new Map<string, Map<number, Map<string, number>>>();
+
   DEFAULT_SUBJECT_NAMES.forEach((subj) => {
     countsBySubjYear.set(subj, new Map<number, number>());
+    countsBySubjYearChapter.set(subj, new Map<number, Map<string, number>>());
   });
 
   ALL_PYQ_QUESTIONS.forEach((q) => {
@@ -215,6 +226,13 @@ export function getSubjectYearMatrix(
     if (y >= min && y <= max && countsBySubjYear.has(q.subject)) {
       const yearMap = countsBySubjYear.get(q.subject)!;
       yearMap.set(y, (yearMap.get(y) || 0) + 1);
+
+      const subjChapYearMap = countsBySubjYearChapter.get(q.subject)!;
+      if (!subjChapYearMap.has(y)) {
+        subjChapYearMap.set(y, new Map<string, number>());
+      }
+      const chapMap = subjChapYearMap.get(y)!;
+      chapMap.set(q.chapter, (chapMap.get(q.chapter) || 0) + 1);
     }
   });
 
@@ -291,6 +309,25 @@ export function getSubjectYearMatrix(
       const isMvp = isIncluded && count > 0 && yearMvps[y]?.subjectNames?.includes(subj);
       const pct = yTotal > 0 && isIncluded ? (count / yTotal) * 100 : 0;
 
+      // Extract top 5 topics for this subject in this year
+      const chapMap = countsBySubjYearChapter.get(subj)?.get(y);
+      const topTopics: SubjectYearTopicStat[] = [];
+      let topTopicsSum = 0;
+
+      if (chapMap && count > 0) {
+        const sortedChaps = Array.from(chapMap.entries())
+          .sort((a, b) => b[1] - a[1]);
+
+        sortedChaps.slice(0, 5).forEach(([chapName, chapCount]) => {
+          topTopicsSum += chapCount;
+          topTopics.push({
+            topicName: chapName,
+            count: chapCount,
+            percentageOfSubjectYear: Math.round((chapCount / count) * 1000) / 10,
+          });
+        });
+      }
+
       yearCells[y] = {
         subjectName: subj,
         year: y,
@@ -298,6 +335,8 @@ export function getSubjectYearMatrix(
         yearTotal: yTotal,
         percentage: Math.round(pct * 10) / 10,
         isMvp: !!isMvp,
+        topTopics,
+        otherTopicsCount: Math.max(0, count - topTopicsSum),
       };
     });
 

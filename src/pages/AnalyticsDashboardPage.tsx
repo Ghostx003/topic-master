@@ -916,6 +916,7 @@ export const AnalyticsDashboardPage: React.FC = () => {
           onToggleSubject={handleToggleSubject}
           onSelectAllSubjects={handleSelectAllSubjects}
           onDeselectAllSubjects={handleDeselectAllSubjects}
+          onPracticeTopic={handlePracticeTopic}
         />
       )}
 
