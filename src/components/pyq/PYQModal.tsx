@@ -11,8 +11,6 @@ import {
 import { PYQCard } from './PYQCard';
 import {
   X,
-  Flame,
-  CheckCircle2,
   Search,
   RotateCcw,
   ChevronDown,
@@ -20,10 +18,10 @@ import {
   BookOpen,
   LayoutGrid,
   List,
-  Award,
   Layers,
   Calendar,
   ArrowUpDown,
+  CheckCheck,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -61,6 +59,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   const { yearFilter, setYearFilter } = useTopicMaster();
   const [progress, setProgress] = useState<PYQProgressMap>(() => loadPYQProgress());
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'marks_desc' | 'marks_asc'>('newest');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'MCQ' | 'MSQ' | 'NAT' | 'Descriptive'>('all');
   const [activeTab, setActiveTab] = useState<PYQFilterTab>('all');
   const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const [isCompletedSectionOpen, setIsCompletedSectionOpen] = useState(true);
@@ -103,6 +102,21 @@ export const PYQModal: React.FC<PYQModalProps> = ({
     }
     return filterQuestionsByYear(rawTopicQuestions, yearFilter);
   }, [rawTopicQuestions, yearFilter, searchQuery]);
+
+  // Question Type counts for current active year set
+  const typeCounts = useMemo(() => {
+    const counts = { all: 0, MCQ: 0, MSQ: 0, NAT: 0, Descriptive: 0 };
+    yearFilteredQuestions.forEach((q) => {
+      counts.all++;
+      const t = (q.type_of_question || 'MCQ') as 'MCQ' | 'MSQ' | 'NAT' | 'Descriptive';
+      if (counts[t] !== undefined) {
+        counts[t]++;
+      } else {
+        counts.MCQ++;
+      }
+    });
+    return counts;
+  }, [yearFilteredQuestions]);
 
   // Apply Sorting (Newest, Oldest, Marks High to Low, Marks Low to High)
   const sortedQuestions = useMemo(() => {
@@ -244,6 +258,12 @@ export const PYQModal: React.FC<PYQModalProps> = ({
       if (activeTab === 'hard' && diff !== 'hard') return false;
       if (activeTab === 'skip' && diff !== 'skip') return false;
 
+      // Question Type filter
+      if (typeFilter !== 'all') {
+        const qType = (q.type_of_question || 'MCQ').toUpperCase();
+        if (qType !== typeFilter.toUpperCase()) return false;
+      }
+
       // Search query
       if (qTrim) {
         const yNum = extractYearNumber(q.year);
@@ -266,7 +286,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
 
       return true;
     });
-  }, [sortedQuestions, progress, activeTab, searchQuery]);
+  }, [sortedQuestions, progress, activeTab, typeFilter, searchQuery]);
 
   // Separate active vs completed if in 'all' tab
   const activeQuestions = useMemo(() => {
@@ -283,49 +303,44 @@ export const PYQModal: React.FC<PYQModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-[#050811] text-slate-100 overflow-hidden animate-fade-in">
-      {/* Top Navigation Bar */}
-      <header className="px-6 sm:px-10 lg:px-12 py-5 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-2xl shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-4 z-20">
-        {/* Left: Breadcrumbs & Topic Title */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-            <span className="px-3 py-1 rounded-xl text-xs font-mono font-bold bg-brand-950/70 text-brand-300 border border-brand-500/30">
+      {/* Top Header */}
+      <header className="px-6 sm:px-10 lg:px-12 py-4 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-2xl shrink-0 flex items-center justify-between gap-4 z-20">
+        <div>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400">
               {subjectName}
             </span>
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-black text-amber-300 bg-amber-950/50 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-              <Flame className="w-3.5 h-3.5 text-amber-400" />
-              <span>{rawTopicQuestions.length} Total PYQs</span>
-            </span>
-            {stats.percentage === 100 && sortedQuestions.length > 0 && (
-              <span className="flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-500/40 animate-pulse">
-                <Award className="w-3.5 h-3.5 text-emerald-400" />
-                <span>100% Mastered</span>
-              </span>
-            )}
+            <span className="text-slate-600">•</span>
+            <span className="text-xs font-semibold text-slate-400">Topic PYQ Vault</span>
           </div>
-
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight truncate">
-            {topicName}
-          </h1>
+          <h2 className="text-xl sm:text-2xl font-black text-white mt-1 flex items-center gap-3 flex-wrap">
+            <span>{topicName}</span>
+            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-lg bg-brand-500/20 text-brand-300 border border-brand-500/40">
+              {stats.total} Questions Total
+            </span>
+          </h2>
         </div>
 
-        {/* Middle / Right: Stats Summary & Close Button */}
-        <div className="flex items-center gap-4 sm:gap-6 shrink-0 flex-wrap">
-          {/* Progress Pill Bar */}
-          <div className="hidden sm:flex flex-col min-w-[200px] lg:min-w-[240px] bg-slate-900/90 px-4 py-2.5 rounded-2xl border border-slate-800 shadow-inner">
-            <div className="flex items-center justify-between text-xs font-bold mb-1.5">
-              <span className="text-slate-400 flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Solved {stats.completed}/{stats.total}</span>
-              </span>
-              <span className="font-mono text-brand-300">{stats.percentage}%</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-slate-800">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-brand-500 to-emerald-400 transition-all duration-500"
-                style={{ width: `${Math.max(stats.percentage, 2)}%` }}
-              />
-            </div>
-          </div>
+        {/* Right Header Actions */}
+        <div className="flex items-center gap-3">
+          {/* Mark all Done */}
+          <button
+            onClick={handleMarkAllCompleted}
+            className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all active:scale-95 shadow-sm"
+            title="Mark all filtered questions as completed"
+          >
+            <CheckCheck className="w-4 h-4 text-emerald-400" />
+            <span>Mark All Done</span>
+          </button>
+
+          {/* Reset topic progress */}
+          <button
+            onClick={handleResetTopicProgress}
+            className="p-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-300 border border-slate-800 transition-all active:scale-95"
+            title="Reset progress for this topic"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
 
           {/* Close Fullscreen Button */}
           <button
@@ -378,7 +393,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
           ))}
         </div>
 
-        {/* Row 2: Year Filters, Sort, Search & Controls */}
+        {/* Row 2: Year Filters, Type Filter, Sort, Search & Controls */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pt-1 border-t border-slate-900">
           {/* Year Range Presets (Saved Site-Wide) */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 xl:pb-0 custom-scrollbar">
@@ -406,8 +421,25 @@ export const PYQModal: React.FC<PYQModalProps> = ({
             })}
           </div>
 
-          {/* Right Section: Sort Toggle, Search, View Mode & Batch Actions */}
+          {/* Right Section: Question Type, Sort Toggle, Search, View Mode & Batch Actions */}
           <div className="flex items-center gap-2.5 shrink-0 flex-wrap justify-between xl:justify-end">
+            {/* Question Type Filter Dropdown */}
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs shadow-sm">
+              <span className="text-slate-400 text-[11px] font-bold uppercase tracking-wider hidden sm:inline">Type:</span>
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value as any)}
+                className="bg-transparent text-xs font-bold text-sky-300 focus:outline-none cursor-pointer pr-1"
+                title="Filter questions by Question Type (MCQ, MSQ, NAT, Descriptive)"
+              >
+                <option value="all" className="bg-slate-950 text-slate-200">All Types ({typeCounts.all})</option>
+                <option value="MCQ" className="bg-slate-950 text-sky-300 font-bold">MCQ ({typeCounts.MCQ})</option>
+                <option value="MSQ" className="bg-slate-950 text-purple-300 font-bold">MSQ ({typeCounts.MSQ})</option>
+                <option value="NAT" className="bg-slate-950 text-amber-300 font-bold">NAT ({typeCounts.NAT})</option>
+                <option value="Descriptive" className="bg-slate-950 text-indigo-300 font-bold">Descriptive ({typeCounts.Descriptive})</option>
+              </select>
+            </div>
+
             {/* Sort Selector Dropdown */}
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs shadow-sm">
               <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" />

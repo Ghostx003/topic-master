@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTopicMaster } from '../context/TopicMasterContext';
 import { TopicTagBadge } from '../components/common/TopicTagBadge';
-import { getAuthoritativeTopicPYQ } from '../utils/pyqUtils';
 import {
   ALL_PYQ_QUESTIONS,
   getQuestionsForSubject,
@@ -29,6 +28,7 @@ import {
   CircleDot,
   Calendar,
   ArrowUpDown,
+  HelpCircle,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -59,37 +59,61 @@ export const PYQAnalyzerPage: React.FC = () => {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [frequencyFilter, setFrequencyFilter] = useState<'all' | 'ultra' | 'high' | 'core' | 'done' | 'pending'>('all');
+  const [questionTypeFilter, setQuestionTypeFilter] = useState<'all' | 'MCQ' | 'MSQ' | 'NAT' | 'Descriptive'>('all');
   const [sortBy, setSortBy] = useState<'questions_desc' | 'questions_asc' | 'marks_desc' | 'marks_asc' | 'name_asc'>('questions_desc');
 
   const subjectsMap = useMemo(() => new Map(subjects.map((s) => [s.id, s])), [subjects]);
 
-  // Precompute O(1) PYQ count & marks maps strictly from actually attached questions (filtered by yearFilter)
+  // Overall Question Type counts for active year filter and selected subject
+  const typeCounts = useMemo(() => {
+    const counts = { all: 0, MCQ: 0, MSQ: 0, NAT: 0, Descriptive: 0 };
+    const base = selectedSubjectId === 'all'
+      ? ALL_PYQ_QUESTIONS
+      : getQuestionsForSubject(subjectsMap.get(selectedSubjectId)?.Subject_Name || '');
+    const filtered = filterQuestionsByYear(base, yearFilter);
+    filtered.forEach((q) => {
+      counts.all++;
+      const t = (q.type_of_question || 'MCQ') as 'MCQ' | 'MSQ' | 'NAT' | 'Descriptive';
+      if (counts[t] !== undefined) counts[t]++;
+      else counts.MCQ++;
+    });
+    return counts;
+  }, [selectedSubjectId, subjectsMap, yearFilter]);
+
+  // Precompute O(1) PYQ count & marks maps strictly from actually attached questions (filtered by yearFilter & questionTypeFilter)
   const { topicPyqMap, topicMarksMap, subjectPyqMap, subjectMarksMap } = useMemo(() => {
     const tMap = new Map<string, number>();
     const tMarksMap = new Map<string, number>();
     const sMap = new Map<string, number>();
     const sMarksMap = new Map<string, number>();
 
-    // 1. Calculate for subjects once (strictly count attached questions in DB for yearFilter)
+    // 1. Calculate for subjects once
     subjects.forEach((s) => {
-      const rawQs = getQuestionsForSubject(s.Subject_Name);
-      const filteredQs = filterQuestionsByYear(rawQs, yearFilter);
+      let filteredQs = filterQuestionsByYear(getQuestionsForSubject(s.Subject_Name), yearFilter);
+      if (questionTypeFilter !== 'all') {
+        filteredQs = filteredQs.filter(
+          (q) => (q.type_of_question || 'MCQ').toUpperCase() === questionTypeFilter.toUpperCase()
+        );
+      }
       sMap.set(s.id, filteredQs.length);
       const totalMarks = filteredQs.reduce((acc, q) => acc + (q.marks || 1), 0);
       sMarksMap.set(s.id, totalMarks);
     });
 
-    // 2. Calculate for every topic once (strictly attached questions in DB or sum of subtopics)
+    // 2. Calculate for every topic once
     topics.forEach((t) => {
       const subj = subjectsMap.get(t.Subject_Id);
-      const count = getAuthoritativeTopicPYQ(t, topics, yearFilter, subj?.Subject_Name);
-      tMap.set(t.id, count);
-
       const subtopicNames = topics
         .filter((child) => child.Parent_Id === t.id)
         .map((c) => c.Topic_Name);
-      const qs = getQuestionsForTopic(subj?.Subject_Name || '', t.Topic_Name, subtopicNames);
-      const filteredTopicQs = filterQuestionsByYear(qs, yearFilter);
+      let qs = getQuestionsForTopic(subj?.Subject_Name || '', t.Topic_Name, subtopicNames);
+      let filteredTopicQs = filterQuestionsByYear(qs, yearFilter);
+      if (questionTypeFilter !== 'all') {
+        filteredTopicQs = filteredTopicQs.filter(
+          (q) => (q.type_of_question || 'MCQ').toUpperCase() === questionTypeFilter.toUpperCase()
+        );
+      }
+      tMap.set(t.id, filteredTopicQs.length);
       const marks = filteredTopicQs.reduce((acc, q) => acc + (q.marks || 1), 0);
       tMarksMap.set(t.id, marks);
     });
@@ -100,7 +124,7 @@ export const PYQAnalyzerPage: React.FC = () => {
       subjectPyqMap: sMap,
       subjectMarksMap: sMarksMap,
     };
-  }, [topics, subjects, subjectsMap, yearFilter]);
+  }, [topics, subjects, subjectsMap, yearFilter, questionTypeFilter]);
 
   const getTopicPYQs = (topic: Topic): number => {
     return topicPyqMap.get(topic.id) || 0;
@@ -118,21 +142,30 @@ export const PYQAnalyzerPage: React.FC = () => {
     return subjectMarksMap.get(subj.id) || 0;
   };
 
-  // Overall Statistics - STRICTLY count actually attached questions for active yearFilter
+  // Overall Statistics - STRICTLY count actually attached questions for active yearFilter and questionTypeFilter
   const totalPYQs = useMemo(() => {
-    if (selectedSubjectId === 'all') {
-      return filterQuestionsByYear(ALL_PYQ_QUESTIONS, yearFilter).length;
-    }
-    const subj = subjectsMap.get(selectedSubjectId);
-    return subj ? (subjectPyqMap.get(subj.id) || 0) : 0;
-  }, [selectedSubjectId, subjectsMap, subjectPyqMap, yearFilter]);
-
-  const totalMarks = useMemo(() => {
-    const questions = selectedSubjectId === 'all'
+    let questions = selectedSubjectId === 'all'
       ? filterQuestionsByYear(ALL_PYQ_QUESTIONS, yearFilter)
       : filterQuestionsByYear(getQuestionsForSubject(subjectsMap.get(selectedSubjectId)?.Subject_Name || ''), yearFilter);
+    if (questionTypeFilter !== 'all') {
+      questions = questions.filter(
+        (q) => (q.type_of_question || 'MCQ').toUpperCase() === questionTypeFilter.toUpperCase()
+      );
+    }
+    return questions.length;
+  }, [selectedSubjectId, subjectsMap, yearFilter, questionTypeFilter]);
+
+  const totalMarks = useMemo(() => {
+    let questions = selectedSubjectId === 'all'
+      ? filterQuestionsByYear(ALL_PYQ_QUESTIONS, yearFilter)
+      : filterQuestionsByYear(getQuestionsForSubject(subjectsMap.get(selectedSubjectId)?.Subject_Name || ''), yearFilter);
+    if (questionTypeFilter !== 'all') {
+      questions = questions.filter(
+        (q) => (q.type_of_question || 'MCQ').toUpperCase() === questionTypeFilter.toUpperCase()
+      );
+    }
     return questions.reduce((acc, q) => acc + (q.marks || 1), 0);
-  }, [selectedSubjectId, subjectsMap, yearFilter]);
+  }, [selectedSubjectId, subjectsMap, yearFilter, questionTypeFilter]);
 
   const completedPYQs = useMemo(() => {
     const progress = loadPYQProgress();
@@ -614,6 +647,82 @@ export const PYQAnalyzerPage: React.FC = () => {
           >
             <CircleDot className="w-3.5 h-3.5 text-sky-400" />
             <span>Pending ({tierCounts.pending})</span>
+          </button>
+        </div>
+
+        {/* Question Type Filter Pills */}
+        <div className="flex items-center gap-2 flex-wrap text-xs pt-1 pb-1">
+          <span className="text-slate-400 font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shrink-0">
+            <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
+            <span>Question Type:</span>
+          </span>
+
+          <button
+            onClick={() => setQuestionTypeFilter('all')}
+            className={clsx(
+              'px-3 py-1.5 rounded-xl font-bold border transition-all',
+              questionTypeFilter === 'all'
+                ? 'bg-sky-500/20 border-sky-400 text-sky-200 shadow-glow-sm'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+            )}
+          >
+            All Question Types ({typeCounts.all})
+          </button>
+
+          <button
+            onClick={() => setQuestionTypeFilter('MCQ')}
+            className={clsx(
+              'px-3 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-1.5',
+              questionTypeFilter === 'MCQ'
+                ? 'bg-sky-950/80 border-sky-500/60 text-sky-300 shadow-glow-sky ring-1 ring-sky-400/40'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+            )}
+          >
+            <span className="w-2 h-2 rounded-full bg-sky-400" />
+            <span>MCQ (Single Choice)</span>
+            <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono">{typeCounts.MCQ}</span>
+          </button>
+
+          <button
+            onClick={() => setQuestionTypeFilter('MSQ')}
+            className={clsx(
+              'px-3 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-1.5',
+              questionTypeFilter === 'MSQ'
+                ? 'bg-purple-950/80 border-purple-500/60 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.25)] ring-1 ring-purple-400/40'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+            )}
+          >
+            <span className="w-2 h-2 rounded-full bg-purple-400" />
+            <span>MSQ (Multiple Select)</span>
+            <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono">{typeCounts.MSQ}</span>
+          </button>
+
+          <button
+            onClick={() => setQuestionTypeFilter('NAT')}
+            className={clsx(
+              'px-3 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-1.5',
+              questionTypeFilter === 'NAT'
+                ? 'bg-amber-950/80 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/40'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+            )}
+          >
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <span>NAT (Numerical Answer)</span>
+            <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono">{typeCounts.NAT}</span>
+          </button>
+
+          <button
+            onClick={() => setQuestionTypeFilter('Descriptive')}
+            className={clsx(
+              'px-3 py-1.5 rounded-xl font-bold border transition-all flex items-center gap-1.5',
+              questionTypeFilter === 'Descriptive'
+                ? 'bg-indigo-950/80 border-indigo-500/60 text-indigo-300 shadow-glow-indigo ring-1 ring-indigo-400/40'
+                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
+            )}
+          >
+            <span className="w-2 h-2 rounded-full bg-indigo-400" />
+            <span>Descriptive / Subjective</span>
+            <span className="px-1.5 py-0.2 rounded-md bg-black/40 text-[10px] font-mono">{typeCounts.Descriptive}</span>
           </button>
         </div>
 
