@@ -104,21 +104,27 @@ export const PYQCard: React.FC<PYQCardProps> = ({
     }
   };
 
+  // Clean formatted question display label
+  const rawQNum = String(question.questionNumber || '');
+  const cleanQNum = rawQNum.includes('-')
+    ? rawQNum.split('-')[0]
+    : rawQNum;
+
   return (
     <div
       onClick={handleCardClick}
       className={clsx(
-        'group relative flex flex-col justify-between p-4 sm:p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none',
+        'group relative flex flex-col justify-between p-4 sm:p-5 rounded-2xl border transition-all duration-200 cursor-pointer select-none overflow-hidden',
         isCompleted
           ? 'bg-slate-950/40 border-slate-850/80 opacity-60 hover:opacity-90 hover:border-slate-700'
           : 'bg-slate-900/90 hover:bg-slate-900 border-slate-800/90 hover:border-slate-700 shadow-md hover:shadow-xl hover:-translate-y-0.5',
         layout === 'list' ? 'gap-3' : 'gap-4 min-h-[140px]'
       )}
     >
-      {/* Top Row: Checkbox + Question Number + GATE Year + Solve Link */}
+      {/* Top Row: Checkbox + Question Number (Truncated if long) + GATE Year + Actions (Never Overflows) */}
       <div className="flex items-center justify-between gap-2 w-full min-w-0">
-        {/* Left: Checkbox + Question # (Never Truncate, Always Visible) */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Left: Checkbox + Question # */}
+        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
           <button
             type="button"
             onClick={(e) => {
@@ -142,21 +148,22 @@ export const PYQCard: React.FC<PYQCardProps> = ({
 
           <span
             className={clsx(
-              'text-sm font-bold tracking-tight whitespace-nowrap transition-colors',
+              'text-sm font-bold tracking-tight truncate transition-colors',
               isCompleted
                 ? 'text-slate-400 line-through'
                 : 'text-white group-hover:text-brand-300'
             )}
+            title={`Question ${question.questionNumber}`}
           >
-            Question {question.questionNumber}
+            Question {cleanQNum}
           </span>
         </div>
 
-        {/* Right: GATE Year Badge + Actions */}
-        <div className="flex items-center gap-1.5 shrink min-w-0" onClick={(e) => e.stopPropagation()}>
+        {/* Right: GATE Year Badge + Actions (Never overflows card boundary) */}
+        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
           {question.year && (
             <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-mono font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-500/40 shadow-sm truncate max-w-[110px]"
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-mono font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-500/40 shadow-sm truncate max-w-[75px] sm:max-w-[100px]"
               title={question.year}
             >
               <Calendar className="w-2.5 h-2.5 text-indigo-400 shrink-0" />
