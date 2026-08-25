@@ -310,18 +310,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             </button>
           </div>
 
+          {/* PYQ Screenshots Management (Subject-Wise) */}
+          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <Camera className="w-4 h-4 text-rose-400" />
+                <span>PYQ Screenshots Management</span>
+              </h4>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed max-w-md">
+                Reset or delete local question screenshots on a subject-wise basis from IndexedDB storage without affecting your study notes or tracking data.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsResetScreenshotsOpen(true)}
+              className="px-4 py-2.5 text-xs font-bold rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 transition-all flex items-center gap-2 shrink-0 active:scale-95 shadow-glow-sm cursor-pointer"
+            >
+              <Camera className="w-4 h-4 text-rose-400" />
+              <span>Reset Screenshots (Subject-Wise)</span>
+            </button>
+          </div>
+
           {/* Reset & Maintenance */}
           <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-3">
             <h4 className="text-sm font-bold text-white">Database Reset & Maintenance</h4>
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => setIsResetScreenshotsOpen(true)}
-                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-              >
-                <Camera className="w-3.5 h-3.5 text-rose-400" />
-                <span>Reset PYQ Screenshots</span>
-              </button>
-
               <button
                 onClick={() => setConfirmResetOpen(true)}
                 className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"

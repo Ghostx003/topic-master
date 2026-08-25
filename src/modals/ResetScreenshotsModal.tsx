@@ -7,6 +7,7 @@ import {
   getScreenshotCaptureStats,
   deleteScreenshotsBySubjects,
 } from '../services/screenshotService';
+import { INITIAL_SUBJECTS } from '../utils/sampleData';
 import { Camera, Trash2, CheckSquare, Square, AlertTriangle } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -21,6 +22,8 @@ export const ResetScreenshotsModal: React.FC<ResetScreenshotsModalProps> = ({
 }) => {
   const { subjects } = useTopicMaster();
   const { toast } = useToast();
+
+  const effectiveSubjects = subjects && subjects.length > 0 ? subjects : INITIAL_SUBJECTS;
 
   const [captureStats, setCaptureStats] = useState<{
     totalCaptured: number;
@@ -56,10 +59,10 @@ export const ResetScreenshotsModal: React.FC<ResetScreenshotsModalProps> = ({
   };
 
   const handleToggleAll = () => {
-    if (selectedSubjects.size === subjects.length) {
+    if (selectedSubjects.size === effectiveSubjects.length) {
       setSelectedSubjects(new Set());
     } else {
-      setSelectedSubjects(new Set(subjects.map((s) => s.Subject_Name)));
+      setSelectedSubjects(new Set(effectiveSubjects.map((s) => s.Subject_Name)));
     }
   };
 
@@ -87,7 +90,7 @@ export const ResetScreenshotsModal: React.FC<ResetScreenshotsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const allSelected = subjects.length > 0 && selectedSubjects.size === subjects.length;
+  const allSelected = effectiveSubjects.length > 0 && selectedSubjects.size === effectiveSubjects.length;
 
   return (
     <>
@@ -101,9 +104,9 @@ export const ResetScreenshotsModal: React.FC<ResetScreenshotsModalProps> = ({
               <Camera className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-black tracking-tight">Reset PYQ Screenshots</h3>
+              <h3 className="text-lg font-black tracking-tight">Reset PYQ Screenshots (Subject-Wise)</h3>
               <p className="text-xs text-slate-400 font-medium mt-0.5">
-                Select subjects to remove cached question screenshots
+                Select specific subjects to clear cached question screenshots
               </p>
             </div>
           </div>
@@ -140,7 +143,7 @@ export const ResetScreenshotsModal: React.FC<ResetScreenshotsModalProps> = ({
 
           {/* Subjects Checkbox Grid */}
           <div className="max-h-[300px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-            {subjects.map((s) => {
+            {effectiveSubjects.map((s) => {
               const count = captureStats.bySubject[s.Subject_Name] || 0;
               const isSelected = selectedSubjects.has(s.Subject_Name);
 
@@ -191,7 +194,7 @@ export const ResetScreenshotsModal: React.FC<ResetScreenshotsModalProps> = ({
           <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-500/30 flex items-start gap-2.5 text-xs text-amber-300/90 leading-relaxed">
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <span>
-              Resetting will remove the local screenshot images for the selected subjects. You can re-capture them anytime using the Chrome Extension.
+              Resetting will remove the local screenshot images for the selected subjects from IndexedDB. You can re-capture them anytime using the Chrome Extension.
             </span>
           </div>
 
