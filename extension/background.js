@@ -308,6 +308,19 @@ async function cleanPageForScreenshot(tabId) {
               color: #1e293b !important;
             }
 
+            .qa-q-view-content ol,
+            .qa-q-view-content ul {
+              margin: 14px 0 !important;
+              padding-left: 28px !important;
+              display: block !important;
+            }
+
+            .qa-q-view-content li {
+              margin: 8px 0 !important;
+              font-size: 15px !important;
+              line-height: 1.6 !important;
+            }
+
             .entry-content img, .qa-q-view-content img {
               max-width: 100% !important;
               height: auto !important;
@@ -368,28 +381,37 @@ async function cleanPageForScreenshot(tabId) {
           });
         });
 
-        // Scroll the question element to top-left of the viewport
+        // Scroll question to top-left
         window.scrollTo(0, 0);
-        const qElem =
-          document.querySelector('.qa-main-heading') ||
+
+        const contentElem =
+          document.querySelector('.qa-q-view-content') ||
+          document.querySelector('.entry-content') ||
+          document.querySelector('.qa-q-view-main') ||
           document.querySelector('.qa-q-view') ||
-          document.querySelector('.qa-main') ||
           document.body;
-        if (qElem) {
-          qElem.scrollIntoView({ behavior: 'instant', block: 'start' });
+
+        const headingElem = document.querySelector('.qa-main-heading') || document.querySelector('h1');
+
+        if (headingElem) {
+          headingElem.scrollIntoView({ behavior: 'instant', block: 'start' });
+        } else if (contentElem) {
+          contentElem.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
 
-        const targetElem =
-          document.querySelector('.qa-main') ||
-          document.querySelector('.qa-q-view') ||
-          document.querySelector('article.qa-post-view') ||
-          document.body;
-        const r = targetElem.getBoundingClientRect();
+        const contentRect = contentElem.getBoundingClientRect();
+        const headingRect = headingElem ? headingElem.getBoundingClientRect() : null;
+
+        const top = headingRect ? Math.min(headingRect.top, contentRect.top) : contentRect.top;
+        const left = Math.min(headingRect ? headingRect.left : contentRect.left, contentRect.left);
+        const right = Math.max(headingRect ? headingRect.right : contentRect.right, contentRect.right);
+        const bottom = contentRect.bottom;
+
         return {
-          top: Math.max(0, r.top),
-          left: Math.max(0, r.left),
-          width: r.width,
-          height: r.height,
+          top: Math.max(0, top),
+          left: Math.max(0, left),
+          width: Math.max(100, right - left),
+          height: Math.max(100, bottom - top),
           dpr: window.devicePixelRatio || 1
         };
       },
