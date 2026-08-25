@@ -58,7 +58,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   } | null>(null);
   const [confirmImportMode, setConfirmImportMode] = useState<'overwrite' | 'merge' | null>(null);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
       const stateToExport = {
         subjects,
@@ -68,8 +68,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         settings: { theme: 'dark' as const, themePalette: settings.themePalette || 'blue', enableSound: true, autoSaveIntervalMs: 5000 },
         activeTimer: { topicId: null, subjectId: null, startTime: null, elapsedSeconds: 0, isRunning: false },
       };
-      BackupService.downloadBackupFile(stateToExport);
-      toast.success('Backup Exported', 'Downloaded complete Topic Master JSON backup.');
+      await BackupService.downloadBackupFile(stateToExport);
+      toast.success('Backup Exported', 'Downloaded complete Topic Master JSON backup including all question screenshots.');
     } catch (err: any) {
       toast.error('Export Failed', err.message);
     }

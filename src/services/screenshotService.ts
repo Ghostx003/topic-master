@@ -244,6 +244,92 @@ export function requestCaptureSpecificPage(
   });
 }
 
+/**
+ * Export all screenshots from IndexedDB as a Record<questionId, QuestionScreenshotRecord>
+ */
+export async function exportAllScreenshots(): Promise<Record<string, QuestionScreenshotRecord>> {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const transaction = db.transaction([STORE_NAME], 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        const records = (request.result as QuestionScreenshotRecord[]) || [];
+        const map: Record<string, QuestionScreenshotRecord> = {};
+        records.forEach((rec) => {
+          if (rec.dataUrl) {
+            map[rec.questionId] = rec;
+          }
+        });
+        resolve(map);
+      };
+
+      request.onerror = () => {
+        resolve({});
+      };
+    });
+  } catch (err) {
+    console.error('Failed to export screenshots:', err);
+    return {};
+  }
+}
+
+/**
+ * Bulk import screenshots into IndexedDB
+ */
+export async function importScreenshots(
+  screenshots: Record<string, QuestionScreenshotRecord | string>
+): Promise<number> {
+  if (!screenshots || typeof screenshots !== 'object') return 0;
+
+  try {
+    const db = await openDB();
+    const entries = Object.entries(screenshots);
+    let importedCount = 0;
+
+    await new Promise<void>((resolve, reject) => {
+      const transaction = db.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+
+      entries.forEach(([qId, val]) => {
+        let record: QuestionScreenshotRecord;
+        if (typeof val === 'string') {
+          record = {
+            questionId: qId,
+            url: '',
+            subject: 'Imported',
+            dataUrl: val,
+            timestamp: Date.now(),
+            status: 'CAPTURED',
+          };
+        } else {
+          record = {
+            ...val,
+            questionId: val.questionId || qId,
+            status: val.status || 'CAPTURED',
+          };
+        }
+
+        if (record.dataUrl) {
+          screenshotMemoryCache.set(record.questionId, record.dataUrl);
+          store.put(record);
+          importedCount++;
+        }
+      });
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+
+    return importedCount;
+  } catch (err) {
+    console.error('Failed to bulk import screenshots:', err);
+    return 0;
+  }
+}
+
 // Global window message listener from Chrome extension to sync incoming batch captures
 if (typeof window !== 'undefined') {
   window.addEventListener('message', (event: MessageEvent) => {

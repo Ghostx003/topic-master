@@ -2,6 +2,7 @@ import { TopicMasterState } from '../types/store';
 import { Subject } from '../types/subject';
 import { Topic } from '../types/topic';
 import { Schedule } from '../types/schedule';
+import { exportAllScreenshots, importScreenshots } from './screenshotService';
 
 export interface BackupPayload {
   version: string;
@@ -12,6 +13,8 @@ export interface BackupPayload {
     topics: Topic[];
     schedules: Schedule[];
     settings?: any;
+    pyqProgress?: Record<string, any>;
+    screenshots?: Record<string, any>;
   };
 }
 
@@ -49,50 +52,53 @@ export function deduplicateDatabase(
     }
   }
 
-  // 2. Deduplicate Topics by (Subject_Id + Parent_Id + Topic_Name)
+  // Set of valid canonical subject IDs
+  const validSubjectIds = new Set(cleanSubjects.map((s) => s.id));
+
+  // 2. Remap & Deduplicate Topics
+  const cleanSubjectTopics = topics
+    .map((t) => ({
+      ...t,
+      Subject_Id: subjectIdAliases.get(t.Subject_Id) || t.Subject_Id,
+    }))
+    .filter((t) => validSubjectIds.has(t.Subject_Id));
+
   const topicKeyMap = new Map<string, Topic>();
-  const topicIdAliases = new Map<string, string>(); // oldTopicId -> masterTopicId
-  let tempCleanTopics: Topic[] = [];
-  let removedTopicsCount = 0;
+  const topicIdAliases = new Map<string, string>();
+  const canonicalTopics: Topic[] = [];
+  let removedTopicsCount = topics.length - cleanSubjectTopics.length;
 
-  for (const top of topics) {
-    const canonicalSubjectId = subjectIdAliases.get(top.Subject_Id) || top.Subject_Id;
+  for (const top of cleanSubjectTopics) {
     const parentKey = top.Parent_Id || 'root';
-    const nameKey = top.Topic_Name.trim().toLowerCase();
-    const compositeKey = `${canonicalSubjectId}::${parentKey}::${nameKey}`;
+    const key = `${top.Subject_Id}:::${parentKey}:::${top.Topic_Name.trim().toLowerCase()}`;
 
-    if (topicKeyMap.has(compositeKey)) {
-      const master = topicKeyMap.get(compositeKey)!;
+    if (topicKeyMap.has(key)) {
+      const master = topicKeyMap.get(key)!;
       topicIdAliases.set(top.id, master.id);
       removedTopicsCount++;
     } else {
-      const cleanTop: Topic = {
-        ...top,
-        Subject_Id: canonicalSubjectId,
-      };
-      topicKeyMap.set(compositeKey, cleanTop);
-      tempCleanTopics.push(cleanTop);
+      topicKeyMap.set(key, top);
+      canonicalTopics.push(top);
     }
   }
 
-  // 3. Remap Parent IDs and fix broken hierarchy references
-  const validTopicIds = new Set(tempCleanTopics.map((t) => t.id));
-  const cleanTopics = tempCleanTopics.map((top) => {
-    let parentId = top.Parent_Id;
+  // Remap parent IDs
+  const validTopicIds = new Set(canonicalTopics.map((t) => t.id));
+  const cleanTopics = canonicalTopics.map((t) => {
+    let parentId = t.Parent_Id;
     if (parentId && topicIdAliases.has(parentId)) {
       parentId = topicIdAliases.get(parentId)!;
     }
-    // If parent ID does not exist in valid topics, promote to root
     if (parentId && !validTopicIds.has(parentId)) {
       parentId = null;
     }
     return {
-      ...top,
+      ...t,
       Parent_Id: parentId,
     };
   });
 
-  // 4. Clean and Remap Schedules
+  // 3. Clean Schedules
   const cleanSchedules = schedules.map((sched) => {
     const seenAllocations = new Set<string>();
     const cleanAllocations = (sched.Allocated_Topics || [])
@@ -146,8 +152,38 @@ export const BackupService = {
     return JSON.stringify(payload, null, 2);
   },
 
-  downloadBackupFile(state: TopicMasterState): void {
-    const json = this.exportBackup(state);
+  async exportBackupAsync(state: TopicMasterState): Promise<string> {
+    let screenshotsMap: Record<string, any> = {};
+    try {
+      screenshotsMap = await exportAllScreenshots();
+    } catch (_) {}
+
+    let pyqProgress: Record<string, any> = {};
+    try {
+      const storedProgress = localStorage.getItem('topic_master_pyq_progress_v1') || localStorage.getItem('pyq_progress_v1');
+      if (storedProgress) {
+        pyqProgress = JSON.parse(storedProgress);
+      }
+    } catch (_) {}
+
+    const payload: BackupPayload = {
+      version: '1.0.0',
+      app: 'Topic Master',
+      exported_at: new Date().toISOString(),
+      data: {
+        subjects: state.subjects,
+        topics: state.topics,
+        schedules: state.schedules,
+        settings: state.settings,
+        pyqProgress,
+        screenshots: screenshotsMap,
+      },
+    };
+    return JSON.stringify(payload, null, 2);
+  },
+
+  async downloadBackupFile(state: TopicMasterState): Promise<void> {
+    const json = await this.exportBackupAsync(state);
     const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -167,7 +203,6 @@ export const BackupService = {
       }
       const parsed = JSON.parse(jsonString);
 
-      // Support either direct data object or full BackupPayload wrapped object
       const subjects = parsed.data?.subjects || parsed.subjects;
       const topics = parsed.data?.topics || parsed.topics;
 
@@ -178,7 +213,6 @@ export const BackupService = {
         };
       }
 
-      // Check minimum subject properties
       for (const subj of subjects) {
         if (!subj.id || !subj.Subject_Name) {
           return {
@@ -188,7 +222,6 @@ export const BackupService = {
         }
       }
 
-      // Check minimum topic properties
       for (const top of topics) {
         if (!top.id || !top.Subject_Id || !top.Topic_Name) {
           return {
@@ -209,6 +242,8 @@ export const BackupService = {
             ? parsed.data?.schedules || parsed.schedules
             : [],
           settings: parsed.data?.settings || parsed.settings || {},
+          pyqProgress: parsed.data?.pyqProgress || parsed.pyqProgress || {},
+          screenshots: parsed.data?.screenshots || parsed.screenshots || {},
         },
       };
 
@@ -234,13 +269,11 @@ export const BackupService = {
       targetTopics = incoming.topics;
       targetSchedules = incoming.schedules || [];
     } else {
-      // Merge Mode: Combine existing + incoming
       targetSubjects = [...currentState.subjects, ...incoming.subjects];
       targetTopics = [...currentState.topics, ...incoming.topics];
       targetSchedules = [...currentState.schedules, ...(incoming.schedules || [])];
     }
 
-    // Automatically deduplicate on import
     const {
       cleanSubjects,
       cleanTopics,
@@ -248,6 +281,22 @@ export const BackupService = {
       removedSubjectsCount,
       removedTopicsCount,
     } = deduplicateDatabase(targetSubjects, targetTopics, targetSchedules);
+
+    if (incoming.screenshots && typeof incoming.screenshots === 'object' && Object.keys(incoming.screenshots).length > 0) {
+      importScreenshots(incoming.screenshots).catch((err) => {
+        console.error('Failed to import screenshots from backup:', err);
+      });
+    }
+
+    if (incoming.pyqProgress && typeof incoming.pyqProgress === 'object' && Object.keys(incoming.pyqProgress).length > 0) {
+      try {
+        const currentProgressStr = localStorage.getItem('topic_master_pyq_progress_v1') || '{}';
+        const currentProgress = JSON.parse(currentProgressStr);
+        const mergedProgress = { ...currentProgress, ...incoming.pyqProgress };
+        localStorage.setItem('topic_master_pyq_progress_v1', JSON.stringify(mergedProgress));
+        window.dispatchEvent(new Event('pyq_progress_updated'));
+      } catch (_) {}
+    }
 
     const nextState: TopicMasterState = {
       ...currentState,

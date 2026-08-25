@@ -6,6 +6,7 @@ import {
   ExternalLink,
   HelpCircle,
   Calendar,
+  Camera,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -15,6 +16,7 @@ export interface PYQCardProps {
   onToggleCompleted: (questionId: string) => void;
   onSetDifficulty: (questionId: string, status: PYQDifficultyStatus) => void;
   onToggleDoubt: (questionId: string) => void;
+  onOpenScreenshot?: (question: PYQQuestion) => void;
   layout?: 'grid' | 'list';
 }
 
@@ -24,6 +26,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
   onToggleCompleted,
   onSetDifficulty,
   onToggleDoubt,
+  onOpenScreenshot,
   layout = 'grid',
 }) => {
   const isCompleted = Boolean(progress?.completed);
@@ -36,8 +39,11 @@ export const PYQCard: React.FC<PYQCardProps> = ({
     if (target.closest('button') || target.closest('a') || target.closest('select')) {
       return;
     }
-    // Open question directly in new tab
-    window.open(question.link, '_blank', 'noopener,noreferrer');
+    if (onOpenScreenshot) {
+      onOpenScreenshot(question);
+    } else {
+      window.open(question.link, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -88,7 +94,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
           </span>
         </div>
 
-        {/* Right: GATE Year Badge + Solve Anchor Link (Fully Contained) */}
+        {/* Right: GATE Year Badge + Actions */}
         <div className="flex items-center gap-1.5 shrink min-w-0" onClick={(e) => e.stopPropagation()}>
           {question.year && (
             <span
@@ -105,16 +111,30 @@ export const PYQCard: React.FC<PYQCardProps> = ({
             </span>
           )}
 
+          {/* Screenshot Preview Trigger */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onOpenScreenshot) onOpenScreenshot(question);
+            }}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-950 hover:bg-brand-950/60 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95 cursor-pointer shrink-0"
+            title="View Question Screenshot"
+          >
+            <Camera className="w-3 h-3 text-slate-400 group-hover:text-brand-400" />
+            <span className="hidden sm:inline">View</span>
+          </button>
+
+          {/* Discussion External Link */}
           <a
             href={question.link}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-brand-950/60 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95 cursor-pointer shrink-0"
-            title="Open question on GateOverflow in a new tab"
+            className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-850 text-slate-400 hover:text-white border border-slate-800 transition-all text-xs shadow-sm active:scale-95 cursor-pointer shrink-0"
+            title="Open discussion on GateOverflow (new tab)"
           >
-            <span>Solve</span>
-            <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-brand-400" />
+            <ExternalLink className="w-3 h-3" />
           </a>
         </div>
       </div>
@@ -138,7 +158,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
           {/* Question Type Badge */}
           <span
             className={clsx(
-              'px-2 py-0.5 rounded-md font-black border shadow-sm uppercase tracking-wider',
+              'px-2 py-0.5 rounded-md font-bold border shadow-sm',
               question.type_of_question === 'MSQ'
                 ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
                 : question.type_of_question === 'NAT'
@@ -154,55 +174,54 @@ export const PYQCard: React.FC<PYQCardProps> = ({
         </div>
       </div>
 
-      {/* Bottom Row: Status 1 (Difficulty) & Status 2 (Doubt Toggle) */}
-      <div
-        className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/60 w-full"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Status 1: Difficulty Status Pills */}
-        <div className="flex items-center bg-slate-950/90 p-0.5 rounded-xl border border-slate-800/80 text-xs">
-          {(['easy', 'medium', 'hard', 'skip'] as PYQDifficultyStatus[]).map((level) => {
-            const isSelected = difficulty === level;
-            return (
-              <button
-                key={level}
-                type="button"
-                onClick={() => onSetDifficulty(question.id, isSelected ? 'none' : level)}
-                className={clsx(
-                  'px-2 py-0.5 rounded-lg text-[11px] font-bold capitalize transition-all',
-                  isSelected
-                    ? level === 'easy'
-                      ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50 shadow-sm'
-                      : level === 'medium'
-                      ? 'bg-amber-950 text-amber-300 border border-amber-500/50 shadow-sm'
-                      : level === 'hard'
-                      ? 'bg-rose-950 text-rose-300 border border-rose-500/50 shadow-sm'
-                      : 'bg-slate-800 text-slate-300 border border-slate-600 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900/60'
-                )}
-                title={`Mark as ${level}`}
-              >
-                {level}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Status 2: Doubt / Review Toggle */}
+      {/* Bottom Row: Doubt Flag + Difficulty Level Selector */}
+      <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+        {/* Doubt Button */}
         <button
           type="button"
-          onClick={() => onToggleDoubt(question.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleDoubt(question.id);
+          }}
           className={clsx(
-            'flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold border transition-all active:scale-95 shrink-0',
+            'flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all active:scale-95',
             isDoubt
-              ? 'bg-amber-950/80 border-amber-500/70 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.35)] ring-1 ring-amber-400/40'
-              : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+              ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+              : 'bg-slate-950 text-slate-500 hover:text-slate-300 border-slate-800 hover:border-slate-700'
           )}
           title={isDoubt ? 'Remove Doubt Flag' : 'Mark as Doubt / Need Review'}
         >
-          <HelpCircle className={clsx('w-3.5 h-3.5', isDoubt ? 'text-amber-400 fill-amber-400/20' : 'text-slate-500')} />
-          <span>Doubt</span>
+          <HelpCircle className={clsx('w-3.5 h-3.5', isDoubt ? 'text-amber-400' : 'text-slate-500')} />
+          <span>{isDoubt ? 'Doubt' : 'Flag'}</span>
         </button>
+
+        {/* Difficulty Status Selector Buttons */}
+        <div
+          className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800 text-[11px] font-semibold"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {(['easy', 'medium', 'hard', 'skip'] as PYQDifficultyStatus[]).map((status) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => onSetDifficulty(question.id, status)}
+              className={clsx(
+                'px-2 py-0.5 rounded-lg capitalize transition-all',
+                difficulty === status
+                  ? status === 'easy'
+                    ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                    : status === 'medium'
+                    ? 'bg-amber-950 text-amber-300 border border-amber-500/40 shadow-sm'
+                    : status === 'hard'
+                    ? 'bg-rose-950 text-rose-300 border border-rose-500/40 shadow-sm'
+                    : 'bg-slate-800 text-slate-300'
+                  : 'text-slate-500 hover:text-slate-300'
+              )}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

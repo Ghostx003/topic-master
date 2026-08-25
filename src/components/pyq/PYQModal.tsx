@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { PYQProgressMap, PYQDifficultyStatus, PYQYearFilter, PYQItemProgress } from '../../types/pyq';
+import { PYQQuestion, PYQProgressMap, PYQDifficultyStatus, PYQYearFilter, PYQItemProgress } from '../../types/pyq';
 import {
   getQuestionsForTopic,
   loadPYQProgress,
@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { PYQPracticeWorkspace } from './PYQPracticeWorkspace';
+import { QuestionScreenshotModal } from './QuestionScreenshotModal';
 
 export interface PYQModalProps {
   isOpen: boolean;
@@ -72,6 +73,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isPracticeOpen, setIsPracticeOpen] = useState<boolean>(false);
   const [practiceQuestionIndex, setPracticeQuestionIndex] = useState<number>(0);
+  const [selectedScreenshotQuestion, setSelectedScreenshotQuestion] = useState<PYQQuestion | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -653,6 +655,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
                       onToggleCompleted={handleToggleCompleted}
                       onSetDifficulty={handleSetDifficulty}
                       onToggleDoubt={handleToggleDoubt}
+                      onOpenScreenshot={(targetQ) => setSelectedScreenshotQuestion(targetQ)}
                       layout={viewMode}
                     />
                   ))}
@@ -692,6 +695,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
                         onToggleCompleted={handleToggleCompleted}
                         onSetDifficulty={handleSetDifficulty}
                         onToggleDoubt={handleToggleDoubt}
+                        onOpenScreenshot={(targetQ) => setSelectedScreenshotQuestion(targetQ)}
                         layout={viewMode}
                       />
                     ))}
@@ -718,6 +722,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
                   onToggleCompleted={handleToggleCompleted}
                   onSetDifficulty={handleSetDifficulty}
                   onToggleDoubt={handleToggleDoubt}
+                  onOpenScreenshot={(targetQ) => setSelectedScreenshotQuestion(targetQ)}
                   layout={viewMode}
                 />
               ))}
@@ -728,14 +733,17 @@ export const PYQModal: React.FC<PYQModalProps> = ({
 
       {/* Fullscreen Footer / Status Bar */}
       <footer className="px-6 sm:px-10 lg:px-12 py-3 border-t border-slate-800/80 bg-slate-950/90 text-xs text-slate-400 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4 flex-wrap">
-          <span>
-            Showing <strong className="text-white">{filteredQuestions.length}</strong> of{' '}
-            <strong className="text-white">{rawTopicQuestions.length}</strong> total questions
+        <div className="flex items-center gap-3">
+          <span className="text-slate-500">
+            Total: <strong className="text-slate-300 font-mono">{filteredQuestions.length}</strong>
           </span>
-          <span className="hidden sm:inline text-slate-600">•</span>
-          <span className="hidden sm:inline">
-            Year filter: <strong className="text-indigo-300">{YEAR_FILTER_OPTIONS.find((o) => o.id === yearFilter)?.label}</strong> (Saved Site-Wide)
+          <span className="text-slate-600">•</span>
+          <span className="text-emerald-400 font-semibold">
+            Done: <strong className="font-mono">{completedQuestions.length}</strong>
+          </span>
+          <span className="text-slate-600">•</span>
+          <span className="text-amber-400 font-semibold">
+            Doubts: <strong className="font-mono">{stats.doubts}</strong>
           </span>
           <span className="hidden sm:inline text-slate-600">•</span>
           <span className="hidden sm:inline">
@@ -750,6 +758,19 @@ export const PYQModal: React.FC<PYQModalProps> = ({
           Done Practicing
         </button>
       </footer>
+
+      {/* Individual Question Screenshot Modal */}
+      {selectedScreenshotQuestion && (
+        <QuestionScreenshotModal
+          question={selectedScreenshotQuestion}
+          isOpen={Boolean(selectedScreenshotQuestion)}
+          onClose={() => setSelectedScreenshotQuestion(null)}
+          progress={progress[selectedScreenshotQuestion.id]}
+          onToggleCompleted={handleToggleCompleted}
+          onToggleDoubt={handleToggleDoubt}
+          onSetDifficulty={handleSetDifficulty}
+        />
+      )}
 
       {/* Split-Screen PYQ Practice Workspace */}
       {isPracticeOpen && (
