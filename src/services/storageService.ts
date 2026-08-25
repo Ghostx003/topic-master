@@ -3,7 +3,7 @@ import { INITIAL_SUBJECTS, INITIAL_TOPICS, INITIAL_SCHEDULES } from '../utils/sa
 import { Subject } from '../types/subject';
 import { Topic } from '../types/topic';
 
-const STORAGE_KEY = 'topic_master_state_gate_cse_v16_pure_math_apti';
+const STORAGE_KEY = 'topic_master_state_gate_cse_v17_marks_stars';
 
 export const DEFAULT_INITIAL_STATE: TopicMasterState = {
   subjects: INITIAL_SUBJECTS,
@@ -31,6 +31,7 @@ export const StorageService = {
       // Clean up legacy storage keys
       try {
         [
+          'topic_master_state_gate_cse_v16_pure_math_apti',
           'topic_master_state_gate_cse_v15_apti_migrated',
           'topic_master_state_gate_cse_v14_clean_pyqs',
           'topic_master_state_gate_cse_v13',
