@@ -1,7 +1,7 @@
 /**
  * Topic Master — PYQ Screenshot Importer Background Service Worker (Manifest V3)
  * High-precision single-element question cropping with distraction removal,
- * tall viewport rendering, and Cloudflare detection.
+ * OffscreenCanvas cropper, tall viewport rendering, and Cloudflare detection.
  */
 
 let importState = {
@@ -161,7 +161,7 @@ async function handleStopImport() {
  */
 async function cleanPageForScreenshot(tabId) {
   try {
-    await chrome.scripting.executeScript({
+    const results = await chrome.scripting.executeScript({
       target: { tabId },
       func: () => {
         const styleId = 'tm-clean-pyq-screenshot-style';
@@ -374,76 +374,63 @@ async function cleanPageForScreenshot(tabId) {
         if (qElem) {
           qElem.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
+
+        const targetElem =
+          document.querySelector('.qa-main') ||
+          document.querySelector('.qa-q-view') ||
+          document.querySelector('article.qa-post-view') ||
+          document.body;
+        const r = targetElem.getBoundingClientRect();
+        return {
+          top: Math.max(0, r.top),
+          left: Math.max(0, r.left),
+          width: r.width,
+          height: r.height,
+          dpr: window.devicePixelRatio || 1
+        };
       },
     });
-  } catch (_) {}
+
+    return results && results[0] ? results[0].result : null;
+  } catch (_) {
+    return null;
+  }
 }
 
 /**
- * Crop the full viewport screenshot tightly around the question element
+ * Native OffscreenCanvas cropping inside service worker (CSP-proof)
  */
-async function cropElementScreenshot(tabId, fullDataUrl) {
+async function cropImageInExtension(dataUrl, rect) {
+  if (!rect || !rect.width || !rect.height) return dataUrl;
   try {
-    const results = await chrome.scripting.executeScript({
-      target: { tabId },
-      func: (dataUrl) => {
-        return new Promise((resolve) => {
-          // Identify target question container
-          const targetElem =
-            document.querySelector('.qa-main') ||
-            document.querySelector('.qa-q-view') ||
-            document.querySelector('article.qa-post-view') ||
-            document.querySelector('.qa-q-view-content') ||
-            document.body;
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    const imageBitmap = await createImageBitmap(blob);
 
-          const rect = targetElem.getBoundingClientRect();
-          const dpr = window.devicePixelRatio || 1;
-          const padding = 16 * dpr;
+    const dpr = rect.dpr || 1;
+    const padding = 16 * dpr;
+    const cropX = Math.max(0, rect.left * dpr - padding);
+    const cropY = Math.max(0, rect.top * dpr - padding);
+    const cropWidth = Math.min(imageBitmap.width - cropX, rect.width * dpr + padding * 2);
+    const cropHeight = Math.min(imageBitmap.height - cropY, rect.height * dpr + padding * 2);
 
-          const img = new Image();
-          img.onload = () => {
-            const cropX = Math.max(0, rect.left * dpr - padding);
-            const cropY = Math.max(0, rect.top * dpr - padding);
-            const cropWidth = Math.min(img.width - cropX, rect.width * dpr + padding * 2);
-            const cropHeight = Math.min(img.height - cropY, rect.height * dpr + padding * 2);
+    if (cropWidth <= 10 || cropHeight <= 10) return dataUrl;
 
-            if (cropWidth <= 0 || cropHeight <= 0) {
-              resolve(dataUrl);
-              return;
-            }
+    const offscreen = new OffscreenCanvas(cropWidth, cropHeight);
+    const ctx = offscreen.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, cropWidth, cropHeight);
+    ctx.drawImage(imageBitmap, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
-            const canvas = document.createElement('canvas');
-            canvas.width = cropWidth;
-            canvas.height = cropHeight;
-
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(
-              img,
-              cropX,
-              cropY,
-              cropWidth,
-              cropHeight,
-              0,
-              0,
-              cropWidth,
-              cropHeight
-            );
-
-            resolve(canvas.toDataURL('image/jpeg', 0.92));
-          };
-          img.onerror = () => resolve(dataUrl);
-          img.src = dataUrl;
-        });
-      },
-      args: [fullDataUrl],
+    const croppedBlob = await offscreen.convertToBlob({ type: 'image/jpeg', quality: 0.92 });
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(croppedBlob);
     });
-
-    return results && results[0] && results[0].result ? results[0].result : fullDataUrl;
   } catch (err) {
-    console.warn('Crop fallback:', err);
-    return fullDataUrl;
+    console.warn('Offscreen crop fallback:', err);
+    return dataUrl;
   }
 }
 
@@ -520,15 +507,15 @@ async function processNextInQueue() {
     }
 
     // Step 5: Clean page distractions, voting buttons, comments, author card
-    await cleanPageForScreenshot(tab.id);
+    const rect = await cleanPageForScreenshot(tab.id);
     await new Promise((r) => setTimeout(r, 1400));
 
     // Step 6: Capture visible tab
     const rawDataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 95 });
 
     if (rawDataUrl && rawDataUrl.startsWith('data:image')) {
-      // Step 7: Crop tightly to the question element
-      const dataUrl = await cropElementScreenshot(tab.id, rawDataUrl);
+      // Step 7: Crop tightly to the question element via OffscreenCanvas
+      const dataUrl = await cropImageInExtension(rawDataUrl, rect);
 
       // Step 8: Store screenshot in local storage
       statuses[q.id] = 'CAPTURED';
@@ -656,16 +643,16 @@ async function handleCaptureSpecific(questionId, url, subject) {
       return { success: false, error: 'SECURITY_CHALLENGE' };
     }
 
-    // 2. Clean page distractions and position question
-    await cleanPageForScreenshot(captureTab.id);
+    // 2. Clean page distractions and get element bounds
+    const rect = await cleanPageForScreenshot(captureTab.id);
     await new Promise((r) => setTimeout(r, 1400));
 
     // 3. Capture visible tab
     const rawDataUrl = await chrome.tabs.captureVisibleTab(captureTab.windowId, { format: 'jpeg', quality: 95 });
 
     if (rawDataUrl && rawDataUrl.startsWith('data:image')) {
-      // 4. Crop tightly to the question element
-      const dataUrl = await cropElementScreenshot(captureTab.id, rawDataUrl);
+      // 4. Crop tightly to the question element via OffscreenCanvas
+      const dataUrl = await cropImageInExtension(rawDataUrl, rect);
 
       const storageData = await chrome.storage.local.get('pyq_question_statuses');
       const statuses = storageData.pyq_question_statuses || {};
