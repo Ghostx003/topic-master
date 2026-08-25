@@ -1087,28 +1087,45 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
       )}
 
       {/* ================= RICH INTERACTIVE & PINNABLE POPOVER ================= */}
-      {activeCellData && (
-        <div
-          ref={popoverRef}
-          className={clsx(
-            'fixed z-50 p-4 rounded-2xl bg-slate-950/98 shadow-[0_12px_45px_rgba(0,0,0,0.9)] backdrop-blur-2xl text-xs space-y-3 w-80 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150',
-            activeCellData.isPinned
-              ? 'border-2 border-brand-500 ring-4 ring-brand-500/20'
-              : 'border border-brand-500/40 ring-1 ring-white/10'
-          )}
-          style={{
-            top: Math.min(
-              window.innerHeight - 360,
-              Math.max(15, activeCellData.rect.bottom + 6)
-            ),
-            left: Math.min(
-              window.innerWidth - 350,
-              Math.max(15, activeCellData.rect.left - 30)
-            ),
-          }}
-          onMouseEnter={handlePopoverMouseEnter}
-          onMouseLeave={handlePopoverMouseLeave}
-        >
+      {activeCellData && (() => {
+        const popoverEstimatedHeight = 340;
+        const spaceBelow = window.innerHeight - activeCellData.rect.bottom;
+        const placeAbove = spaceBelow < popoverEstimatedHeight && activeCellData.rect.top > popoverEstimatedHeight;
+
+        const topPosition = placeAbove
+          ? Math.max(12, activeCellData.rect.top - popoverEstimatedHeight - 8)
+          : activeCellData.rect.bottom + 6;
+
+        const leftPosition = Math.max(
+          12,
+          Math.min(window.innerWidth - 340, activeCellData.rect.left - 12)
+        );
+
+        return (
+          <div
+            ref={popoverRef}
+            className={clsx(
+              'fixed z-50 p-4 rounded-2xl bg-slate-950/98 shadow-[0_16px_50px_rgba(0,0,0,0.95)] backdrop-blur-2xl text-xs space-y-3 w-80 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150',
+              activeCellData.isPinned
+                ? 'border-2 border-brand-500 ring-4 ring-brand-500/20'
+                : 'border border-brand-500/40 ring-1 ring-white/10'
+            )}
+            style={{
+              top: `${topPosition}px`,
+              left: `${leftPosition}px`,
+            }}
+            onMouseEnter={handlePopoverMouseEnter}
+            onMouseLeave={handlePopoverMouseLeave}
+          >
+            {/* Pointer arrow pointing to the subject cell */}
+            <div
+              className={clsx(
+                'absolute w-3 h-3 bg-slate-950 rotate-45 pointer-events-none',
+                placeAbove
+                  ? '-bottom-1.5 left-6 border-r border-b border-brand-500/50'
+                  : '-top-1.5 left-6 border-l border-t border-brand-500/50'
+              )}
+            />
           {/* Header */}
           <div className="space-y-1">
             <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-800">
@@ -1233,7 +1250,8 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
             )}
           </div>
         </div>
-      )}
+      );
+    })()}
     </div>
   );
 };
