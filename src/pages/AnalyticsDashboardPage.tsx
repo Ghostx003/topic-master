@@ -181,13 +181,19 @@ export const AnalyticsDashboardPage: React.FC = () => {
         ? '2008_2026'
         : 'all';
 
+    const customRange: [number, number] | undefined =
+      selectedPreset === 'custom'
+        ? [effectiveStartYear, effectiveEndYear]
+        : undefined;
+
     openPYQModal(
       match?.id || `topic-${topicName.replace(/\s+/g, '-').toLowerCase()}`,
       topicName,
       subjectName,
       [],
       year ? String(year) : undefined,
-      targetFilter
+      targetFilter,
+      customRange
     );
   };
 

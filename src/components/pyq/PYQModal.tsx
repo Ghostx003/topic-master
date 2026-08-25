@@ -33,6 +33,7 @@ export interface PYQModalProps {
   subjectName: string;
   subtopicNames?: string[];
   initialSearch?: string;
+  customYearRange?: [number, number];
 }
 
 export type PYQFilterTab = 'all' | 'active' | 'completed' | 'doubts' | 'easy' | 'medium' | 'hard' | 'skip';
@@ -55,8 +56,10 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   subjectName,
   subtopicNames = [],
   initialSearch,
+  customYearRange,
 }) => {
   const { yearFilter, setYearFilter } = useTopicMaster();
+  const [customRange, setCustomRange] = useState<[number, number] | null>(customYearRange || null);
   const [progress, setProgress] = useState<PYQProgressMap>(() => loadPYQProgress());
   const [yearSort, setYearSort] = useState<'newest' | 'oldest'>('newest');
   const [marksSort, setMarksSort] = useState<'none' | 'desc' | 'asc'>('none');
@@ -69,8 +72,9 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setSearchQuery(initialSearch || '');
+      setCustomRange(customYearRange || null);
     }
-  }, [isOpen, initialSearch, topicName, subjectName]);
+  }, [isOpen, initialSearch, customYearRange, topicName, subjectName]);
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -86,6 +90,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
 
   // Handle year filter change with site-wide persistence
   const handleYearFilterChange = (filter: PYQYearFilter) => {
+    setCustomRange(null);
     setYearFilter(filter);
   };
 
@@ -95,14 +100,22 @@ export const PYQModal: React.FC<PYQModalProps> = ({
     return getQuestionsForTopic(subjectName, topicName, subtopicNames);
   }, [isOpen, subjectName, topicName, subtopicNames]);
 
-  // Apply Year Range Filter (bypass yearFilter preset if searching a specific 4-digit year like 2012)
+  // Apply Year Range Filter (custom range or standard preset, bypassed if searching a specific year)
   const yearFilteredQuestions = useMemo(() => {
     const isSearchingSpecificYear = searchQuery && /^\d{4}$/.test(searchQuery.trim());
     if (isSearchingSpecificYear) {
       return rawTopicQuestions;
     }
+    if (customRange) {
+      const min = Math.min(customRange[0], customRange[1]);
+      const max = Math.max(customRange[0], customRange[1]);
+      return rawTopicQuestions.filter((q) => {
+        const y = extractYearNumber(q.year);
+        return !y || (y >= min && y <= max);
+      });
+    }
     return filterQuestionsByYear(rawTopicQuestions, yearFilter);
-  }, [rawTopicQuestions, yearFilter, searchQuery]);
+  }, [rawTopicQuestions, yearFilter, customRange, searchQuery]);
 
   // Question Type counts for current active year set
   const typeCounts = useMemo(() => {
@@ -401,8 +414,20 @@ export const PYQModal: React.FC<PYQModalProps> = ({
               <Calendar className="w-3.5 h-3.5 text-indigo-400" />
               <span>Years:</span>
             </div>
+            {customRange && (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap bg-purple-950 text-purple-200 border border-purple-500/60 shadow-sm ring-1 ring-purple-400/30">
+                <span>Custom: {customRange[0]} – {customRange[1]}</span>
+                <button
+                  onClick={() => setCustomRange(null)}
+                  className="ml-1 p-0.5 rounded-md hover:bg-purple-900/60 text-purple-400 hover:text-white"
+                  title="Clear custom range and return to presets"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
             {YEAR_FILTER_OPTIONS.map((opt) => {
-              const isSelected = yearFilter === opt.id;
+              const isSelected = !customRange && yearFilter === opt.id;
               return (
                 <button
                   key={opt.id}

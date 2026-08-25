@@ -17,6 +17,8 @@ export interface ActivePYQTopicInfo {
   subjectName: string;
   subtopicNames?: string[];
   initialSearch?: string;
+  initialYearFilter?: PYQYearFilter;
+  customYearRange?: [number, number];
 }
 
 interface TopicMasterContextType extends TopicMasterState, TopicMasterActions {
@@ -30,7 +32,8 @@ interface TopicMasterContextType extends TopicMasterState, TopicMasterActions {
     subjectName: string,
     subtopicNames?: string[],
     initialSearch?: string,
-    initialYearFilter?: PYQYearFilter
+    initialYearFilter?: PYQYearFilter,
+    customYearRange?: [number, number]
   ) => void;
   closePYQModal: () => void;
   yearFilter: PYQYearFilter;
@@ -1135,9 +1138,10 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
       subjectName: string,
       subtopicNames?: string[],
       initialSearch?: string,
-      initialYearFilter?: PYQYearFilter
+      initialYearFilter?: PYQYearFilter,
+      customYearRange?: [number, number]
     ) => {
-      if (initialYearFilter) {
+      if (initialYearFilter && !customYearRange) {
         setYearFilterState(initialYearFilter);
         savePYQYearFilter(initialYearFilter);
       }
@@ -1147,6 +1151,8 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
         subjectName,
         subtopicNames,
         initialSearch,
+        initialYearFilter,
+        customYearRange,
       });
     },
     []
