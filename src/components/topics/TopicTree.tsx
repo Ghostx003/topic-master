@@ -1,11 +1,11 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Subject } from '../../types/subject';
 import { TopicTreeNodeType } from '../../types/topic';
 import { PYQYearFilter } from '../../types/pyq';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { buildTopicTree, calculateTopicProgress } from '../../utils/hierarchyUtils';
 import { formatHours } from '../../utils/timeUtils';
-import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
+import { getAuthoritativeTopicPYQ, getAuthoritativeTopicMarks } from '../../utils/pyqUtils';
 import { TopicTreeNode } from './TopicTreeNode';
 import { EmptyState } from '../common/EmptyState';
 import { Button } from '../common/Button';
@@ -17,7 +17,7 @@ import {
   Clock,
   X,
   Flame,
-  ArrowUpDown,
+  Zap,
   CircleDot,
   SlidersHorizontal,
   Calendar,
@@ -32,6 +32,7 @@ export interface TopicTreeProps {
 }
 
 export type TopicYieldFilter = 'all' | 'ultra' | 'high' | 'core' | 'done' | 'pending';
+export type TopicRankMode = 'default' | 'marks' | 'pyqs';
 
 const YEAR_FILTER_OPTIONS: { id: PYQYearFilter; label: string; desc: string }[] = [
   { id: 'all', label: 'All Years', desc: '1987 - 2026' },
@@ -53,7 +54,7 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
   const [yieldFilter, setYieldFilter] = useState<TopicYieldFilter>('all');
   const [isRootDropOver, setIsRootDropOver] = useState(false);
   const [activeMenuTopicId, setActiveMenuTopicId] = useState<string | null>(null);
-  const [isPyqRanked, setIsPyqRanked] = useState(false);
+  const [rankMode, setRankMode] = useState<TopicRankMode>('default');
 
   // Global listener to close context menus whenever clicking or right-clicking anywhere outside
   React.useEffect(() => {
@@ -86,6 +87,10 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
 
   const getNodePYQ = (node: TopicTreeNodeType): number => {
     return getAuthoritativeTopicPYQ(node, topics, yearFilter, subject.Subject_Name);
+  };
+
+  const getNodeMarks = (node: TopicTreeNodeType): number => {
+    return getAuthoritativeTopicMarks(node, topics, yearFilter, subject.Subject_Name);
   };
 
   // Subject topics for counts
@@ -121,21 +126,35 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
   const treeNodes = useMemo(() => {
     const rawNodes = buildTopicTree(topics, subject.id, null);
 
-    if (!isPyqRanked) return rawNodes;
+    if (rankMode === 'default') return rawNodes;
 
-    // Helper to sort tree nodes by PYQ count descending recursively
-    function sortNodeByPYQs(node: TopicTreeNodeType): TopicTreeNodeType {
+    // Helper to sort tree nodes recursively
+    function sortNode(node: TopicTreeNodeType): TopicTreeNodeType {
       const sortedChildren = [...node.children]
-        .map(sortNodeByPYQs)
-        .sort((a, b) => getNodePYQ(b) - getNodePYQ(a));
+        .map(sortNode)
+        .sort((a, b) => {
+          if (rankMode === 'marks') {
+            const diff = getNodeMarks(b) - getNodeMarks(a);
+            if (diff !== 0) return diff;
+            return getNodePYQ(b) - getNodePYQ(a);
+          }
+          return getNodePYQ(b) - getNodePYQ(a);
+        });
       return {
         ...node,
         children: sortedChildren,
       };
     }
 
-    return rawNodes.map(sortNodeByPYQs).sort((a, b) => getNodePYQ(b) - getNodePYQ(a));
-  }, [topics, subject.id, isPyqRanked, yearFilter]);
+    return rawNodes.map(sortNode).sort((a, b) => {
+      if (rankMode === 'marks') {
+        const diff = getNodeMarks(b) - getNodeMarks(a);
+        if (diff !== 0) return diff;
+        return getNodePYQ(b) - getNodePYQ(a);
+      }
+      return getNodePYQ(b) - getNodePYQ(a);
+    });
+  }, [topics, subject.id, rankMode, yearFilter]);
 
   // Overall Subject Progress
   const stats = useMemo(() => {
@@ -253,44 +272,61 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
         </div>
       </div>
 
-      {/* Toolbar: Search input, PYQ Ranking Toggle, and Stats summary badges */}
+      {/* Toolbar: Search input, Marks & PYQ Ranking Toggles, and Stats summary badges */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1 max-w-xl">
+        <div className="flex flex-wrap items-center gap-2.5 flex-1">
           {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+          <div className="relative w-full sm:w-64 lg:w-72 shrink-0">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search topics in this subject..."
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              className="w-full pl-11 pr-10 py-3 text-xs rounded-2xl bg-slate-900/80 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500/60 transition-all shadow-inner"
+              className="w-full pl-10 pr-8 py-2 text-xs rounded-xl bg-slate-900/80 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-brand-500/60 transition-all shadow-inner"
             />
             {searchFilter && (
               <button
                 onClick={() => setSearchFilter('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
-          {/* PYQ Sort / Ranking Pill Button */}
-          <button
-            onClick={() => setIsPyqRanked(!isPyqRanked)}
-            className={clsx(
-              'flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-bold border transition-all shrink-0 active:scale-95 select-none',
-              isPyqRanked
-                ? 'bg-amber-950/60 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/40'
-                : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-            )}
-            title="Sort topics from most PYQs to least PYQs"
-          >
-            <Flame className={clsx('w-4 h-4', isPyqRanked ? 'text-amber-400 fill-current' : 'text-slate-400')} />
-            <span>Rank by PYQs</span>
-            <ArrowUpDown className="w-3 h-3 text-slate-400" />
-          </button>
+          {/* Quick Rank / Sort Buttons */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Most Marks Button */}
+            <button
+              onClick={() => setRankMode(rankMode === 'marks' ? 'default' : 'marks')}
+              className={clsx(
+                'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all shrink-0 active:scale-95 select-none',
+                rankMode === 'marks'
+                  ? 'bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.3)] ring-1 ring-emerald-500/30'
+                  : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+              )}
+              title="Sort topics from highest marks to lowest marks"
+            >
+              <Flame className={clsx('w-3.5 h-3.5', rankMode === 'marks' ? 'text-emerald-400 fill-current' : 'text-slate-400')} />
+              <span>Most Marks</span>
+            </button>
+
+            {/* Most PYQs Button */}
+            <button
+              onClick={() => setRankMode(rankMode === 'pyqs' ? 'default' : 'pyqs')}
+              className={clsx(
+                'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all shrink-0 active:scale-95 select-none',
+                rankMode === 'pyqs'
+                  ? 'bg-amber-950/80 border-amber-500/60 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.3)] ring-1 ring-amber-500/30'
+                  : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+              )}
+              title="Sort topics from most PYQs to least PYQs"
+            >
+              <Zap className={clsx('w-3.5 h-3.5', rankMode === 'pyqs' ? 'text-amber-400 fill-current' : 'text-slate-400')} />
+              <span>Most PYQs</span>
+            </button>
+          </div>
         </div>
 
         {/* Counts summary pills */}

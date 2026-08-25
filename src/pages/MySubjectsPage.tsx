@@ -8,6 +8,7 @@ import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { AddSubjectModal } from '../modals/AddSubjectModal';
 import { calculateTopicProgress } from '../utils/hierarchyUtils';
+import { getQuestionsForSubject } from '../services/pyqService';
 import { BookOpen, Plus } from 'lucide-react';
 
 export const MySubjectsPage: React.FC = () => {
@@ -20,6 +21,18 @@ export const MySubjectsPage: React.FC = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [subjectToEdit, setSubjectToEdit] = useState<Subject | null>(null);
   const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
+
+  // Subject metrics map for PYQ count and Total Marks
+  const subjectMetrics = useMemo(() => {
+    const map = new Map<string, { pyqs: number; marks: number }>();
+    subjects.forEach((s) => {
+      const qs = getQuestionsForSubject(s.Subject_Name);
+      const pyqs = qs.length;
+      const marks = qs.reduce((acc, q) => acc + (q.marks || 1), 0);
+      map.set(s.id, { pyqs, marks });
+    });
+    return map;
+  }, [subjects]);
 
   // Filter & Sort Subjects
   const filteredAndSortedSubjects = useMemo(() => {
@@ -42,6 +55,18 @@ export const MySubjectsPage: React.FC = () => {
 
     // Sort
     result.sort((a, b) => {
+      if (sortBy === 'marks') {
+        const mA = subjectMetrics.get(a.id)?.marks || 0;
+        const mB = subjectMetrics.get(b.id)?.marks || 0;
+        if (mB !== mA) return mB - mA;
+        return a.Subject_Name.localeCompare(b.Subject_Name);
+      }
+      if (sortBy === 'pyqs') {
+        const pA = subjectMetrics.get(a.id)?.pyqs || 0;
+        const pB = subjectMetrics.get(b.id)?.pyqs || 0;
+        if (pB !== pA) return pB - pA;
+        return a.Subject_Name.localeCompare(b.Subject_Name);
+      }
       if (sortBy === 'importance') {
         return (
           IMPORTANCE_ORDER.indexOf(a.Subject_Importance) -
@@ -68,7 +93,7 @@ export const MySubjectsPage: React.FC = () => {
     });
 
     return result;
-  }, [subjects, topics, searchQuery, selectedImportance, sortBy]);
+  }, [subjects, topics, searchQuery, selectedImportance, sortBy, subjectMetrics]);
 
   return (
     <div className="space-y-8 pb-28">

@@ -4,9 +4,11 @@ import { getQuestionsForTopic, filterQuestionsByYear } from '../services/pyqServ
 import { INITIAL_SUBJECTS } from './sampleData';
 
 const AUTHORITATIVE_PYQ_CACHE = new Map<string, number>();
+const AUTHORITATIVE_MARKS_CACHE = new Map<string, number>();
 
 export function clearAuthoritativePYQCache(): void {
   AUTHORITATIVE_PYQ_CACHE.clear();
+  AUTHORITATIVE_MARKS_CACHE.clear();
 }
 
 /**
@@ -62,6 +64,60 @@ export function getAuthoritativeTopicPYQ(
   // Otherwise if node itself has attached questions, use directSum.
   result = childrenSum > 0 ? childrenSum : directSum;
   AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
+  return result;
+}
+
+/**
+ * Universal authoritative resolver for Topic & Subtopic Total Marks.
+ */
+export function getAuthoritativeTopicMarks(
+  topicOrNode: Topic | TopicTreeNodeType,
+  allTopics: Topic[] = [],
+  yearFilter: PYQYearFilter = 'all',
+  subjectName?: string
+): number {
+  if (!topicOrNode) return 0;
+
+  const cacheKey = `${topicOrNode.id || topicOrNode.Topic_Name}::marks::${yearFilter}::${subjectName || topicOrNode.Subject_Id || ''}`;
+  const cached = AUTHORITATIVE_MARKS_CACHE.get(cacheKey);
+  if (cached !== undefined) return cached;
+
+  let result = 0;
+
+  // 1. Calculate sum from any child topics
+  let childrenSum = 0;
+  const children = allTopics.length > 0
+    ? allTopics.filter((t) => t.Parent_Id === topicOrNode.id)
+    : ('children' in topicOrNode && Array.isArray((topicOrNode as any).children))
+    ? (topicOrNode as any).children
+    : [];
+
+  if (children.length > 0) {
+    childrenSum = children.reduce(
+      (acc: number, c: any) => acc + getAuthoritativeTopicMarks(c, allTopics, yearFilter, subjectName),
+      0
+    );
+  }
+
+  // 2. Look up direct questions attached to this topic
+  let directSum = 0;
+  const effSubjectName =
+    subjectName ||
+    INITIAL_SUBJECTS.find((s) => s.id === topicOrNode.Subject_Id)?.Subject_Name ||
+    '';
+
+  if (effSubjectName) {
+    const matchedQs = getQuestionsForTopic(effSubjectName, topicOrNode.Topic_Name, []);
+    if (matchedQs.length > 0) {
+      const filtered = yearFilter === 'all'
+        ? matchedQs
+        : filterQuestionsByYear(matchedQs, yearFilter);
+      directSum = filtered.reduce((acc, q) => acc + (q.marks || 1), 0);
+    }
+  }
+
+  result = childrenSum > 0 ? childrenSum : directSum;
+  AUTHORITATIVE_MARKS_CACHE.set(cacheKey, result);
   return result;
 }
 
