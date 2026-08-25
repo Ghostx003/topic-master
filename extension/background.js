@@ -794,8 +794,21 @@ async function processNextInQueue() {
     if (!tab) {
       tab = await chrome.tabs.create({ url: q.link, active: true });
       importState.workerTabId = tab.id;
+      await new Promise((resolve) => {
+        const listener = (tid, changeInfo) => {
+          if (tid === tab.id && changeInfo.status === 'complete') {
+            chrome.tabs.onUpdated.removeListener(listener);
+            resolve();
+          }
+        };
+        chrome.tabs.onUpdated.addListener(listener);
+        setTimeout(() => {
+          chrome.tabs.onUpdated.removeListener(listener);
+          resolve();
+        }, 5000);
+      });
     } else {
-      await chrome.tabs.update(tab.id, { url: q.link, active: true });
+      await navigateAndEnsureReady(tab.id, q.link, 5000);
     }
 
     if (tab.windowId) {
@@ -804,8 +817,8 @@ async function processNextInQueue() {
       } catch (_) {}
     }
 
-    const readyState = await waitForQuestionReady(tab.id, 12000);
-    if (readyState === 'CHALLENGE') {
+    const isChallenge = await checkForSecurityChallenge(tab.id);
+    if (isChallenge) {
       importState.status = 'PAUSED_CLOUDFLARE';
       saveState();
       await chrome.tabs.update(tab.id, { active: true });
@@ -858,11 +871,80 @@ async function processNextInQueue() {
   saveState();
   broadcastState();
 
-  setTimeout(processNextInQueue, 350);
+  setTimeout(processNextInQueue, 250);
+}
+
+/**
+ * Cleanly navigate worker tab to new URL and wait for page to reach complete state
+ */
+function navigateAndEnsureReady(tabId, targetUrl, timeoutMs = 5000) {
+  return new Promise((resolve) => {
+    let resolved = false;
+
+    const cleanup = () => {
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        chrome.tabs.onUpdated.removeListener(onUpdated);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      cleanup();
+      resolve(true); // Fallback: proceed even if external scripts delay complete
+    }, timeoutMs);
+
+    const onUpdated = (updatedTabId, changeInfo) => {
+      if (updatedTabId === tabId && changeInfo.status === 'complete') {
+        cleanup();
+        resolve(true);
+      }
+    };
+
+    chrome.tabs.onUpdated.addListener(onUpdated);
+    chrome.tabs.update(tabId, { url: targetUrl, active: true }).catch(() => {
+      cleanup();
+      resolve(false);
+    });
+  });
+}
+
+/**
+ * Check if the loaded page is a Cloudflare / DDoS / Turnstile challenge
+ */
+async function checkForSecurityChallenge(tabId) {
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        const title = document.title.toLowerCase();
+        const bodyText = document.body ? document.body.innerText.toLowerCase() : '';
+        const hasChallenge =
+          document.querySelector('#challenge-running') ||
+          document.querySelector('.cf-browser-verification') ||
+          document.querySelector('#cf-wrapper') ||
+          document.querySelector('.cf-turnstile-wrapper') ||
+          document.querySelector('#turnstile-wrapper');
+
+        return (
+          title.includes('just a moment') ||
+          title.includes('attention required') ||
+          title.includes('cloudflare') ||
+          bodyText.includes('checking your browser') ||
+          bodyText.includes('verify you are human') ||
+          Boolean(hasChallenge)
+        );
+      },
+    });
+
+    return results && results[0] && results[0].result === true;
+  } catch (_) {
+    return false;
+  }
 }
 
 let lastCaptureTimestamp = 0;
-const MIN_CAPTURE_INTERVAL_MS = 800; // Chrome limit is 2/sec; 800ms spacing guarantees 100% quota safety
+const MIN_CAPTURE_INTERVAL_MS = 600; // Chrome limit is 2/sec; 600ms spacing ensures 100% quota safety
 
 /**
  * Rate-limited wrapper around chrome.tabs.captureVisibleTab with automatic backoff retry on quota error
@@ -883,87 +965,17 @@ async function safeCaptureVisibleTab(windowId, options = { format: 'jpeg', quali
     } catch (err) {
       const errMsg = String(err?.message || err);
       if (errMsg.includes('MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND') || errMsg.includes('quota') || errMsg.includes('MAX_CAPTURE')) {
-        console.warn(`[Capture Quota] Rate limit hit. Backing off for 1.2s before retry (attempt ${attempt + 1}/${maxRetries})...`);
-        await new Promise((r) => setTimeout(r, 1200));
+        console.warn(`[Capture Quota] Rate limit hit. Backing off for 1.0s before retry (attempt ${attempt + 1}/${maxRetries})...`);
+        await new Promise((r) => setTimeout(r, 1000));
         continue;
       }
       if (attempt === maxRetries) {
         throw err;
       }
-      await new Promise((r) => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 500));
     }
   }
   return null;
-}
-
-/**
- * Fast check: Wait until the question DOM container is rendered and ready
- * (Does not wait for third-party scripts, ads, or slow analytics)
- */
-async function waitForQuestionReady(tabId, timeoutMs = 12000) {
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < timeoutMs) {
-    if (importState.status !== 'IMPORTING') return 'ABORTED';
-
-    try {
-      const results = await chrome.scripting.executeScript({
-        target: { tabId },
-        func: () => {
-          // 1. Check for security challenge first
-          const title = document.title.toLowerCase();
-          const bodyText = document.body ? document.body.innerText.toLowerCase() : '';
-          const hasChallenge =
-            document.querySelector('#challenge-running') ||
-            document.querySelector('.cf-browser-verification') ||
-            document.querySelector('#cf-wrapper') ||
-            document.querySelector('.cf-turnstile-wrapper') ||
-            document.querySelector('#turnstile-wrapper');
-
-          if (
-            title.includes('just a moment') ||
-            title.includes('attention required') ||
-            title.includes('cloudflare') ||
-            bodyText.includes('checking your browser') ||
-            bodyText.includes('verify you are human') ||
-            Boolean(hasChallenge)
-          ) {
-            return { ready: false, challenge: true };
-          }
-
-          // 2. Check if question container exists and has content
-          const qElem =
-            document.querySelector('.qa-q-view') ||
-            document.querySelector('article.qa-post-view') ||
-            document.querySelector('.qa-main');
-
-          if (qElem) {
-            const rect = qElem.getBoundingClientRect();
-            if (rect.height > 40) {
-              // Check if MathJax formulas are still actively processing
-              const mathjax = window.MathJax;
-              if (mathjax?.Hub?.queue?.pending > 0) {
-                return { ready: false, challenge: false };
-              }
-              return { ready: true, challenge: false };
-            }
-          }
-
-          return { ready: false, challenge: false };
-        },
-      });
-
-      if (results && results[0]?.result) {
-        const { ready, challenge } = results[0].result;
-        if (challenge) return 'CHALLENGE';
-        if (ready) return 'READY';
-      }
-    } catch (_) {}
-
-    await new Promise((r) => setTimeout(r, 60));
-  }
-
-  return 'TIMEOUT';
 }
 
 /**
