@@ -119,9 +119,39 @@ export const PYQCard: React.FC<PYQCardProps> = ({
         </div>
       </div>
 
-      {/* Middle Row: Chapter / Subtopic Path */}
-      <div className="text-xs text-slate-400/90 font-medium truncate">
-        {question.chapter}
+      {/* Middle Row: Chapter / Subtopic Path + Marks & Question Type Badges */}
+      <div className="flex items-center justify-between gap-2 text-xs min-w-0">
+        <span className="text-slate-400 font-medium truncate" title={question.chapter}>
+          {question.chapter}
+        </span>
+
+        {/* Badges: Marks (Green) & Question Type */}
+        <div className="flex items-center gap-1.5 shrink-0 font-mono text-[10px]">
+          {/* Marks Badge in Vibrant Green */}
+          <span
+            className="px-2 py-0.5 rounded-md font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm"
+            title={`${question.marks || 1} Mark(s)`}
+          >
+            {question.marks || 1} {question.marks === 1 ? 'Mark' : 'Marks'}
+          </span>
+
+          {/* Question Type Badge */}
+          <span
+            className={clsx(
+              'px-2 py-0.5 rounded-md font-black border shadow-sm uppercase tracking-wider',
+              question.type_of_question === 'MSQ'
+                ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
+                : question.type_of_question === 'NAT'
+                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                : question.type_of_question === 'Descriptive'
+                ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30'
+                : 'bg-sky-500/15 text-sky-300 border-sky-500/30'
+            )}
+            title={`Question Type: ${question.type_of_question || 'MCQ'}`}
+          >
+            {question.type_of_question || 'MCQ'}
+          </span>
+        </div>
       </div>
 
       {/* Bottom Row: Status 1 (Difficulty) & Status 2 (Doubt Toggle) */}

@@ -238,7 +238,13 @@ export const PYQModal: React.FC<PYQModalProps> = ({
           `question ${q.questionNumber}`.toLowerCase().includes(qTrim) ||
           `${q.questionNumber}`.toLowerCase() === qTrim;
         const matchChap = q.chapter.toLowerCase().includes(qTrim);
-        if (!matchYear && !matchNum && !matchChap) return false;
+        const matchMarks =
+          `${q.marks || 1} mark`.includes(qTrim) ||
+          `${q.marks || 1} marks`.includes(qTrim) ||
+          `${q.marks || 1}m` === qTrim;
+        const matchType = (q.type_of_question || 'MCQ').toLowerCase().includes(qTrim);
+
+        if (!matchYear && !matchNum && !matchChap && !matchMarks && !matchType) return false;
       }
 
       return true;
