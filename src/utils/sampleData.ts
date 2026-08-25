@@ -257,10 +257,6 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic('em-sub-probability-density-function', 'subj-em', 'em-ch-prob', 'Probability Density Function', 'Core GATE CSE concepts and historical examination questions for Probability Density Function.', 18, false),
   makeTopic('em-sub-probability-distribution', 'subj-em', 'em-ch-prob', 'Probability Distribution', 'Core GATE CSE concepts and historical examination questions for Probability Distribution.', 19, false),
 
-  // --- Chapter 4: Numerical Methods ---
-  makeTopic('em-ch-num', 'subj-em', null, 'Numerical Methods', 'Numerical computation, roots of equations, numerical integration, and error estimation.', 4, true),
-  makeTopic('em-sub-numerical-computation', 'subj-em', 'em-ch-num', 'Numerical Computation', 'Core GATE CSE concepts and historical examination questions for Numerical Computation.', 1, false),
-
   // =========================================================================
   // ALGORITHMS (subj-algo)
   // =========================================================================
@@ -809,6 +805,7 @@ export const INITIAL_TOPICS: Topic[] = [
   makeTopic("ga-sub-arithmetic-series", "subj-ga", "ga-ch-quant", "Arithmetic Series", "Core GATE CSE concepts and historical examination questions for Arithmetic Series.", 33, false),
   makeTopic("ga-sub-functions", "subj-ga", "ga-ch-quant", "Functions", "Core GATE CSE concepts and historical examination questions for Functions.", 34, false),
   makeTopic("ga-sub-geometry", "subj-ga", "ga-ch-quant", "Geometry", "Core GATE CSE concepts and historical examination questions for Geometry.", 35, false),
+  makeTopic("ga-sub-numerical-computation", "subj-ga", "ga-ch-quant", "Numerical Computation", "Core GATE CSE concepts and historical examination questions for Numerical Computation.", 36, false),
 
   // --- Chapter 3: Analytical & Logical Reasoning ---
   makeTopic("ga-ch-analytical", "subj-ga", null, "Analytical & Logical Reasoning", "Deduction, induction, analogy, relations, seating arrangements, coding decoding, and data interpretation.", 3, true),
