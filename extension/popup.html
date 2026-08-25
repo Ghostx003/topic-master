@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PYQ Screenshot Importer</title>
+  <style>
+    :root {
+      --bg: #060a14;
+      --card-bg: #0d1322;
+      --border: #1e293b;
+      --brand: #3b82f6;
+      --brand-hover: #2563eb;
+      --brand-light: #60a5fa;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      width: 380px;
+      min-height: 480px;
+      max-height: 580px;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      padding: 14px 16px;
+      background: #090e1a;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .title-group h1 {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .title-group p {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .status-pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-idle { background: #1e293b; color: #94a3b8; }
+    .status-importing { background: rgba(59, 130, 246, 0.2); color: var(--brand-light); border: 1px solid rgba(59, 130, 246, 0.4); }
+    .status-paused { background: rgba(245, 158, 11, 0.2); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.4); }
+    .status-completed { background: rgba(16, 185, 129, 0.2); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.4); }
+    .status-stopped { background: #334155; color: #cbd5e1; }
+
+    /* Security Challenge Warning Box */
+    .security-alert {
+      display: none;
+      margin: 12px 14px 0 14px;
+      padding: 12px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 12px;
+      font-size: 11.5px;
+      color: #fbbf24;
+      line-height: 1.4;
+    }
+
+    .security-alert strong {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: #fef3c7;
+    }
+
+    /* Progress Section */
+    .progress-section {
+      padding: 12px 16px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .progress-bar-container {
+      height: 6px;
+      background: #1e293b;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      transition: width 0.3s ease;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .active-question-pill {
+      font-size: 11px;
+      color: #cbd5e1;
+      margin-top: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Subject Selection List */
+    .subject-list-header {
+      padding: 10px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+    }
+
+    .select-all-btn {
+      background: none;
+      border: none;
+      color: var(--brand-light);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .subject-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 12px;
+    }
+
+    .subject-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .subject-item:hover {
+      background: rgba(30, 41, 59, 0.4);
+      border-color: rgba(51, 65, 85, 0.6);
+    }
+
+    .subject-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .subject-checkbox {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--brand);
+      cursor: pointer;
+    }
+
+    .subject-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .subject-count {
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--text-muted);
+      background: #1e293b;
+      padding: 2px 6px;
+      border-radius: 6px;
+      shrink-0;
+    }
+
+    /* Footer Action Buttons */
+    footer {
+      padding: 12px 16px;
+      background: #090e1a;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-hover);
+    }
+
+    .btn-secondary {
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+    }
+
+    .btn-secondary:hover {
+      background: #334155;
+      color: #fff;
+    }
+
+    .btn-warning {
+      background: var(--amber);
+      color: #000;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: var(--rose);
+      color: #fff;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="title-group">
+      <h1>📷 PYQ Screenshot Importer</h1>
+      <p>Topic Master • Sequential Capture Queue</p>
+    </div>
+    <div id="statusBadge" class="status-pill status-idle">IDLE</div>
+  </header>
+
+  <!-- Cloudflare / CAPTCHA Alert -->
+  <div id="securityAlert" class="security-alert">
+    <strong>⚠️ Security verification detected</strong>
+    Complete the Cloudflare / verification check in the opened Chrome tab, then click Resume Import below.
+  </div>
+
+  <!-- Progress Bar & Active State -->
+  <div id="progressSection" class="progress-section">
+    <div class="progress-info">
+      <span id="progressCount">0 / 0 captured</span>
+      <span id="progressPercent">0%</span>
+    </div>
+    <div class="progress-bar-container">
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+    <div id="activeQuestionText" class="active-question-pill">
+      Select subjects below and click Begin Import.
+    </div>
+  </div>
+
+  <!-- Subject List (BY SUBJECT ONLY) -->
+  <div class="subject-list-header">
+    <span>Subjects Detected</span>
+    <button id="toggleSelectAllBtn" class="select-all-btn">Select All</button>
+  </div>
+
+  <div id="subjectList" class="subject-list">
+    <!-- Rendered dynamically by popup.js -->
+  </div>
+
+  <!-- Footer Actions -->
+  <footer>
+    <button id="startBtn" class="btn btn-primary">Begin Import</button>
+    <button id="stopBtn" class="btn btn-danger" style="display: none;">Stop Import</button>
+    <button id="resumeBtn" class="btn btn-warning" style="display: none;">Resume Import</button>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

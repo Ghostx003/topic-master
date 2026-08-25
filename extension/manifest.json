@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Topic Master — PYQ Screenshot Importer",
+  "version": "1.0.0",
+  "description": "Sequential webpage screenshot capture and importer for GATE PYQs organized by subject.",
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://gateoverflow.in/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "*://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "PYQ Screenshot Importer"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "https://*/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

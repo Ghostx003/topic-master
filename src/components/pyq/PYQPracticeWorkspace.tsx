@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { PYQQuestion, PYQProgressMap, PYQDifficultyStatus, PYQItemProgress } from '../../types/pyq';
 import {
+  getQuestionScreenshot,
+  requestCaptureSpecificPage,
+} from '../../services/screenshotService';
+import {
   X,
   ChevronLeft,
   ChevronRight,
@@ -10,12 +14,19 @@ import {
   PanelLeftClose,
   PanelLeft,
   Search,
-  Edit3,
   Timer,
+  Play,
+  Pause,
+  RotateCcw,
+  Camera,
+  ZoomIn,
+  ZoomOut,
   Maximize2,
   Minimize2,
+  FileText,
+  Loader2,
+  RefreshCw,
   Sparkles,
-  HelpCircle,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -44,44 +55,95 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
   const [isPlaylistOpen, setIsPlaylistOpen] = useState<boolean>(true);
   const [playlistSearch, setPlaylistSearch] = useState<string>('');
   const [playlistTab, setPlaylistTab] = useState<'all' | 'pending' | 'completed' | 'doubts'>('all');
-  const [iframeLoading, setIframeLoading] = useState<boolean>(true);
-  const [viewMode, setViewMode] = useState<'embedded' | 'scratchpad'>('embedded');
+
+  // Screenshot State
+  const [screenshotData, setScreenshotData] = useState<string | null>(null);
+  const [isScreenshotLoading, setIsScreenshotLoading] = useState<boolean>(true);
+  const [isCapturingSpecific, setIsCapturingSpecific] = useState<boolean>(false);
+  const [zoomLevel, setZoomLevel] = useState<number>(100);
+
+  // Per-question Timer State
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(true);
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
+
+  // Scratchpad State
+  const [isScratchpadOpen, setIsScratchpadOpen] = useState<boolean>(false);
   const [notes, setNotes] = useState<string>('');
-  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
-  const [timerSeconds, setTimerSeconds] = useState<number>(0);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   const playlistItemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const timerIntervalRef = useRef<any>(null);
+  const activeQuestionRef = useRef<PYQQuestion | null>(null);
 
-  // Synchronize initial question index on open
+  // Synchronize on open or change in question index
   useEffect(() => {
     if (isOpen) {
       const idx = Math.min(Math.max(0, initialQuestionIndex), Math.max(0, questions.length - 1));
       setCurrentIndex(idx);
-      setIframeLoading(true);
-      setTimerSeconds(0);
-      setIsTimerRunning(true);
     }
   }, [isOpen, initialQuestionIndex, questions.length]);
 
   const activeQuestion = questions[currentIndex] || questions[0];
+  activeQuestionRef.current = activeQuestion;
 
-  // Sync notes with active question
+  // Load screenshot for current active question
+  useEffect(() => {
+    if (!activeQuestion) return;
+
+    let isMounted = true;
+    setIsScreenshotLoading(true);
+    setScreenshotData(null);
+    setZoomLevel(100);
+
+    getQuestionScreenshot(activeQuestion.id).then((imgData) => {
+      if (isMounted) {
+        setScreenshotData(imgData);
+        setIsScreenshotLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeQuestion?.id]);
+
+  // Listen for real-time screenshot updates from Chrome extension
+  useEffect(() => {
+    const handleScreenshotUpdated = (e: any) => {
+      if (e.detail && activeQuestion && e.detail.questionId === activeQuestion.id) {
+        setScreenshotData(e.detail.dataUrl);
+        setIsScreenshotLoading(false);
+        setIsCapturingSpecific(false);
+      }
+    };
+
+    window.addEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
+    return () => window.removeEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
+  }, [activeQuestion?.id]);
+
+  // Load question-specific timer and notes
   useEffect(() => {
     if (activeQuestion) {
-      setNotes(progress[activeQuestion.id]?.notes || '');
-      setIframeLoading(true);
-      setTimerSeconds(0);
+      const qProgress = progress[activeQuestion.id];
+      setElapsedSeconds(qProgress?.elapsedSeconds || 0);
+      setNotes(qProgress?.notes || '');
+      setIsTimerRunning(true);
     }
   }, [activeQuestion?.id]);
 
-  // Question Timer
+  // Timer Tick
   useEffect(() => {
     if (isOpen && isTimerRunning) {
       timerIntervalRef.current = setInterval(() => {
-        setTimerSeconds((prev) => prev + 1);
+        setElapsedSeconds((prev) => {
+          const next = prev + 1;
+          // Persist elapsed time periodically (every 5 seconds)
+          if (activeQuestionRef.current && next % 5 === 0) {
+            onUpdateProgress(activeQuestionRef.current.id, { elapsedSeconds: next });
+          }
+          return next;
+        });
       }, 1000);
     } else {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
@@ -90,6 +152,13 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
   }, [isOpen, isTimerRunning]);
+
+  // Save elapsed timer when changing questions or closing
+  const persistCurrentTimer = () => {
+    if (activeQuestion) {
+      onUpdateProgress(activeQuestion.id, { elapsedSeconds });
+    }
+  };
 
   // Scroll active item into view in playlist
   useEffect(() => {
@@ -125,17 +194,14 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
     });
   }, [questions, progress, playlistTab, playlistSearch]);
 
-  // Keyboard navigation
+  // Keyboard shortcuts
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts if typing inside textarea or input
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-        if (e.key === 'Escape') {
-          target.blur();
-        }
+        if (e.key === 'Escape') target.blur();
         return;
       }
 
@@ -176,12 +242,21 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
         case 'o':
           if (activeQuestion) window.open(activeQuestion.link, '_blank');
           break;
+        case 't':
+        case ' ':
+          e.preventDefault();
+          setIsTimerRunning((prev) => !prev);
+          break;
+        case 'r':
+          handleResetTimer();
+          break;
         case '\\':
           e.preventDefault();
           setIsPlaylistOpen((prev) => !prev);
           break;
         case 'Escape':
           e.preventDefault();
+          persistCurrentTimer();
           onClose();
           break;
       }
@@ -189,17 +264,26 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, activeQuestion, questions.length]);
+  }, [isOpen, currentIndex, activeQuestion, questions.length, elapsedSeconds]);
 
   const handlePrevQuestion = () => {
     if (currentIndex > 0) {
+      persistCurrentTimer();
       setCurrentIndex(currentIndex - 1);
     }
   };
 
   const handleNextQuestion = () => {
     if (currentIndex < questions.length - 1) {
+      persistCurrentTimer();
       setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const handleResetTimer = () => {
+    setElapsedSeconds(0);
+    if (activeQuestion) {
+      onUpdateProgress(activeQuestion.id, { elapsedSeconds: 0 });
     }
   };
 
@@ -229,6 +313,31 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
     onUpdateProgress(activeQuestion.id, { notes: val });
   };
 
+  // Trigger Capture Specific Page via Chrome Extension
+  const handleCaptureSpecificPage = async () => {
+    if (!activeQuestion || isCapturingSpecific) return;
+    setIsCapturingSpecific(true);
+
+    try {
+      const result = await requestCaptureSpecificPage(
+        activeQuestion.id,
+        activeQuestion.link,
+        activeQuestion.subject
+      );
+
+      if (result) {
+        setScreenshotData(result);
+      } else {
+        // If extension is not installed or page timed out, alert user gracefully
+        alert(
+          'Capture request sent! If the Chrome extension is installed, it will capture and display the question. Otherwise, use "Go to Discussion" to view the question page.'
+        );
+      }
+    } finally {
+      setIsCapturingSpecific(false);
+    }
+  };
+
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
     if (!document.fullscreenElement) {
@@ -247,7 +356,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
   const isDoubt = Boolean(currentProgress.isDoubt);
   const difficulty = currentProgress.difficulty || 'none';
 
-  // Format timer seconds to MM:SS
+  // Format timer MM:SS
   const formatTimer = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -259,7 +368,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
       ref={containerRef}
       className="fixed inset-0 z-[120] flex flex-col bg-[#030712] text-slate-100 overflow-hidden select-none animate-fade-in font-sans"
     >
-      {/* ================= WORKSPACE TOP CONTROL BAR ================= */}
+      {/* ================= WORKSPACE COMPACT TOP CONTROL BAR ================= */}
       <header className="h-14 px-4 sm:px-6 bg-[#090e1a]/95 border-b border-slate-800/90 backdrop-blur-2xl shrink-0 flex items-center justify-between gap-3 z-30 shadow-md">
         {/* Left Side: Playlist Toggle + Breadcrumbs */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -281,7 +390,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
               {subjectName}
             </span>
             <span className="text-slate-600 hidden md:inline">•</span>
-            <span className="text-sm font-bold text-white truncate group-hover:text-brand-300">
+            <span className="text-sm font-bold text-white truncate">
               {topicName}
             </span>
             <span className="text-xs font-mono font-bold text-brand-300 bg-brand-500/15 border border-brand-500/30 px-2 py-0.5 rounded-lg shrink-0">
@@ -323,22 +432,41 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
           </button>
         </div>
 
-        {/* Right Side: Active Question Status Actions & View Options */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Question Practice Timer */}
-          <div
-            onClick={() => setIsTimerRunning(!isTimerRunning)}
-            className={clsx(
-              'hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer select-none',
-              isTimerRunning
-                ? 'bg-slate-900 text-brand-300 border-brand-500/30'
-                : 'bg-slate-950 text-slate-500 border-slate-900'
-            )}
-            title="Click to Pause/Resume Question Timer"
-          >
+        {/* Right Side: [Timer: MM:SS ▶ ↻] ........ [Go to Discussion ↗] ........ [Status Actions] */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          {/* ================= TIMER WIDGET (Start/Pause + Reset) ================= */}
+          <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800/90 px-2.5 py-1 rounded-xl shadow-sm">
             <Timer className={clsx('w-3.5 h-3.5', isTimerRunning ? 'text-brand-400 animate-pulse' : 'text-slate-500')} />
-            <span>{formatTimer(timerSeconds)}</span>
+            <span className="text-xs font-mono font-black text-slate-200 w-11 text-center select-none">
+              {formatTimer(elapsedSeconds)}
+            </span>
+            <button
+              onClick={() => setIsTimerRunning(!isTimerRunning)}
+              className="p-1 rounded-md hover:bg-slate-800 text-slate-400 hover:text-brand-300 transition-all active:scale-90"
+              title={isTimerRunning ? 'Pause Timer (Space / T)' : 'Start Timer (Space / T)'}
+            >
+              {isTimerRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 fill-current" />}
+            </button>
+            <button
+              onClick={handleResetTimer}
+              className="p-1 rounded-md hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-all active:scale-90"
+              title="Reset Timer (R)"
+            >
+              <RotateCcw className="w-3 h-3" />
+            </button>
           </div>
+
+          {/* ================= GO TO DISCUSSION ACTION ================= */}
+          <a
+            href={activeQuestion.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white border border-brand-400/40 text-xs font-bold shadow-md shadow-brand-500/20 transition-all active:scale-95 shrink-0"
+            title="Open official question discussion on GateOverflow in a new tab (O)"
+          >
+            <span>Go to Discussion</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
 
           {/* Mark as Done Toggle */}
           <button
@@ -369,17 +497,6 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
             <Star className={clsx('w-4 h-4', isDoubt ? 'text-amber-400 fill-current' : 'text-slate-400')} />
           </button>
 
-          {/* Open in GateOverflow button */}
-          <a
-            href={activeQuestion.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700 transition-all active:scale-95"
-            title="Open on official GateOverflow page (O)"
-          >
-            <ExternalLink className="w-4 h-4 text-slate-400" />
-          </a>
-
           {/* Fullscreen Toggle */}
           <button
             onClick={toggleFullscreen}
@@ -391,7 +508,10 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
 
           {/* Exit Practice Workspace */}
           <button
-            onClick={onClose}
+            onClick={() => {
+              persistCurrentTimer();
+              onClose();
+            }}
             className="p-2 rounded-xl bg-slate-900 hover:bg-rose-950/60 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-700/60 transition-all active:scale-95 ml-1"
             title="Close Practice Workspace (Esc)"
           >
@@ -500,8 +620,8 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
                     playlistItemRefs.current[originalIndex] = el;
                   }}
                   onClick={() => {
+                    persistCurrentTimer();
                     setCurrentIndex(originalIndex);
-                    // On small screen, automatically collapse playlist on selection
                     if (window.innerWidth < 768) {
                       setIsPlaylistOpen(false);
                     }
@@ -610,7 +730,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
           </div>
         </aside>
 
-        {/* ================= RIGHT PANEL: QUESTION PRACTICE VIEWPORT ================= */}
+        {/* ================= RIGHT PANEL: SCREENSHOT PRACTICE VIEWPORT ================= */}
         <main className="flex-1 h-full flex flex-col bg-[#02040a] relative overflow-hidden">
           {/* Sub-Header Toolbar for Active Question */}
           <div className="h-10 px-4 bg-[#070c18] border-b border-slate-800/70 flex items-center justify-between gap-3 text-xs shrink-0 z-10">
@@ -639,9 +759,9 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
               </span>
             </div>
 
-            {/* View Mode & Difficulty Quick Radios */}
+            {/* Right Controls: Zoom + Difficulty + Scratchpad Toggle */}
             <div className="flex items-center gap-2">
-              {/* Difficulty Status Radios */}
+              {/* Difficulty Status Selector */}
               <div className="hidden sm:flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-800/80 text-[10px] font-bold">
                 {(['easy', 'medium', 'hard', 'skip'] as PYQDifficultyStatus[]).map((lvl) => (
                   <button
@@ -665,156 +785,163 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
                 ))}
               </div>
 
-              {/* View Switcher Button */}
-              <div className="flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-800">
-                <button
-                  onClick={() => setViewMode('embedded')}
-                  className={clsx(
-                    'px-2.5 py-0.5 rounded text-[11px] font-bold transition-all',
-                    viewMode === 'embedded'
-                      ? 'bg-brand-500 text-white'
-                      : 'text-slate-400 hover:text-slate-200'
-                  )}
-                  title="View Embedded Question Page"
-                >
-                  Browser
-                </button>
-                <button
-                  onClick={() => setViewMode('scratchpad')}
-                  className={clsx(
-                    'px-2.5 py-0.5 rounded text-[11px] font-bold transition-all',
-                    viewMode === 'scratchpad'
-                      ? 'bg-brand-500 text-white'
-                      : 'text-slate-400 hover:text-slate-200'
-                  )}
-                  title="View Scratchpad & Focus Mode"
-                >
-                  Scratchpad
-                </button>
-              </div>
+              {/* Zoom Controls (when screenshot is available) */}
+              {screenshotData && (
+                <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+                  <button
+                    onClick={() => setZoomLevel((z) => Math.max(50, z - 15))}
+                    className="p-1 rounded text-slate-400 hover:text-white"
+                    title="Zoom Out"
+                  >
+                    <ZoomOut className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-[10px] font-mono text-slate-300 px-1 font-bold">
+                    {zoomLevel}%
+                  </span>
+                  <button
+                    onClick={() => setZoomLevel((z) => Math.min(200, z + 15))}
+                    className="p-1 rounded text-slate-400 hover:text-white"
+                    title="Zoom In"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {/* Scratchpad Toggle */}
+              <button
+                onClick={() => setIsScratchpadOpen(!isScratchpadOpen)}
+                className={clsx(
+                  'flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all',
+                  isScratchpadOpen
+                    ? 'bg-brand-500/20 text-brand-300 border-brand-500/50'
+                    : 'bg-slate-950 text-slate-400 hover:text-slate-200 border-slate-800'
+                )}
+                title="Toggle Notes / Scratchpad Drawer"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Notes</span>
+              </button>
             </div>
           </div>
 
-          {/* Main Viewport Content */}
-          <div className="flex-1 w-full h-full relative overflow-hidden">
-            {viewMode === 'embedded' ? (
-              <div className="w-full h-full relative flex flex-col">
-                {/* Fallback Banner on Top */}
-                <div className="px-4 py-1.5 bg-slate-950/90 border-b border-slate-800/80 flex items-center justify-between gap-3 text-[11px] text-slate-400 shrink-0">
-                  <div className="flex items-center gap-1.5 truncate">
-                    <Sparkles className="w-3.5 h-3.5 text-brand-400 shrink-0" />
-                    <span className="truncate">
-                      Practicing on GateOverflow. If embed is restricted by security policy, use official link.
-                    </span>
-                  </div>
+          {/* Screenshot Display Area */}
+          <div className="flex-1 w-full h-full relative overflow-y-auto overflow-x-auto p-4 sm:p-8 flex items-start justify-center custom-scrollbar bg-[#02040a]">
+            {isScreenshotLoading ? (
+              <div className="flex flex-col items-center justify-center gap-3 my-auto">
+                <Loader2 className="w-8 h-8 text-brand-400 animate-spin" />
+                <span className="text-xs font-mono font-bold text-slate-400">
+                  Loading Question Screenshot...
+                </span>
+              </div>
+            ) : screenshotData ? (
+              /* High-Resolution Captured Screenshot */
+              <div
+                className="transition-transform duration-200 origin-top flex flex-col items-center max-w-full"
+                style={{ transform: `scale(${zoomLevel / 100})` }}
+              >
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-[#0d121f]">
+                  <img
+                    src={screenshotData}
+                    alt={`GATE Question ${activeQuestion.questionNumber}`}
+                    className="max-w-full object-contain select-text"
+                  />
+                </div>
+
+                {/* Floating Re-capture action */}
+                <div className="mt-4 flex items-center gap-3">
+                  <button
+                    onClick={handleCaptureSpecificPage}
+                    disabled={isCapturingSpecific}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-850 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold transition-all active:scale-95"
+                    title="Re-capture question screenshot from official page"
+                  >
+                    {isCapturingSpecific ? (
+                      <Loader2 className="w-3.5 h-3.5 text-brand-400 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+                    )}
+                    <span>Re-capture Screenshot</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Empty State: Question Not Captured Yet */
+              <div className="my-auto max-w-lg w-full p-8 rounded-3xl bg-slate-900/70 border border-slate-800/90 shadow-2xl backdrop-blur-xl text-center space-y-5 animate-fade-in">
+                <div className="w-14 h-14 rounded-2xl bg-brand-500/10 border border-brand-500/30 text-brand-400 flex items-center justify-center mx-auto shadow-inner">
+                  <Camera className="w-7 h-7" />
+                </div>
+
+                <div>
+                  <h3 className="text-lg sm:text-xl font-black text-white">
+                    Question not captured yet
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    The screenshot for this GATE question has not been captured yet. Use the Chrome Extension Importer to batch import, or capture this specific page now.
+                  </p>
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <button
+                    onClick={handleCaptureSpecificPage}
+                    disabled={isCapturingSpecific}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-lg shadow-brand-500/25 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {isCapturingSpecific ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Capturing Page...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="w-4 h-4" />
+                        <span>Capture Specific Page</span>
+                      </>
+                    )}
+                  </button>
+
                   <a
                     href={activeQuestion.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-brand-400 hover:text-brand-300 font-bold shrink-0 underline"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all active:scale-95"
                   >
-                    <span>Open Official Page</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <span>Go to Discussion</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
                   </a>
                 </div>
 
-                {/* Iframe Viewport Container */}
-                <div className="flex-1 w-full h-full relative bg-[#090e1a]">
-                  {iframeLoading && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#030712]/90 backdrop-blur-sm">
-                      <div className="w-8 h-8 rounded-full border-2 border-brand-500/30 border-t-brand-500 animate-spin" />
-                      <span className="text-xs font-bold text-slate-400 font-mono">
-                        Loading Question Page...
-                      </span>
-                    </div>
-                  )}
-
-                  <iframe
-                    key={activeQuestion.id}
-                    src={activeQuestion.link}
-                    onLoad={() => setIframeLoading(false)}
-                    className="w-full h-full border-0 bg-white"
-                    title={`Question ${activeQuestion.questionNumber}`}
-                    sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-                  />
-                </div>
-              </div>
-            ) : (
-              /* Scratchpad / Focus Card View */
-              <div className="w-full h-full p-6 sm:p-10 overflow-y-auto custom-scrollbar flex flex-col max-w-4xl mx-auto space-y-6">
-                {/* Main Focus Card */}
-                <div className="p-8 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-2xl backdrop-blur-xl space-y-5">
-                  <div className="flex items-start justify-between gap-4 flex-wrap">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                          {activeQuestion.year}
-                        </span>
-                        <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-300">
-                          {activeQuestion.marks || 1} {activeQuestion.marks === 1 ? 'Mark' : 'Marks'}
-                        </span>
-                        <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-blue-950/80 border border-blue-500/40 text-blue-300">
-                          {activeQuestion.type_of_question || 'MCQ'}
-                        </span>
-                      </div>
-                      <h2 className="text-2xl sm:text-3xl font-black text-white mt-3">
-                        Question {activeQuestion.questionNumber}
-                      </h2>
-                      <p className="text-sm text-slate-400 mt-1">
-                        {topicName} • {subjectName}
-                      </p>
-                    </div>
-
-                    <a
-                      href={activeQuestion.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition-all active:scale-95"
-                    >
-                      <span>Open Question Page</span>
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </div>
-
-                  {/* Question Notes & Scratchpad */}
-                  <div className="space-y-2 pt-4 border-t border-slate-800">
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                      <div className="flex items-center gap-1.5">
-                        <Edit3 className="w-4 h-4 text-brand-400" />
-                        <span>Working Notes / Solution Scratchpad</span>
-                      </div>
-                      <span className="text-[11px] text-slate-500 font-mono">
-                        Auto-saved locally
-                      </span>
-                    </div>
-                    <textarea
-                      value={notes}
-                      onChange={(e) => handleSaveNotes(e.target.value)}
-                      placeholder="Write your rough calculations, final numerical answer, or revision notes here..."
-                      rows={8}
-                      className="w-full p-4 rounded-2xl bg-slate-950 border border-slate-800 text-sm font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-brand-500/60 transition-colors custom-scrollbar"
-                    />
-                  </div>
-                </div>
-
-                {/* Keyboard Shortcuts Guide */}
-                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-xs text-slate-400 flex items-center justify-between gap-4 flex-wrap">
-                  <div className="flex items-center gap-1.5 font-bold text-slate-300">
-                    <HelpCircle className="w-4 h-4 text-brand-400" />
-                    <span>Keyboard Shortcuts:</span>
-                  </div>
-                  <div className="flex items-center gap-3 flex-wrap font-mono text-[11px]">
-                    <span><kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-800 rounded">←</kbd> / <kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-800 rounded">[</kbd> Prev</span>
-                    <span><kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-800 rounded">→</kbd> / <kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-800 rounded">]</kbd> Next</span>
-                    <span><kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-800 rounded">M</kbd> Done</span>
-                    <span><kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-800 rounded">D</kbd> Doubt</span>
-                    <span><kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-800 rounded">\</kbd> Toggle Playlist</span>
-                    <span><kbd className="px-1.5 py-0.5 bg-slate-900 border border-slate-800 rounded">Esc</kbd> Exit</span>
-                  </div>
+                <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-800 flex items-center justify-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400/80" />
+                  <span>Use the Chrome Extension to automatically capture all questions by subject.</span>
                 </div>
               </div>
             )}
           </div>
+
+          {/* Expandable Scratchpad / Notes Drawer */}
+          {isScratchpadOpen && (
+            <div className="h-48 border-t border-slate-800/90 bg-[#090e1a]/95 backdrop-blur-2xl p-3 flex flex-col shrink-0 animate-fade-in">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1.5">
+                <div className="flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-brand-400" />
+                  <span>Working Scratchpad & Notes</span>
+                </div>
+                <button
+                  onClick={() => setIsScratchpadOpen(false)}
+                  className="text-slate-400 hover:text-white"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <textarea
+                value={notes}
+                onChange={(e) => handleSaveNotes(e.target.value)}
+                placeholder="Write rough calculations, steps, or revision notes here (saved automatically)..."
+                className="flex-1 w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-brand-500/50 resize-none custom-scrollbar"
+              />
+            </div>
+          )}
         </main>
       </div>
     </div>

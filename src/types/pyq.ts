@@ -27,6 +27,7 @@ export interface PYQItemProgress {
   difficulty?: PYQDifficultyStatus; // 'easy' | 'medium' | 'hard' | 'skip'
   isDoubt?: boolean; // Doubt / Review needed flag
   notes?: string;
+  elapsedSeconds?: number; // Per-question practice timer in seconds
   updatedAt?: string;
 }
 
