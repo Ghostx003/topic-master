@@ -64,6 +64,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
 
   // 2. Interactive & Sticky Popover State
   const [activeCellData, setActiveCellData] = useState<ActiveCellPopoverData | null>(null);
+  const enterTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const leaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
 
@@ -206,6 +207,10 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
       clearTimeout(leaveTimeoutRef.current);
       leaveTimeoutRef.current = null;
     }
+    if (enterTimeoutRef.current) {
+      clearTimeout(enterTimeoutRef.current);
+      enterTimeoutRef.current = null;
+    }
 
     // If already pinned by a click, do not override with simple hover of other cells
     if (activeCellData?.isPinned) {
@@ -213,20 +218,24 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
     }
 
     if (data.count === 0) {
-      setActiveCellData(null);
       return;
     }
+
     const rect = e.currentTarget.getBoundingClientRect();
-    setActiveCellData({
-      ...data,
-      rect: {
-        top: rect.top,
-        left: rect.left,
-        right: rect.right,
-        bottom: rect.bottom,
-      },
-      isPinned: false,
-    });
+
+    // Dwell delay: Only show hover card if cursor stays on cell for >= 1.7 seconds
+    enterTimeoutRef.current = setTimeout(() => {
+      setActiveCellData({
+        ...data,
+        rect: {
+          top: rect.top,
+          left: rect.left,
+          right: rect.right,
+          bottom: rect.bottom,
+        },
+        isPinned: false,
+      });
+    }, 1700);
   };
 
   const handleCellClick = (
@@ -245,6 +254,10 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
     e.stopPropagation();
     if (data.count === 0) return;
 
+    if (enterTimeoutRef.current) {
+      clearTimeout(enterTimeoutRef.current);
+      enterTimeoutRef.current = null;
+    }
     if (leaveTimeoutRef.current) {
       clearTimeout(leaveTimeoutRef.current);
       leaveTimeoutRef.current = null;
@@ -270,6 +283,10 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
   };
 
   const handleCellMouseLeave = () => {
+    if (enterTimeoutRef.current) {
+      clearTimeout(enterTimeoutRef.current);
+      enterTimeoutRef.current = null;
+    }
     if (activeCellData?.isPinned) {
       return; // Do NOT close if pinned!
     }
@@ -283,6 +300,10 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
   };
 
   const handlePopoverMouseEnter = () => {
+    if (enterTimeoutRef.current) {
+      clearTimeout(enterTimeoutRef.current);
+      enterTimeoutRef.current = null;
+    }
     if (leaveTimeoutRef.current) {
       clearTimeout(leaveTimeoutRef.current);
       leaveTimeoutRef.current = null;
