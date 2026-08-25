@@ -62,7 +62,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
   const [isCapturingSpecific, setIsCapturingSpecific] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
 
-  // Per-question Timer State
+  // Per-question Timer State (resets on each question navigation)
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(true);
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
 
@@ -122,12 +122,11 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
     return () => window.removeEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
   }, [activeQuestion?.id]);
 
-  // Load question-specific timer and notes
+  // Reset timer to 0 and start fresh whenever moving to a new question
   useEffect(() => {
     if (activeQuestion) {
-      const qProgress = progress[activeQuestion.id];
-      setElapsedSeconds(qProgress?.elapsedSeconds || 0);
-      setNotes(qProgress?.notes || '');
+      setElapsedSeconds(0);
+      setNotes(progress[activeQuestion.id]?.notes || '');
       setIsTimerRunning(true);
     }
   }, [activeQuestion?.id]);
@@ -136,14 +135,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
   useEffect(() => {
     if (isOpen && isTimerRunning) {
       timerIntervalRef.current = setInterval(() => {
-        setElapsedSeconds((prev) => {
-          const next = prev + 1;
-          // Persist elapsed time periodically (every 5 seconds)
-          if (activeQuestionRef.current && next % 5 === 0) {
-            onUpdateProgress(activeQuestionRef.current.id, { elapsedSeconds: next });
-          }
-          return next;
-        });
+        setElapsedSeconds((prev) => prev + 1);
       }, 1000);
     } else {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
@@ -152,13 +144,6 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
   }, [isOpen, isTimerRunning]);
-
-  // Save elapsed timer when changing questions or closing
-  const persistCurrentTimer = () => {
-    if (activeQuestion) {
-      onUpdateProgress(activeQuestion.id, { elapsedSeconds });
-    }
-  };
 
   // Scroll active item into view in playlist
   useEffect(() => {
@@ -256,7 +241,6 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
           break;
         case 'Escape':
           e.preventDefault();
-          persistCurrentTimer();
           onClose();
           break;
       }
@@ -264,27 +248,22 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, activeQuestion, questions.length, elapsedSeconds]);
+  }, [isOpen, currentIndex, activeQuestion, questions.length]);
 
   const handlePrevQuestion = () => {
     if (currentIndex > 0) {
-      persistCurrentTimer();
       setCurrentIndex(currentIndex - 1);
     }
   };
 
   const handleNextQuestion = () => {
     if (currentIndex < questions.length - 1) {
-      persistCurrentTimer();
       setCurrentIndex(currentIndex + 1);
     }
   };
 
   const handleResetTimer = () => {
     setElapsedSeconds(0);
-    if (activeQuestion) {
-      onUpdateProgress(activeQuestion.id, { elapsedSeconds: 0 });
-    }
   };
 
   const handleToggleCompleted = () => {
@@ -327,11 +306,6 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
 
       if (result) {
         setScreenshotData(result);
-      } else {
-        // If extension is not installed or page timed out, alert user gracefully
-        alert(
-          'Capture request sent! If the Chrome extension is installed, it will capture and display the question. Otherwise, use "Go to Discussion" to view the question page.'
-        );
       }
     } finally {
       setIsCapturingSpecific(false);
@@ -399,13 +373,13 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
           </div>
         </div>
 
-        {/* Center: Prev / Next Navigation */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        {/* Center: [ < Prev ] ........ [ TIMER WIDGET (CENTERED) ] ........ [ Next > ] */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={handlePrevQuestion}
             disabled={currentIndex === 0}
             className={clsx(
-              'flex items-center gap-1 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all active:scale-95',
+              'flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all active:scale-95',
               currentIndex === 0
                 ? 'opacity-40 bg-slate-950 text-slate-600 border-slate-900 cursor-not-allowed'
                 : 'bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border-slate-800 hover:border-slate-700'
@@ -416,28 +390,10 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
             <span className="hidden sm:inline">Prev</span>
           </button>
 
-          <button
-            onClick={handleNextQuestion}
-            disabled={currentIndex === questions.length - 1}
-            className={clsx(
-              'flex items-center gap-1 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all active:scale-95',
-              currentIndex === questions.length - 1
-                ? 'opacity-40 bg-slate-950 text-slate-600 border-slate-900 cursor-not-allowed'
-                : 'bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border-slate-800 hover:border-slate-700'
-            )}
-            title="Next Question (→ or ])"
-          >
-            <span className="hidden sm:inline">Next</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Right Side: [Timer: MM:SS ▶ ↻] ........ [Go to Discussion ↗] ........ [Status Actions] */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          {/* ================= TIMER WIDGET (Start/Pause + Reset) ================= */}
-          <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800/90 px-2.5 py-1 rounded-xl shadow-sm">
+          {/* ================= CENTERED TIMER WIDGET ================= */}
+          <div className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-750 px-3 py-1 rounded-xl shadow-inner ring-1 ring-white/5">
             <Timer className={clsx('w-3.5 h-3.5', isTimerRunning ? 'text-brand-400 animate-pulse' : 'text-slate-500')} />
-            <span className="text-xs font-mono font-black text-slate-200 w-11 text-center select-none">
+            <span className="text-xs font-mono font-black text-slate-100 w-12 text-center select-none">
               {formatTimer(elapsedSeconds)}
             </span>
             <button
@@ -456,7 +412,25 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
             </button>
           </div>
 
-          {/* ================= GO TO DISCUSSION ACTION ================= */}
+          <button
+            onClick={handleNextQuestion}
+            disabled={currentIndex === questions.length - 1}
+            className={clsx(
+              'flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all active:scale-95',
+              currentIndex === questions.length - 1
+                ? 'opacity-40 bg-slate-950 text-slate-600 border-slate-900 cursor-not-allowed'
+                : 'bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border-slate-800 hover:border-slate-700'
+            )}
+            title="Next Question (→ or ])"
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Right Side: [Go to Discussion ↗] ........ [Status Actions] ........ [Close] */}
+        <div className="flex items-center justify-end gap-2.5 min-w-0 flex-1">
+          {/* Go to Discussion Button */}
           <a
             href={activeQuestion.link}
             target="_blank"
@@ -508,10 +482,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
 
           {/* Exit Practice Workspace */}
           <button
-            onClick={() => {
-              persistCurrentTimer();
-              onClose();
-            }}
+            onClick={onClose}
             className="p-2 rounded-xl bg-slate-900 hover:bg-rose-950/60 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-700/60 transition-all active:scale-95 ml-1"
             title="Close Practice Workspace (Esc)"
           >
@@ -620,7 +591,6 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
                     playlistItemRefs.current[originalIndex] = el;
                   }}
                   onClick={() => {
-                    persistCurrentTimer();
                     setCurrentIndex(originalIndex);
                     if (window.innerWidth < 768) {
                       setIsPlaylistOpen(false);
@@ -759,10 +729,27 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
               </span>
             </div>
 
-            {/* Right Controls: Zoom + Difficulty + Scratchpad Toggle */}
+            {/* Right Controls: [Re-capture Button AT TOP] + Zoom + Difficulty + Scratchpad */}
             <div className="flex items-center gap-2">
+              {/* TOP RE-CAPTURE BUTTON */}
+              <button
+                onClick={handleCaptureSpecificPage}
+                disabled={isCapturingSpecific}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[11px] font-bold transition-all active:scale-95 disabled:opacity-50"
+                title="Re-capture screenshot from official page"
+              >
+                {isCapturingSpecific ? (
+                  <Loader2 className="w-3.5 h-3.5 text-brand-400 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+                )}
+                <span className="hidden sm:inline">
+                  {isCapturingSpecific ? 'Capturing...' : 'Re-capture'}
+                </span>
+              </button>
+
               {/* Difficulty Status Selector */}
-              <div className="hidden sm:flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-800/80 text-[10px] font-bold">
+              <div className="hidden md:flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-800/80 text-[10px] font-bold">
                 {(['easy', 'medium', 'hard', 'skip'] as PYQDifficultyStatus[]).map((lvl) => (
                   <button
                     key={lvl}
@@ -825,8 +812,8 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
             </div>
           </div>
 
-          {/* Screenshot Display Area */}
-          <div className="flex-1 w-full h-full relative overflow-y-auto overflow-x-auto p-4 sm:p-8 flex items-start justify-center custom-scrollbar bg-[#02040a]">
+          {/* Screenshot Display Area — Centered Vertically and Horizontally in Fullscreen */}
+          <div className="flex-1 w-full h-full relative overflow-y-auto overflow-x-auto p-4 sm:p-8 flex items-center justify-center custom-scrollbar bg-[#02040a]">
             {isScreenshotLoading ? (
               <div className="flex flex-col items-center justify-center gap-3 my-auto">
                 <Loader2 className="w-8 h-8 text-brand-400 animate-spin" />
@@ -835,34 +822,17 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
                 </span>
               </div>
             ) : screenshotData ? (
-              /* High-Resolution Captured Screenshot */
+              /* High-Resolution Captured Screenshot — Centered */
               <div
-                className="transition-transform duration-200 origin-top flex flex-col items-center max-w-full"
+                className="transition-transform duration-200 flex flex-col items-center justify-center max-w-full my-auto"
                 style={{ transform: `scale(${zoomLevel / 100})` }}
               >
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-[#0d121f]">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-800/90 bg-[#0d121f]">
                   <img
                     src={screenshotData}
                     alt={`GATE Question ${activeQuestion.questionNumber}`}
-                    className="max-w-full object-contain select-text"
+                    className="max-w-full max-h-[82vh] object-contain select-text"
                   />
-                </div>
-
-                {/* Floating Re-capture action */}
-                <div className="mt-4 flex items-center gap-3">
-                  <button
-                    onClick={handleCaptureSpecificPage}
-                    disabled={isCapturingSpecific}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-850 text-slate-400 hover:text-white border border-slate-800 text-xs font-bold transition-all active:scale-95"
-                    title="Re-capture question screenshot from official page"
-                  >
-                    {isCapturingSpecific ? (
-                      <Loader2 className="w-3.5 h-3.5 text-brand-400 animate-spin" />
-                    ) : (
-                      <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
-                    )}
-                    <span>Re-capture Screenshot</span>
-                  </button>
                 </div>
               </div>
             ) : (
@@ -877,7 +847,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
                     Question not captured yet
                   </h3>
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                    The screenshot for this GATE question has not been captured yet. Use the Chrome Extension Importer to batch import, or capture this specific page now.
+                    The screenshot for this GATE question has not been captured yet. Click Capture Specific Page to import it now with the extension.
                   </p>
                 </div>
 
@@ -913,7 +883,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
 
                 <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-800 flex items-center justify-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400/80" />
-                  <span>Use the Chrome Extension to automatically capture all questions by subject.</span>
+                  <span>Use the Chrome Extension to batch capture all questions by subject.</span>
                 </div>
               </div>
             )}
