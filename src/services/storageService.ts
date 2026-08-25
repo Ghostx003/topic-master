@@ -3,7 +3,7 @@ import { INITIAL_SUBJECTS, INITIAL_TOPICS, INITIAL_SCHEDULES } from '../utils/sa
 import { Subject } from '../types/subject';
 import { Topic } from '../types/topic';
 
-const STORAGE_KEY = 'topic_master_state_gate_cse_v14_clean_pyqs';
+const STORAGE_KEY = 'topic_master_state_gate_cse_v15_apti_migrated';
 
 export const DEFAULT_INITIAL_STATE: TopicMasterState = {
   subjects: INITIAL_SUBJECTS,
@@ -31,6 +31,7 @@ export const StorageService = {
       // Clean up legacy storage keys
       try {
         [
+          'topic_master_state_gate_cse_v14_clean_pyqs',
           'topic_master_state_gate_cse_v13',
           'topic_master_state_gate_cse_v12_final',
           'topic_master_state_gate_cse_v11_clean',
@@ -92,6 +93,7 @@ export const StorageService = {
           const { Topic_PYQ_Count, ...cleanT } = t as any;
           return {
             ...cleanT,
+            Subject_Id: init ? init.Subject_Id : t.Subject_Id,
             Topic_Name: init ? init.Topic_Name : t.Topic_Name,
             Topic_Description: init ? init.Topic_Description : (t.Topic_Description ? t.Topic_Description.replace(/\s*\(\d+\s+(?:Total\s+|Historical\s+)?PYQs?\)/gi, '') : ''),
             Parent_Id: init !== undefined ? init.Parent_Id : t.Parent_Id,
