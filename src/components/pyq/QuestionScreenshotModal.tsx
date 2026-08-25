@@ -17,6 +17,8 @@ import {
   Loader2,
   RefreshCw,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -28,6 +30,12 @@ export interface QuestionScreenshotModalProps {
   onToggleCompleted?: (questionId: string) => void;
   onToggleDoubt?: (questionId: string) => void;
   onSetDifficulty?: (questionId: string, status: PYQDifficultyStatus) => void;
+  onNavigatePrevious?: () => void;
+  onNavigateNext?: () => void;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
+  currentIndex?: number;
+  totalCount?: number;
 }
 
 export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = ({
@@ -38,6 +46,12 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
   onToggleCompleted,
   onToggleDoubt,
   onSetDifficulty,
+  onNavigatePrevious,
+  onNavigateNext,
+  hasPrevious = false,
+  hasNext = false,
+  currentIndex,
+  totalCount,
 }) => {
   const [screenshotData, setScreenshotData] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -80,17 +94,38 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
     return () => window.removeEventListener('pyq_screenshot_updated', handleUpdated);
   }, [question?.id]);
 
-  // Keyboard shortcut: Esc to close
+  // Keyboard shortcuts: ArrowLeft (Prev), ArrowRight (Next), Esc (Close)
   useEffect(() => {
     if (!isOpen) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if typing in an input
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return;
+      }
+
       if (e.key === 'Escape') {
         onClose();
+      } else if (e.key === 'ArrowLeft' || e.key === 'Left') {
+        e.preventDefault();
+        if (hasPrevious && onNavigatePrevious) {
+          onNavigatePrevious();
+        }
+      } else if (e.key === 'ArrowRight' || e.key === 'Right') {
+        e.preventDefault();
+        if (hasNext && onNavigateNext) {
+          onNavigateNext();
+        }
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, hasPrevious, hasNext, onNavigatePrevious, onNavigateNext]);
 
   const handleCapture = async () => {
     if (!question || isCapturing) return;
@@ -136,8 +171,35 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
       <div className="relative w-full max-w-5xl h-[92vh] max-h-[95vh] flex flex-col rounded-3xl bg-[#080d1a] border border-slate-800 shadow-2xl overflow-hidden select-none">
         {/* Header Bar */}
         <header className="h-14 px-4 sm:px-6 bg-[#0a1020] border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
-          {/* Question Metadata Info */}
+          {/* Question Metadata Info & Left/Right Quick Switcher */}
           <div className="flex items-center gap-2.5 truncate min-w-0">
+            {/* Prev / Next Header Navigator */}
+            {(hasPrevious || hasNext) && (
+              <div className="flex items-center gap-0.5 bg-slate-900/90 border border-slate-800 rounded-xl p-0.5 shrink-0 shadow-inner">
+                <button
+                  onClick={onNavigatePrevious}
+                  disabled={!hasPrevious}
+                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                  title="Previous Question (← Arrow Left)"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {typeof currentIndex === 'number' && typeof totalCount === 'number' && (
+                  <span className="text-[11px] font-mono font-black text-brand-300 px-1.5 select-none">
+                    {currentIndex + 1} / {totalCount}
+                  </span>
+                )}
+                <button
+                  onClick={onNavigateNext}
+                  disabled={!hasNext}
+                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                  title="Next Question (→ Arrow Right)"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 hidden sm:inline shrink-0">
               {question.subject}
             </span>
@@ -306,8 +368,36 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
           </div>
         </div>
 
-        {/* Screenshot Viewport — Centered */}
+        {/* Screenshot Viewport — Centered with Floating Side Navigation Buttons */}
         <div className="flex-1 w-full h-full relative overflow-y-auto overflow-x-auto p-4 sm:p-6 flex items-center justify-center custom-scrollbar bg-[#02040a]">
+          {/* Floating Left Prev Button */}
+          {hasPrevious && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onNavigatePrevious) onNavigatePrevious();
+              }}
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-3 rounded-2xl bg-slate-950/85 hover:bg-brand-600 border border-slate-700/70 hover:border-brand-400 text-slate-300 hover:text-white shadow-2xl backdrop-blur-xl transition-all active:scale-90 group"
+              title="Previous Question (← Arrow Left)"
+            >
+              <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+            </button>
+          )}
+
+          {/* Floating Right Next Button */}
+          {hasNext && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onNavigateNext) onNavigateNext();
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-3 rounded-2xl bg-slate-950/85 hover:bg-brand-600 border border-slate-700/70 hover:border-brand-400 text-slate-300 hover:text-white shadow-2xl backdrop-blur-xl transition-all active:scale-90 group"
+              title="Next Question (→ Arrow Right)"
+            >
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          )}
+
           {isLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 my-auto">
               <Loader2 className="w-8 h-8 text-brand-400 animate-spin" />

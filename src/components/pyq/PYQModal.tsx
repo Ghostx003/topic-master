@@ -332,6 +332,35 @@ export const PYQModal: React.FC<PYQModalProps> = ({
     return filteredQuestions.filter((q) => Boolean(progress[q.id]?.completed));
   }, [filteredQuestions, progress, activeTab]);
 
+  // Current active questions list in exact display order for sequential arrow navigation
+  const currentQuestionsList = useMemo(() => {
+    if (activeTab === 'all') {
+      return [...activeQuestions, ...completedQuestions];
+    }
+    return filteredQuestions;
+  }, [activeTab, activeQuestions, completedQuestions, filteredQuestions]);
+
+  const selectedScreenshotIndex = useMemo(() => {
+    if (!selectedScreenshotQuestion) return -1;
+    return currentQuestionsList.findIndex((q) => q.id === selectedScreenshotQuestion.id);
+  }, [selectedScreenshotQuestion, currentQuestionsList]);
+
+  const hasPreviousScreenshot = selectedScreenshotIndex > 0;
+  const hasNextScreenshot =
+    selectedScreenshotIndex >= 0 && selectedScreenshotIndex < currentQuestionsList.length - 1;
+
+  const handleNavigatePreviousScreenshot = () => {
+    if (hasPreviousScreenshot) {
+      setSelectedScreenshotQuestion(currentQuestionsList[selectedScreenshotIndex - 1]);
+    }
+  };
+
+  const handleNavigateNextScreenshot = () => {
+    if (hasNextScreenshot) {
+      setSelectedScreenshotQuestion(currentQuestionsList[selectedScreenshotIndex + 1]);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -769,6 +798,12 @@ export const PYQModal: React.FC<PYQModalProps> = ({
           onToggleCompleted={handleToggleCompleted}
           onToggleDoubt={handleToggleDoubt}
           onSetDifficulty={handleSetDifficulty}
+          onNavigatePrevious={handleNavigatePreviousScreenshot}
+          onNavigateNext={handleNavigateNextScreenshot}
+          hasPrevious={hasPreviousScreenshot}
+          hasNext={hasNextScreenshot}
+          currentIndex={selectedScreenshotIndex}
+          totalCount={currentQuestionsList.length}
         />
       )}
 
