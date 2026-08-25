@@ -2,6 +2,7 @@
  * Topic Master — PYQ Screenshot Importer Background Service Worker (Manifest V3)
  * Exact question viewport capture from top border line to tags,
  * matching official GateOverflow problem statement + code + options + tags layout.
+ * Removes left sidebar, headers, and right whitespace for a pixel-perfect middle crop.
  */
 
 let importState = {
@@ -159,7 +160,7 @@ async function handleStopImport() {
 /**
  * Clean up page distractions and style the question element for crystal-clear capture
  * Keeps: Top line, Voting Buttons, Question Text, Code, Options, and Tags
- * Hides: Navbars, Headers, Sidebars, Author container, Buttons, Comments, Answers
+ * Hides: Left navigation sidebar, headers, author box, action buttons, comments, answers
  */
 async function cleanPageForScreenshot(tabId) {
   try {
@@ -172,7 +173,7 @@ async function cleanPageForScreenshot(tabId) {
           style = document.createElement('style');
           style.id = styleId;
           style.textContent = `
-            /* Hide page headers, topbars, search, and navigation */
+            /* Hide entire left navigation sidebar & menu triggers */
             .sc-header-wrapper,
             .qa-header,
             .topbar-search-container,
@@ -181,6 +182,22 @@ async function cleanPageForScreenshot(tabId) {
             .sc-logReg,
             .qa-nav-user,
             .qam-main-nav-wrapper,
+            .qa-nav-main,
+            .sc-main-nav,
+            .sc-side-nav,
+            .qa-sidepanel-left,
+            .qam-sidepanel,
+            .sc-menu,
+            .sc-nav-panel,
+            .left-sidebar,
+            .qa-left-sidebar,
+            .sc-left-sidebar,
+            nav[class*="nav"],
+            div[class*="left-nav"],
+            div[class*="side-nav"],
+            div[class*="main-nav"],
+            .theme-switch-wrapper,
+            .dark-mode-switch,
             .qa-main-heading,
             h1,
             
@@ -203,9 +220,12 @@ async function cleanPageForScreenshot(tabId) {
             .qa-suggest-next,
             #q2a-chat-widget,
             
-            /* Hide author info, views count, metadata below tags */
-            .qa-user-container,
+            /* Hide top metadata (asked by, views, date) */
+            .qa-q-view-meta,
             .qa-q-item-meta,
+            .qa-post-meta,
+            .entry-meta,
+            .qa-user-container,
             .ct-who1,
             
             /* Hide action buttons (answer, comment, share, print) */
@@ -257,24 +277,26 @@ async function cleanPageForScreenshot(tabId) {
               width: 100% !important;
               max-width: 100% !important;
               margin: 0 !important;
-              padding: 12px 28px !important;
+              padding: 16px 24px !important;
               box-sizing: border-box !important;
             }
 
             .qa-main {
               width: 100% !important;
-              max-width: 100% !important;
-              margin: 0 !important;
+              max-width: 960px !important;
+              margin: 0 auto !important;
               padding: 0 !important;
               float: none !important;
             }
 
             .qa-q-view, article.qa-post-view {
               width: 100% !important;
+              max-width: 100% !important;
               margin: 0 !important;
               padding-top: 14px !important;
               border-top: 1.5px solid #e2e8f0 !important;
               border-bottom: none !important;
+              box-sizing: border-box !important;
             }
 
             .qa-voting-container {
@@ -307,9 +329,20 @@ async function cleanPageForScreenshot(tabId) {
           document.head.appendChild(style);
         }
 
-        // Direct DOM Element removal for extra reliability
+        // Direct DOM Element removal
         const selectorsToHide = [
           '.sc-header-wrapper',
+          '.qam-main-nav-wrapper',
+          '.qa-nav-main',
+          '.sc-main-nav',
+          '.sc-side-nav',
+          '.qa-sidepanel-left',
+          '.qam-sidepanel',
+          '.sc-menu',
+          '.sc-nav-panel',
+          '.left-sidebar',
+          '.qa-left-sidebar',
+          '.sc-left-sidebar',
           'aside.qa-sidepanel',
           '.qa-sidepanel',
           '.qa-widgets-side',
@@ -332,7 +365,12 @@ async function cleanPageForScreenshot(tabId) {
           '#q2a-chat-widget',
           '.qa-main-heading',
           'h1',
+          '.qa-q-view-meta',
+          '.qa-q-item-meta',
+          '.qa-post-meta',
+          '.entry-meta',
           '.qa-user-container',
+          '.ct-who1',
           '.qa-q-view-buttons',
           'nav.qa-q-view-buttons',
           '.comment-section',
@@ -341,7 +379,9 @@ async function cleanPageForScreenshot(tabId) {
           '.qa-a-list',
           '.qa-a-form',
           'div[class*="ai-summary"]',
-          'div[id*="ai-summary"]'
+          'div[id*="ai-summary"]',
+          '.theme-switch-wrapper',
+          '.dark-mode-switch'
         ];
 
         selectorsToHide.forEach((sel) => {
@@ -376,8 +416,8 @@ async function cleanPageForScreenshot(tabId) {
         const height = bottom - top + 18;
 
         return {
-          top: 0,
-          left: 0,
+          left: Math.max(0, qRect.left),
+          top: top,
           width: qRect.width,
           height: height,
           dpr: dpr
@@ -407,21 +447,25 @@ async function blobToBase64(blob) {
 
 /**
  * Native OffscreenCanvas cropping inside service worker (CSP-proof)
+ * Cuts out left sidebar, headers, and right whitespace for a clean middle crop.
  */
 async function cropImageInExtension(dataUrl, rect) {
-  if (!rect || !rect.height) return dataUrl;
+  if (!rect || !rect.width || !rect.height) return dataUrl;
   try {
     const response = await fetch(dataUrl);
     const blob = await response.blob();
     const imageBitmap = await createImageBitmap(blob);
 
     const dpr = rect.dpr || 1;
-    const cropX = 0;
-    const cropY = Math.max(0, (rect.top || 0) * dpr);
-    const cropWidth = imageBitmap.width;
-    const cropHeight = Math.min(imageBitmap.height - cropY, (rect.height + 12) * dpr);
+    const paddingX = 8 * dpr;
+    const paddingY = 8 * dpr;
 
-    if (cropWidth <= 10 || cropHeight <= 10) return dataUrl;
+    const cropX = Math.max(0, (rect.left || 0) * dpr - paddingX);
+    const cropY = Math.max(0, (rect.top || 0) * dpr);
+    const cropWidth = Math.min(imageBitmap.width - cropX, (rect.width || 0) * dpr + paddingX * 2);
+    const cropHeight = Math.min(imageBitmap.height - cropY, (rect.height || 0) * dpr + paddingY);
+
+    if (cropWidth <= 20 || cropHeight <= 20) return dataUrl;
 
     const offscreen = new OffscreenCanvas(cropWidth, cropHeight);
     const ctx = offscreen.getContext('2d');
@@ -429,10 +473,10 @@ async function cropImageInExtension(dataUrl, rect) {
     ctx.fillRect(0, 0, cropWidth, cropHeight);
     ctx.drawImage(imageBitmap, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
-    const croppedBlob = await offscreen.convertToBlob({ type: 'image/jpeg', quality: 0.92 });
+    const croppedBlob = await offscreen.convertToBlob({ type: 'image/jpeg', quality: 0.94 });
     return await blobToBase64(croppedBlob);
   } catch (err) {
-    console.warn('Offscreen crop fallback:', err);
+    console.warn('Crop fallback:', err);
     return dataUrl;
   }
 }
