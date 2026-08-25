@@ -144,7 +144,7 @@ export function getQuestionsForTopic(
   const targets = [topicName, ...subtopicNames];
   const targetAliases = targets.map((t) => CHAPTER_ALIASES[t.toLowerCase()] || t);
 
-  const matched = subjectQuestions.filter((q) => {
+  let matched = subjectQuestions.filter((q) => {
     const qChap = q.chapter;
     const aliasQ = CHAPTER_ALIASES[qChap.toLowerCase()] || qChap;
 
@@ -157,6 +157,30 @@ export function getQuestionsForTopic(
     }
     return false;
   });
+
+  // Fallback 1: Normalized substring matching if exact match yields 0
+  if (matched.length === 0 && subjectQuestions.length > 0) {
+    matched = subjectQuestions.filter((q) => {
+      const normQ = normalize(q.chapter);
+      for (const target of targets) {
+        const normT = normalize(target);
+        if (normQ && normT && (normQ.includes(normT) || normT.includes(normQ))) return true;
+      }
+      return false;
+    });
+  }
+
+  // Fallback 2: Global dataset search if subject name had a variant or alias
+  if (matched.length === 0) {
+    matched = ALL_PYQ_QUESTIONS.filter((q) => {
+      const normQ = normalize(q.chapter);
+      for (const target of targets) {
+        const normT = normalize(target);
+        if (normQ && normT && (normQ === normT || normQ.includes(normT) || normT.includes(normQ))) return true;
+      }
+      return false;
+    });
+  }
 
   const sorted = sortQuestionsNewestFirst(matched);
   TOPIC_QUERY_CACHE.set(cacheKey, sorted);

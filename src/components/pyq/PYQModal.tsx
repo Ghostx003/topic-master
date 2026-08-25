@@ -95,10 +95,14 @@ export const PYQModal: React.FC<PYQModalProps> = ({
     return getQuestionsForTopic(subjectName, topicName, subtopicNames);
   }, [isOpen, subjectName, topicName, subtopicNames]);
 
-  // Apply Year Range Filter
+  // Apply Year Range Filter (bypass yearFilter preset if searching a specific 4-digit year like 2012)
   const yearFilteredQuestions = useMemo(() => {
+    const isSearchingSpecificYear = searchQuery && /^\d{4}$/.test(searchQuery.trim());
+    if (isSearchingSpecificYear) {
+      return rawTopicQuestions;
+    }
     return filterQuestionsByYear(rawTopicQuestions, yearFilter);
-  }, [rawTopicQuestions, yearFilter]);
+  }, [rawTopicQuestions, yearFilter, searchQuery]);
 
   // Apply Sorting (Newest to Oldest or Oldest to Newest)
   const sortedQuestions = useMemo(() => {
@@ -225,8 +229,14 @@ export const PYQModal: React.FC<PYQModalProps> = ({
 
       // Search query
       if (qTrim) {
-        const matchYear = q.year.toLowerCase().includes(qTrim);
-        const matchNum = `question ${q.questionNumber}`.includes(qTrim) || `${q.questionNumber}` === qTrim;
+        const yNum = extractYearNumber(q.year);
+        const matchYear =
+          q.year.toLowerCase().includes(qTrim) ||
+          String(yNum) === qTrim ||
+          `gate ${yNum}`.includes(qTrim);
+        const matchNum =
+          `question ${q.questionNumber}`.toLowerCase().includes(qTrim) ||
+          `${q.questionNumber}`.toLowerCase() === qTrim;
         const matchChap = q.chapter.toLowerCase().includes(qTrim);
         if (!matchYear && !matchNum && !matchChap) return false;
       }
