@@ -814,9 +814,9 @@ async function processNextInQueue() {
     }
 
     const rect = await cleanPageForScreenshot(tab.id);
-    await new Promise((r) => setTimeout(r, 180));
+    await new Promise((r) => setTimeout(r, 200));
 
-    const rawDataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 92 });
+    const rawDataUrl = await safeCaptureVisibleTab(tab.windowId, { format: 'jpeg', quality: 92 });
 
     if (rawDataUrl && rawDataUrl.startsWith('data:image')) {
       const dataUrl = await cropImageInExtension(rawDataUrl, rect);
@@ -858,7 +858,42 @@ async function processNextInQueue() {
   saveState();
   broadcastState();
 
-  setTimeout(processNextInQueue, 80);
+  setTimeout(processNextInQueue, 350);
+}
+
+let lastCaptureTimestamp = 0;
+const MIN_CAPTURE_INTERVAL_MS = 800; // Chrome limit is 2/sec; 800ms spacing guarantees 100% quota safety
+
+/**
+ * Rate-limited wrapper around chrome.tabs.captureVisibleTab with automatic backoff retry on quota error
+ */
+async function safeCaptureVisibleTab(windowId, options = { format: 'jpeg', quality: 92 }, maxRetries = 3) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const elapsed = Date.now() - lastCaptureTimestamp;
+    if (elapsed < MIN_CAPTURE_INTERVAL_MS) {
+      await new Promise((r) => setTimeout(r, MIN_CAPTURE_INTERVAL_MS - elapsed));
+    }
+
+    try {
+      lastCaptureTimestamp = Date.now();
+      const dataUrl = await chrome.tabs.captureVisibleTab(windowId, options);
+      if (dataUrl && dataUrl.startsWith('data:image')) {
+        return dataUrl;
+      }
+    } catch (err) {
+      const errMsg = String(err?.message || err);
+      if (errMsg.includes('MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND') || errMsg.includes('quota') || errMsg.includes('MAX_CAPTURE')) {
+        console.warn(`[Capture Quota] Rate limit hit. Backing off for 1.2s before retry (attempt ${attempt + 1}/${maxRetries})...`);
+        await new Promise((r) => setTimeout(r, 1200));
+        continue;
+      }
+      if (attempt === maxRetries) {
+        throw err;
+      }
+      await new Promise((r) => setTimeout(r, 600));
+    }
+  }
+  return null;
 }
 
 /**
@@ -953,7 +988,7 @@ async function handleCaptureSpecific(questionId, url, subject) {
     const rect = await cleanPageForScreenshot(captureTab.id);
     await new Promise((r) => setTimeout(r, 1400));
 
-    const rawDataUrl = await chrome.tabs.captureVisibleTab(captureTab.windowId, { format: 'jpeg', quality: 95 });
+    const rawDataUrl = await safeCaptureVisibleTab(captureTab.windowId, { format: 'jpeg', quality: 95 });
 
     if (rawDataUrl && rawDataUrl.startsWith('data:image')) {
       const dataUrl = await cropImageInExtension(rawDataUrl, rect);
