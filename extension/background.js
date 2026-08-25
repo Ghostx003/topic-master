@@ -1,7 +1,7 @@
 /**
  * Topic Master — PYQ Screenshot Importer Background Service Worker (Manifest V3)
- * Sequential single-tab webpage capture with Cloudflare detection, persistent resume,
- * tall screenshot capture (longer questions + all options), and automated distraction cleaner.
+ * High-precision single-element question cropping with distraction removal,
+ * tall viewport rendering, and Cloudflare detection.
  */
 
 let importState = {
@@ -157,20 +157,20 @@ async function handleStopImport() {
 }
 
 /**
- * Clean up page distractions (headers, search bar, sidebars, chat, notices) and optimize layout for tall screenshot
+ * Clean up page distractions and style the question element for crystal-clear capture
  */
 async function cleanPageForScreenshot(tabId) {
   try {
     await chrome.scripting.executeScript({
       target: { tabId },
       func: () => {
-        // Inject clean styles with zoom for longer question capture
         const styleId = 'tm-clean-pyq-screenshot-style';
         let style = document.getElementById(styleId);
         if (!style) {
           style = document.createElement('style');
           style.id = styleId;
           style.textContent = `
+            /* Hide all page headers, sidebars, footers, chats */
             .sc-header-wrapper,
             .qa-header,
             .topbar-search-container,
@@ -196,20 +196,55 @@ async function cleanPageForScreenshot(tabId) {
             .qa-suggest-next,
             #q2a-chat-widget,
             .qam-main-nav-wrapper,
-            .qa-a-list,
-            .qa-c-list,
+            
+            /* Hide voting buttons & counters */
+            .qa-voting-container,
+            .qa-voting,
+            .qa-voting-net,
+            .qa-vote-buttons,
+            .confetti-button,
+            
+            /* Hide tag bar & view count / author info */
+            #section-post-tags,
+            .qa-q-view-tags,
+            .qa-user-container,
+            .qa-q-item-meta,
+            
+            /* Hide action buttons (answer, comment, share, print) */
             .qa-q-view-buttons,
+            
+            /* Hide comments section & comment input form */
+            .comment-section,
+            .qa-post-c-list,
+            .qa-c-form,
+            .comment-list-container,
+            .qa-comments-header,
+            .qa-c-list,
+            .qa-q-view-c-list,
+            
+            /* Hide answers section & answer form */
+            .qa-a-list,
             .qa-a-form,
             #anew,
             .qa-a-list-title,
             .qa-comment-button,
-            .qa-q-view-follows {
+            .qa-q-view-follows,
+            
+            /* Hide AI summary bottom bar */
+            .ai-summary-container,
+            .ai-summary-bar,
+            div[class*="ai-summary"],
+            div[id*="ai-summary"],
+            .btn-ai-summary,
+            .q2a-ai-summary {
               display: none !important;
               visibility: hidden !important;
               height: 0 !important;
               width: 0 !important;
               opacity: 0 !important;
               pointer-events: none !important;
+              margin: 0 !important;
+              padding: 0 !important;
             }
 
             body, html {
@@ -217,46 +252,77 @@ async function cleanPageForScreenshot(tabId) {
               margin: 0 !important;
               padding: 0 !important;
               overflow-x: hidden !important;
-              zoom: 0.86 !important;
             }
 
             .qa-body-wrapper {
               width: 100% !important;
               max-width: 100% !important;
               margin: 0 !important;
-              padding: 8px 16px !important;
+              padding: 16px 24px !important;
+              box-sizing: border-box !important;
             }
 
             .qa-main {
               width: 100% !important;
-              max-width: 1100px !important;
-              margin: 0 auto !important;
+              max-width: 100% !important;
+              margin: 0 !important;
               float: none !important;
               padding: 0 !important;
             }
 
-            .qa-q-view {
+            .qa-main-heading, h1 {
+              font-size: 20px !important;
+              font-weight: 800 !important;
+              color: #0f172a !important;
+              margin: 0 0 16px 0 !important;
+              padding: 0 !important;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+            }
+
+            .qa-q-view, article.qa-post-view {
               width: 100% !important;
               max-width: 100% !important;
               margin: 0 !important;
-              padding: 6px 0 20px 0 !important;
-              border-bottom: none !important;
+              padding: 0 !important;
+              border: none !important;
+              box-shadow: none !important;
             }
 
-            .entry-content {
-              font-size: 15px !important;
-              line-height: 1.6 !important;
+            .qa-q-view-main {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              float: none !important;
             }
 
-            .entry-content img {
+            .qa-q-view-content {
+              width: 100% !important;
+              max-width: 100% !important;
+              font-size: 16px !important;
+              line-height: 1.65 !important;
+              color: #1e293b !important;
+            }
+
+            .entry-content img, .qa-q-view-content img {
               max-width: 100% !important;
               height: auto !important;
+            }
+
+            .prettyprint, pre {
+              background: #f8fafc !important;
+              border: 1px solid #e2e8f0 !important;
+              border-radius: 10px !important;
+              padding: 14px !important;
+              margin: 12px 0 !important;
+              font-size: 14px !important;
+              line-height: 1.5 !important;
             }
           `;
           document.head.appendChild(style);
         }
 
-        // Direct DOM Element hiding
+        // Direct DOM Element removal for extra reliability
         const selectorsToHide = [
           '.sc-header-wrapper',
           'aside.qa-sidepanel',
@@ -279,10 +345,17 @@ async function cleanPageForScreenshot(tabId) {
           '.qa-footer',
           '.qa-nav-footer',
           '#q2a-chat-widget',
-          '.qa-a-list',
-          '.qa-c-list',
+          '.qa-voting-container',
+          '#section-post-tags',
+          '.qa-user-container',
           '.qa-q-view-buttons',
-          '.qa-a-form'
+          '.comment-section',
+          '.qa-post-c-list',
+          '.qa-c-form',
+          '.qa-a-list',
+          '.qa-a-form',
+          'div[class*="ai-summary"]',
+          'div[id*="ai-summary"]'
         ];
 
         selectorsToHide.forEach((sel) => {
@@ -291,10 +364,11 @@ async function cleanPageForScreenshot(tabId) {
           });
         });
 
-        // Scroll question view to the very top
+        // Scroll the question element to top-left of the viewport
+        window.scrollTo(0, 0);
         const qElem =
+          document.querySelector('.qa-main-heading') ||
           document.querySelector('.qa-q-view') ||
-          document.querySelector('.entry-content') ||
           document.querySelector('.qa-main') ||
           document.body;
         if (qElem) {
@@ -303,6 +377,74 @@ async function cleanPageForScreenshot(tabId) {
       },
     });
   } catch (_) {}
+}
+
+/**
+ * Crop the full viewport screenshot tightly around the question element
+ */
+async function cropElementScreenshot(tabId, fullDataUrl) {
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: (dataUrl) => {
+        return new Promise((resolve) => {
+          // Identify target question container
+          const targetElem =
+            document.querySelector('.qa-main') ||
+            document.querySelector('.qa-q-view') ||
+            document.querySelector('article.qa-post-view') ||
+            document.querySelector('.qa-q-view-content') ||
+            document.body;
+
+          const rect = targetElem.getBoundingClientRect();
+          const dpr = window.devicePixelRatio || 1;
+          const padding = 16 * dpr;
+
+          const img = new Image();
+          img.onload = () => {
+            const cropX = Math.max(0, rect.left * dpr - padding);
+            const cropY = Math.max(0, rect.top * dpr - padding);
+            const cropWidth = Math.min(img.width - cropX, rect.width * dpr + padding * 2);
+            const cropHeight = Math.min(img.height - cropY, rect.height * dpr + padding * 2);
+
+            if (cropWidth <= 0 || cropHeight <= 0) {
+              resolve(dataUrl);
+              return;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = cropWidth;
+            canvas.height = cropHeight;
+
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(
+              img,
+              cropX,
+              cropY,
+              cropWidth,
+              cropHeight,
+              0,
+              0,
+              cropWidth,
+              cropHeight
+            );
+
+            resolve(canvas.toDataURL('image/jpeg', 0.92));
+          };
+          img.onerror = () => resolve(dataUrl);
+          img.src = dataUrl;
+        });
+      },
+      args: [fullDataUrl],
+    });
+
+    return results && results[0] && results[0].result ? results[0].result : fullDataUrl;
+  } catch (err) {
+    console.warn('Crop fallback:', err);
+    return fullDataUrl;
+  }
 }
 
 /**
@@ -332,7 +474,6 @@ async function processNextInQueue() {
   const statuses = storageData.pyq_question_statuses || {};
 
   if ((statuses[q.id] === 'CAPTURED' && storageData[`pyq_img_${q.id}`]) || storageData[`pyq_img_${q.id}`]) {
-    // Already captured or manually added, skip smoothly
     importState.currentIndex++;
     importState.stats.skipped = (importState.stats.skipped || 0) + 1;
     broadcastState();
@@ -358,7 +499,7 @@ async function processNextInQueue() {
       await chrome.tabs.update(tab.id, { url: q.link, active: true });
     }
 
-    // Step 2: Ensure window is maximized for maximum capture height
+    // Step 2: Ensure window is maximized for full resolution
     if (tab.windowId) {
       try {
         await chrome.windows.update(tab.windowId, { state: 'maximized' });
@@ -378,15 +519,18 @@ async function processNextInQueue() {
       return;
     }
 
-    // Step 5: Clean page distractions, zoom out slightly to capture longer questions & all options
+    // Step 5: Clean page distractions, voting buttons, comments, author card
     await cleanPageForScreenshot(tab.id);
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1400));
 
     // Step 6: Capture visible tab
-    const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 90 });
+    const rawDataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 95 });
 
-    if (dataUrl && dataUrl.startsWith('data:image')) {
-      // Step 7: Store screenshot in local storage
+    if (rawDataUrl && rawDataUrl.startsWith('data:image')) {
+      // Step 7: Crop tightly to the question element
+      const dataUrl = await cropElementScreenshot(tab.id, rawDataUrl);
+
+      // Step 8: Store screenshot in local storage
       statuses[q.id] = 'CAPTURED';
       await chrome.storage.local.set({
         pyq_question_statuses: statuses,
@@ -401,7 +545,7 @@ async function processNextInQueue() {
 
       importState.stats.captured++;
 
-      // Step 8: Broadcast captured image to all Topic Master web tabs
+      // Step 9: Broadcast captured image to all Topic Master web tabs
       notifyWebTabs({
         type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
         questionId: q.id,
@@ -512,14 +656,17 @@ async function handleCaptureSpecific(questionId, url, subject) {
       return { success: false, error: 'SECURITY_CHALLENGE' };
     }
 
-    // 2. Clean page distractions and zoom out for tall screenshot
+    // 2. Clean page distractions and position question
     await cleanPageForScreenshot(captureTab.id);
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1400));
 
     // 3. Capture visible tab
-    const dataUrl = await chrome.tabs.captureVisibleTab(captureTab.windowId, { format: 'jpeg', quality: 90 });
+    const rawDataUrl = await chrome.tabs.captureVisibleTab(captureTab.windowId, { format: 'jpeg', quality: 95 });
 
-    if (dataUrl && dataUrl.startsWith('data:image')) {
+    if (rawDataUrl && rawDataUrl.startsWith('data:image')) {
+      // 4. Crop tightly to the question element
+      const dataUrl = await cropElementScreenshot(captureTab.id, rawDataUrl);
+
       const storageData = await chrome.storage.local.get('pyq_question_statuses');
       const statuses = storageData.pyq_question_statuses || {};
       statuses[questionId] = 'CAPTURED';
@@ -535,12 +682,12 @@ async function handleCaptureSpecific(questionId, url, subject) {
         },
       });
 
-      // 4. Close the temporary capture tab
+      // 5. Close the temporary capture tab
       try {
         await chrome.tabs.remove(captureTab.id);
       } catch (_) {}
 
-      // 5. Notify web tabs
+      // 6. Notify web tabs
       notifyWebTabs({
         type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
         questionId,
