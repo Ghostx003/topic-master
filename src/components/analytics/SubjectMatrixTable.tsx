@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { SubjectMatrixResult, SubjectYearTopicStat } from '../../services/analyticsService';
 import {
   Crown,
@@ -14,6 +14,8 @@ import {
   Table as TableIcon,
   Play,
   Sparkles,
+  Pin,
+  X,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -24,6 +26,19 @@ export type SubjectMatrixSortMode =
   | 'name_desc';        // Z -> A
 
 export type MatrixViewType = 'annual_ranked' | 'subject_grid';
+
+interface ActiveCellPopoverData {
+  subjectName: string;
+  subjectColor: string;
+  year: number;
+  count: number;
+  percentage: number;
+  isMvp: boolean;
+  topTopics: SubjectYearTopicStat[];
+  otherTopicsCount: number;
+  rect: { top: number; left: number; right: number; bottom: number };
+  isPinned: boolean;
+}
 
 interface SubjectMatrixTableProps {
   matrixResult: SubjectMatrixResult;
@@ -47,22 +62,33 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
   const [activeSortYear, setActiveSortYear] = useState<number | null>(null);
   const [yearSortDir, setYearSortDir] = useState<'desc' | 'asc'>('desc');
 
-  // 2. Hover Tooltip Popover State & Timeout Ref for Interactive Hovering
-  const [hoveredCellData, setHoveredCellData] = useState<{
-    subjectName: string;
-    subjectColor: string;
-    year: number;
-    count: number;
-    percentage: number;
-    isMvp: boolean;
-    topTopics: SubjectYearTopicStat[];
-    otherTopicsCount: number;
-    rect: { top: number; left: number; right: number; bottom: number };
-  } | null>(null);
-
+  // 2. Interactive & Sticky Popover State
+  const [activeCellData, setActiveCellData] = useState<ActiveCellPopoverData | null>(null);
   const leaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
 
   const { years, rows, yearTotals, yearMvps, grandTotal } = matrixResult;
+
+  // Handle clicking outside to dismiss pinned popover
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setActiveCellData(null);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveCellData(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleDocumentClick);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentClick);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const handleYearHeaderClick = (year: number) => {
     if (activeSortYear === year) {
@@ -79,7 +105,6 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
   };
 
   const sortedRows = [...rows].sort((a, b) => {
-    // If user clicked a specific year column header or selected a year from dropdown
     if (activeSortYear !== null) {
       if (a.included !== b.included) return a.included ? -1 : 1;
       const countA = a.yearCells[activeSortYear]?.count || 0;
@@ -104,7 +129,6 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
       return a.subjectName.localeCompare(b.subjectName);
     }
 
-    // Default: 'highest_to_lowest' (Max questions in range first)
     if (a.included !== b.included) return a.included ? -1 : 1;
     if (b.rangeTotal !== a.rangeTotal) {
       return b.rangeTotal - a.rangeTotal;
@@ -157,7 +181,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
     return byYear;
   }, [years, rows]);
 
-  // Overall Range Leaderboard (Rank 1 to N across all years combined)
+  // Overall Range Leaderboard
   const overallLeaderboard = useMemo(() => {
     return rows
       .filter((r) => r.included)
@@ -183,12 +207,17 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
       leaveTimeoutRef.current = null;
     }
 
+    // If already pinned by a click, do not override with simple hover of other cells
+    if (activeCellData?.isPinned) {
+      return;
+    }
+
     if (data.count === 0) {
-      setHoveredCellData(null);
+      setActiveCellData(null);
       return;
     }
     const rect = e.currentTarget.getBoundingClientRect();
-    setHoveredCellData({
+    setActiveCellData({
       ...data,
       rect: {
         top: rect.top,
@@ -196,17 +225,61 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
         right: rect.right,
         bottom: rect.bottom,
       },
+      isPinned: false,
+    });
+  };
+
+  const handleCellClick = (
+    e: React.MouseEvent<HTMLElement>,
+    data: {
+      subjectName: string;
+      subjectColor: string;
+      year: number;
+      count: number;
+      percentage: number;
+      isMvp: boolean;
+      topTopics: SubjectYearTopicStat[];
+      otherTopicsCount: number;
+    }
+  ) => {
+    e.stopPropagation();
+    if (data.count === 0) return;
+
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    setActiveCellData((prev) => {
+      // Toggle pin if clicking the same cell
+      if (prev && prev.subjectName === data.subjectName && prev.year === data.year && prev.isPinned) {
+        return null;
+      }
+      return {
+        ...data,
+        rect: {
+          top: rect.top,
+          left: rect.left,
+          right: rect.right,
+          bottom: rect.bottom,
+        },
+        isPinned: true,
+      };
     });
   };
 
   const handleCellMouseLeave = () => {
+    if (activeCellData?.isPinned) {
+      return; // Do NOT close if pinned!
+    }
     if (leaveTimeoutRef.current) {
       clearTimeout(leaveTimeoutRef.current);
     }
-    // Give user 300ms grace period to move mouse into the popover
+    // 400ms grace period so user can smoothly move cursor into popover
     leaveTimeoutRef.current = setTimeout(() => {
-      setHoveredCellData(null);
-    }, 300);
+      setActiveCellData((prev) => (prev?.isPinned ? prev : null));
+    }, 400);
   };
 
   const handlePopoverMouseEnter = () => {
@@ -217,7 +290,10 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
   };
 
   const handlePopoverMouseLeave = () => {
-    setHoveredCellData(null);
+    if (activeCellData?.isPinned) return; // Keep open if pinned!
+    leaveTimeoutRef.current = setTimeout(() => {
+      setActiveCellData((prev) => (prev?.isPinned ? prev : null));
+    }, 300);
   };
 
   const handleTopicClick = (topicName: string, subjectName: string, year: number) => {
@@ -242,7 +318,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
               </span>
             </h3>
             <p className="text-xs text-slate-400">
-              💡 <strong>Hover over any subject cell</strong> to see top topics asked in that year, then <strong>click any topic</strong> to practice its questions!
+              💡 <strong>Hover or click any subject cell</strong> to inspect and click its top topics for that year. (Clicking pins the card in place!)
             </p>
           </div>
         </div>
@@ -415,7 +491,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
           <Info className="w-4 h-4 text-brand-400 shrink-0" />
           {viewType === 'annual_ranked' ? (
             <span>
-              <strong>Yearly Ranked Leaderboard:</strong> In every year column below, subjects are sorted top-to-bottom from <strong>Highest to Lowest questions asked in that specific year</strong>.
+              <strong>Yearly Ranked Leaderboard:</strong> In every year column below, subjects are sorted top-to-bottom from <strong>Highest to Lowest questions asked in that specific year</strong>. Click any cell to pin its topic breakdown!
             </span>
           ) : activeSortYear !== null ? (
             <span>
@@ -437,7 +513,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
         )}
       </div>
 
-      {/* ================= VIEW TYPE 1: ANNUAL RANKED LEADERBOARD (HIGHEST TO LOWEST PER SPECIFIC YEAR) ================= */}
+      {/* ================= VIEW TYPE 1: ANNUAL RANKED LEADERBOARD ================= */}
       {viewType === 'annual_ranked' && (
         <div className="relative rounded-3xl bg-slate-950/90 border border-slate-800 overflow-hidden shadow-2xl backdrop-blur-2xl">
           <div className="w-full overflow-x-auto">
@@ -539,10 +615,25 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                         }
 
                         const isMvp = item.isMvp;
+                        const isThisCellActive =
+                          activeCellData?.subjectName === item.subjectName &&
+                          activeCellData?.year === year;
 
                         return (
                           <td
                             key={`cell-ranked-${year}-${rankNumber}`}
+                            onClick={(e) =>
+                              handleCellClick(e, {
+                                subjectName: item.subjectName,
+                                subjectColor: item.subjectColor,
+                                year,
+                                count: item.count,
+                                percentage: item.percentage,
+                                isMvp,
+                                topTopics: item.topTopics,
+                                otherTopicsCount: item.otherTopicsCount,
+                              })
+                            }
                             onMouseEnter={(e) =>
                               handleCellMouseEnter(e, {
                                 subjectName: item.subjectName,
@@ -558,7 +649,11 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                             onMouseLeave={handleCellMouseLeave}
                             className={clsx(
                               'px-3 py-2.5 border-r border-slate-800/60 font-mono transition-all cursor-pointer select-none',
-                              isMvp ? 'bg-amber-950/20 ring-1 ring-inset ring-amber-500/30' : 'hover:bg-slate-850/80 hover:ring-1 hover:ring-brand-500/40'
+                              isThisCellActive && activeCellData?.isPinned
+                                ? 'bg-brand-950/80 ring-2 ring-brand-500 shadow-glow-sm'
+                                : isMvp
+                                ? 'bg-amber-950/20 ring-1 ring-inset ring-amber-500/30'
+                                : 'hover:bg-slate-850/80 hover:ring-1 hover:ring-brand-500/40'
                             )}
                           >
                             <div className="space-y-1">
@@ -630,7 +725,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
         </div>
       )}
 
-      {/* ================= VIEW TYPE 2: SUBJECT GRID MATRIX (FIXED SUBJECT ROWS) ================= */}
+      {/* ================= VIEW TYPE 2: SUBJECT GRID MATRIX ================= */}
       {viewType === 'subject_grid' && (
         <div className="relative rounded-3xl bg-slate-950/90 border border-slate-800 overflow-hidden shadow-2xl backdrop-blur-2xl">
           <div className="w-full overflow-x-auto">
@@ -830,6 +925,9 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                         const count = cell ? cell.count : 0;
                         const pct = cell ? cell.percentage : 0;
                         const isMvp = cell ? cell.isMvp : false;
+                        const isThisCellActive =
+                          activeCellData?.subjectName === row.subjectName &&
+                          activeCellData?.year === year;
 
                         let bgStyle = 'transparent';
                         if (isIncluded && count > 0) {
@@ -845,6 +943,18 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                         return (
                           <td
                             key={`cell-${row.subjectName}-${year}`}
+                            onClick={(e) =>
+                              handleCellClick(e, {
+                                subjectName: row.subjectName,
+                                subjectColor: row.subjectColor,
+                                year,
+                                count,
+                                percentage: pct,
+                                isMvp,
+                                topTopics: cell?.topTopics || [],
+                                otherTopicsCount: cell?.otherTopicsCount || 0,
+                              })
+                            }
                             onMouseEnter={(e) =>
                               handleCellMouseEnter(e, {
                                 subjectName: row.subjectName,
@@ -860,7 +970,11 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                             onMouseLeave={handleCellMouseLeave}
                             className={clsx(
                               'px-2.5 py-3 text-center border-r border-slate-800/60 font-mono transition-all cursor-pointer select-none',
-                              isMvp && isIncluded && 'ring-1 ring-amber-500/40',
+                              isThisCellActive && activeCellData?.isPinned
+                                ? 'bg-brand-950/80 ring-2 ring-brand-500 shadow-glow-sm'
+                                : isMvp && isIncluded
+                                ? 'ring-1 ring-amber-500/40'
+                                : '',
                               activeSortYear === year && 'bg-brand-950/30'
                             )}
                             style={{ backgroundColor: activeSortYear === year ? undefined : bgStyle }}
@@ -928,7 +1042,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                                 ? 'bg-slate-300/20 text-slate-200 border border-slate-300/40'
                                 : row.rank === 3
                                 ? 'bg-amber-700/20 text-amber-400 border border-amber-700/40'
-                                : 'text-slate-400 bg-slate-850'
+                                : 'text-slate-400 bg-slate-855'
                             )}
                           >
                             #{row.rank}
@@ -972,18 +1086,24 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
         </div>
       )}
 
-      {/* ================= RICH INTERACTIVE HOVER POPOVER (TOP 4-5 TOPICS IN THAT YEAR) ================= */}
-      {hoveredCellData && (
+      {/* ================= RICH INTERACTIVE & PINNABLE POPOVER ================= */}
+      {activeCellData && (
         <div
-          className="fixed z-50 p-4 rounded-2xl bg-slate-950/95 border border-brand-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.8)] backdrop-blur-2xl text-xs space-y-3 w-80 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150 ring-1 ring-white/10"
+          ref={popoverRef}
+          className={clsx(
+            'fixed z-50 p-4 rounded-2xl bg-slate-950/98 shadow-[0_12px_45px_rgba(0,0,0,0.9)] backdrop-blur-2xl text-xs space-y-3 w-80 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150',
+            activeCellData.isPinned
+              ? 'border-2 border-brand-500 ring-4 ring-brand-500/20'
+              : 'border border-brand-500/40 ring-1 ring-white/10'
+          )}
           style={{
             top: Math.min(
-              window.innerHeight - 350,
-              Math.max(15, hoveredCellData.rect.bottom + 10)
+              window.innerHeight - 360,
+              Math.max(15, activeCellData.rect.bottom + 6)
             ),
             left: Math.min(
               window.innerWidth - 350,
-              Math.max(15, hoveredCellData.rect.left - 40)
+              Math.max(15, activeCellData.rect.left - 30)
             ),
           }}
           onMouseEnter={handlePopoverMouseEnter}
@@ -995,28 +1115,48 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
               <div className="flex items-center gap-2 truncate">
                 <span
                   className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
-                  style={{ backgroundColor: hoveredCellData.subjectColor }}
+                  style={{ backgroundColor: activeCellData.subjectColor }}
                 />
                 <span className="font-black text-white text-sm truncate">
-                  {hoveredCellData.subjectName}
+                  {activeCellData.subjectName}
                 </span>
               </div>
-              <span className="font-mono text-xs font-black text-brand-300 bg-brand-950/80 px-2 py-0.5 rounded-lg border border-brand-500/40 shrink-0">
-                {hoveredCellData.year}
-              </span>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="font-mono text-xs font-black text-brand-300 bg-brand-950/80 px-2 py-0.5 rounded-lg border border-brand-500/40">
+                  {activeCellData.year}
+                </span>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => setActiveCellData(null)}
+                  className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                  title="Close card"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between text-[11px] font-mono text-slate-300 pt-0.5">
               <span>
-                <strong className="text-white">{hoveredCellData.count} Questions</strong> ({hoveredCellData.percentage}% of {hoveredCellData.year} Exam)
+                <strong className="text-white">{activeCellData.count} Questions</strong> ({activeCellData.percentage}% of {activeCellData.year} Exam)
               </span>
-              {hoveredCellData.isMvp && (
+              {activeCellData.isMvp && (
                 <span className="text-amber-400 font-black flex items-center gap-1 text-[10px] bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-500/40">
                   <Crown className="w-2.5 h-2.5 fill-current" />
                   MVP
                 </span>
               )}
             </div>
+
+            {/* Pinned status badge if pinned */}
+            {activeCellData.isPinned && (
+              <div className="flex items-center gap-1 text-[10px] font-bold text-brand-300 bg-brand-950/60 px-2 py-0.5 rounded-lg border border-brand-500/30">
+                <Pin className="w-2.5 h-2.5 fill-current rotate-45" />
+                <span>Pinned in place • Click topics to practice or (X) to close</span>
+              </div>
+            )}
           </div>
 
           {/* Top Topics Breakdown */}
@@ -1024,26 +1164,26 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
             <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               <span className="flex items-center gap-1 text-brand-300">
                 <Sparkles className="w-3 h-3 text-brand-400" />
-                <span>Top Topics in {hoveredCellData.year}</span>
+                <span>Top Topics in {activeCellData.year}</span>
               </span>
               <span className="text-brand-400 text-[10px] lowercase italic">click to practice</span>
             </div>
 
-            {hoveredCellData.topTopics.length === 0 ? (
+            {activeCellData.topTopics.length === 0 ? (
               <div className="text-slate-500 text-[11px] italic py-1">
                 No specific topic breakdown available.
               </div>
             ) : (
               <div className="space-y-1.5">
-                {hoveredCellData.topTopics.map((topic, idx) => (
+                {activeCellData.topTopics.map((topic, idx) => (
                   <div
                     key={`hover-topic-${topic.topicName}-${idx}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleTopicClick(topic.topicName, hoveredCellData.subjectName, hoveredCellData.year);
+                      handleTopicClick(topic.topicName, activeCellData.subjectName, activeCellData.year);
                     }}
                     className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800/80 hover:border-brand-500/60 hover:bg-slate-800/90 transition-all group cursor-pointer shadow-sm active:scale-[0.98]"
-                    title={`Click to practice ${topic.count} questions from ${topic.topicName} in ${hoveredCellData.year}`}
+                    title={`Click to practice ${topic.count} questions from ${topic.topicName} in ${activeCellData.year}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 truncate">
@@ -1075,7 +1215,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                         className="h-full rounded-full transition-all duration-300"
                         style={{
                           width: `${Math.min(100, topic.percentageOfSubjectYear)}%`,
-                          backgroundColor: hoveredCellData.subjectColor,
+                          backgroundColor: activeCellData.subjectColor,
                         }}
                       />
                     </div>
@@ -1084,10 +1224,10 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
               </div>
             )}
 
-            {hoveredCellData.otherTopicsCount > 0 && (
+            {activeCellData.otherTopicsCount > 0 && (
               <div className="text-center pt-1">
                 <span className="text-[10px] text-slate-500 font-mono">
-                  + {hoveredCellData.otherTopicsCount} more question(s) from other chapters
+                  + {activeCellData.otherTopicsCount} more question(s) from other chapters
                 </span>
               </div>
             )}
