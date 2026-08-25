@@ -52,9 +52,9 @@ export const PYQCard: React.FC<PYQCardProps> = ({
       )}
     >
       {/* Top Row: Checkbox + Question Number + GATE Year + Solve Link */}
-      <div className="flex items-center justify-between gap-2.5 w-full flex-wrap sm:flex-nowrap">
-        {/* Left: Checkbox + Question # (Never Truncate) */}
-        <div className="flex items-center gap-2.5 shrink-0">
+      <div className="flex items-center justify-between gap-2 w-full min-w-0">
+        {/* Left: Checkbox + Question # (Never Truncate, Always Visible) */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={(e) => {
@@ -70,15 +70,15 @@ export const PYQCard: React.FC<PYQCardProps> = ({
             title={isCompleted ? 'Mark as Pending' : 'Mark as Completed'}
           >
             {isCompleted ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             ) : (
-              <Circle className="w-5 h-5" />
+              <Circle className="w-4 h-4" />
             )}
           </button>
 
           <span
             className={clsx(
-              'text-sm sm:text-base font-bold tracking-tight whitespace-nowrap transition-colors',
+              'text-sm font-bold tracking-tight whitespace-nowrap transition-colors',
               isCompleted
                 ? 'text-slate-400 line-through'
                 : 'text-white group-hover:text-brand-300'
@@ -88,16 +88,19 @@ export const PYQCard: React.FC<PYQCardProps> = ({
           </span>
         </div>
 
-        {/* Right: GATE Year Badge + Solve Anchor Link */}
-        <div className="flex items-center gap-2 shrink-0 min-w-0" onClick={(e) => e.stopPropagation()}>
+        {/* Right: GATE Year Badge + Solve Anchor Link (Fully Contained) */}
+        <div className="flex items-center gap-1.5 shrink min-w-0" onClick={(e) => e.stopPropagation()}>
           {question.year && (
             <span
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-mono font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-500/40 shadow-sm truncate max-w-[190px] sm:max-w-none"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-mono font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-500/40 shadow-sm truncate max-w-[110px]"
               title={question.year}
             >
-              <Calendar className="w-3 h-3 text-indigo-400 shrink-0" />
+              <Calendar className="w-2.5 h-2.5 text-indigo-400 shrink-0" />
               <span className="truncate">
-                {question.year.startsWith('GATE') ? question.year : `GATE ${question.year}`}
+                {question.year
+                  .replace(/GATE\s+(CSE\s+)?/i, '')
+                  .replace(/\|\s*Set\s*(\d+)/i, 'S$1')
+                  .trim()}
               </span>
             </span>
           )}
@@ -107,11 +110,11 @@ export const PYQCard: React.FC<PYQCardProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-950 hover:bg-brand-950/60 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95 cursor-pointer shrink-0"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-brand-950/60 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95 cursor-pointer shrink-0"
             title="Open question on GateOverflow in a new tab"
           >
             <span>Solve</span>
-            <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-400" />
+            <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-brand-400" />
           </a>
         </div>
       </div>
