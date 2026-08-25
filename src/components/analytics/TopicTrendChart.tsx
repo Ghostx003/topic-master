@@ -51,6 +51,7 @@ export const TopicTrendChart: React.FC<TopicTrendChartProps> = ({
     seriesName: string;
     subjectName: string;
     count: number;
+    marks: number;
     percentage: number;
     color: string;
     x: number;
@@ -147,9 +148,9 @@ export const TopicTrendChart: React.FC<TopicTrendChartProps> = ({
   }, [trendData.series, sortOrder]);
 
   // Copy topic summary stats to clipboard
-  const handleCopyStats = (topicName: string, data: { year: number; count: number }[], total: number) => {
-    const nonZeroYears = data.filter((d) => d.count > 0).map((d) => `${d.year}: ${d.count} Qs`).join(', ');
-    const text = `${topicName} (${selectedSubject})\nTotal in ${startYear}-${endYear}: ${total} Questions\nBreakdown: ${nonZeroYears || '0 questions'}`;
+  const handleCopyStats = (topicName: string, data: { year: number; count: number; marks: number }[], totalQs: number, totalMarks: number) => {
+    const nonZeroYears = data.filter((d) => d.count > 0).map((d) => `${d.year}: ${d.count} Qs (${d.marks}M)`).join(', ');
+    const text = `${topicName} (${selectedSubject})\nTotal in ${startYear}-${endYear}: ${totalQs} Questions (${totalMarks} Marks)\nBreakdown: ${nonZeroYears || '0 questions'}`;
     navigator.clipboard.writeText(text);
     setCopiedTopic(topicName);
     setTimeout(() => setCopiedTopic(null), 2000);
@@ -399,7 +400,8 @@ export const TopicTrendChart: React.FC<TopicTrendChartProps> = ({
                               handleCopyStats(
                                 seriesItem.name,
                                 seriesItem.data,
-                                seriesItem.totalInRange
+                                seriesItem.totalInRange,
+                                seriesItem.totalMarksInRange
                               )
                             }
                             className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-all"
@@ -429,9 +431,14 @@ export const TopicTrendChart: React.FC<TopicTrendChartProps> = ({
                         <span className="text-slate-400 font-sans text-[11px]">
                           Range Total ({startYear}–{endYear}):
                         </span>
-                        <span className="font-bold text-white px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800">
-                          {seriesItem.totalInRange} Questions
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-white px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800">
+                            {seriesItem.totalInRange} Questions
+                          </span>
+                          <span className="font-bold text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-950/80 border border-emerald-500/50 shadow-[0_0_8px_rgba(16,185,129,0.2)]">
+                            {seriesItem.totalMarksInRange} Marks
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -468,15 +475,22 @@ export const TopicTrendChart: React.FC<TopicTrendChartProps> = ({
                               )}
                             </div>
 
-                            {/* Question Count Label */}
-                            <span
+                            {/* Question Count & Marks Label */}
+                            <div
                               className={clsx(
-                                'w-12 text-right text-[11px] shrink-0',
+                                'w-24 text-right text-[11px] shrink-0 font-mono flex items-center justify-end gap-1',
                                 point.count > 0 ? 'text-slate-200 font-bold' : 'text-slate-600'
                               )}
                             >
-                              {point.count > 0 ? `${point.count} Qs` : '0'}
-                            </span>
+                              {point.count > 0 ? (
+                                <>
+                                  <span>{point.count} Qs</span>
+                                  <span className="text-emerald-400 font-bold text-[10px]">({point.marks}M)</span>
+                                </>
+                              ) : (
+                                <span>0</span>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
@@ -595,6 +609,7 @@ export const TopicTrendChart: React.FC<TopicTrendChartProps> = ({
                               seriesName: s.name,
                               subjectName: s.subjectName,
                               count: point.count,
+                              marks: point.marks,
                               percentage: point.percentage,
                               color: s.color,
                               x: xPos,
@@ -657,7 +672,10 @@ export const TopicTrendChart: React.FC<TopicTrendChartProps> = ({
               </div>
               <div className="text-[11px] text-slate-300">{hoveredPoint.subjectName}</div>
               <div className="flex items-center justify-between gap-4 font-mono font-bold pt-0.5">
-                <span className="text-white">{hoveredPoint.count} Questions</span>
+                <span className="text-white flex items-center gap-1">
+                  <span>{hoveredPoint.count} Questions</span>
+                  <span className="text-emerald-400 text-[10px]">({hoveredPoint.marks}M)</span>
+                </span>
                 <span className="text-brand-300 font-bold">{hoveredPoint.percentage}% of Year</span>
               </div>
             </div>

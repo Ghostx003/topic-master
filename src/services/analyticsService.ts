@@ -4,6 +4,7 @@ import { PYQQuestion } from '../types/pyq';
 export interface SubjectYearTopicStat {
   topicName: string;
   count: number;
+  marks: number;
   percentageOfSubjectYear: number;
 }
 
@@ -11,6 +12,7 @@ export interface SubjectMatrixCell {
   subjectName: string;
   year: number;
   count: number;
+  marks: number;
   yearTotal: number;
   percentage: number; // % of questions in that year
   isMvp: boolean; // True if this subject had the highest count in this year
@@ -64,6 +66,10 @@ export interface SubjectMasteryReport {
   headsUpSummary: string;
   topTopics: SubjectTopicStat[];
   allTopicsCount: number;
+  mcqCount: number;
+  msqCount: number;
+  natCount: number;
+  descriptiveCount: number;
 }
 
 export interface FavouriteTopicItem {
@@ -85,8 +91,9 @@ export interface TopicTrendSeries {
   name: string;
   subjectName: string;
   color: string;
-  data: { year: number; count: number; percentage: number }[];
+  data: { year: number; count: number; marks: number; percentage: number }[];
   totalInRange: number;
+  totalMarksInRange: number;
 }
 
 export interface TopicTrendResult {
@@ -221,25 +228,32 @@ export function getSubjectYearMatrix(
 
   // Pre-index questions in range by subject, year, and chapter
   const countsBySubjYear = new Map<string, Map<number, number>>();
-  const countsBySubjYearChapter = new Map<string, Map<number, Map<string, number>>>();
+  const marksBySubjYear = new Map<string, Map<number, number>>();
+  const countsBySubjYearChapter = new Map<string, Map<number, Map<string, { count: number; marks: number }>>>();
 
   DEFAULT_SUBJECT_NAMES.forEach((subj) => {
     countsBySubjYear.set(subj, new Map<number, number>());
-    countsBySubjYearChapter.set(subj, new Map<number, Map<string, number>>());
+    marksBySubjYear.set(subj, new Map<number, number>());
+    countsBySubjYearChapter.set(subj, new Map());
   });
 
   ALL_PYQ_QUESTIONS.forEach((q) => {
     const y = extractYearNumber(q.year);
+    const m = q.marks || 1;
     if (y >= min && y <= max && countsBySubjYear.has(q.subject)) {
       const yearMap = countsBySubjYear.get(q.subject)!;
       yearMap.set(y, (yearMap.get(y) || 0) + 1);
 
+      const marksMap = marksBySubjYear.get(q.subject)!;
+      marksMap.set(y, (marksMap.get(y) || 0) + m);
+
       const subjChapYearMap = countsBySubjYearChapter.get(q.subject)!;
       if (!subjChapYearMap.has(y)) {
-        subjChapYearMap.set(y, new Map<string, number>());
+        subjChapYearMap.set(y, new Map());
       }
       const chapMap = subjChapYearMap.get(y)!;
-      chapMap.set(q.chapter, (chapMap.get(q.chapter) || 0) + 1);
+      const prev = chapMap.get(q.chapter) || { count: 0, marks: 0 };
+      chapMap.set(q.chapter, { count: prev.count + 1, marks: prev.marks + m });
     }
   });
 
@@ -309,6 +323,7 @@ export function getSubjectYearMatrix(
 
     years.forEach((y) => {
       const count = countsBySubjYear.get(subj)?.get(y) || 0;
+      const cellMarks = marksBySubjYear.get(subj)?.get(y) || 0;
       if (isIncluded) {
         rangeTotal += count;
       }
@@ -323,14 +338,15 @@ export function getSubjectYearMatrix(
 
       if (chapMap && count > 0) {
         const sortedChaps = Array.from(chapMap.entries())
-          .sort((a, b) => b[1] - a[1]);
+          .sort((a, b) => b[1].count - a[1].count);
 
-        sortedChaps.forEach(([chapName, chapCount]) => {
-          topTopicsSum += chapCount;
+        sortedChaps.forEach(([chapName, stat]) => {
+          topTopicsSum += stat.count;
           topTopics.push({
             topicName: chapName,
-            count: chapCount,
-            percentageOfSubjectYear: Math.round((chapCount / count) * 1000) / 10,
+            count: stat.count,
+            marks: stat.marks,
+            percentageOfSubjectYear: Math.round((stat.count / count) * 1000) / 10,
           });
         });
       }
@@ -339,6 +355,7 @@ export function getSubjectYearMatrix(
         subjectName: subj,
         year: y,
         count,
+        marks: cellMarks,
         yearTotal: yTotal,
         percentage: Math.round(pct * 10) / 10,
         isMvp: !!isMvp,
@@ -405,6 +422,10 @@ export function getTopTopicsToMasterPerSubject(
     {
       rangeTotal: number;
       rangeMarks: number;
+      mcqCount: number;
+      msqCount: number;
+      natCount: number;
+      descriptiveCount: number;
       chaptersInRange: Map<string, { count: number; marks: number }>;
       chaptersAllTime: Map<string, { count: number; marks: number }>;
     }
@@ -414,6 +435,10 @@ export function getTopTopicsToMasterPerSubject(
     subjectMap.set(subj, {
       rangeTotal: 0,
       rangeMarks: 0,
+      mcqCount: 0,
+      msqCount: 0,
+      natCount: 0,
+      descriptiveCount: 0,
       chaptersInRange: new Map(),
       chaptersAllTime: new Map(),
     });
@@ -437,6 +462,18 @@ export function getTopTopicsToMasterPerSubject(
     if (y >= min && y <= max) {
       data.rangeTotal++;
       data.rangeMarks += qMarks;
+
+      const rawType = (q.type_of_question || 'MCQ').toUpperCase();
+      if (rawType.includes('MSQ')) {
+        data.msqCount++;
+      } else if (rawType.includes('NAT')) {
+        data.natCount++;
+      } else if (rawType.includes('DESC')) {
+        data.descriptiveCount++;
+      } else {
+        data.mcqCount++;
+      }
+
       const r = data.chaptersInRange.get(q.chapter) || { count: 0, marks: 0 };
       r.count++;
       r.marks += qMarks;
@@ -504,6 +541,10 @@ export function getTopTopicsToMasterPerSubject(
       headsUpSummary,
       topTopics,
       allTopicsCount: sortedChapters.length,
+      mcqCount: data.mcqCount,
+      msqCount: data.msqCount,
+      natCount: data.natCount,
+      descriptiveCount: data.descriptiveCount,
     });
   });
 
@@ -625,26 +666,33 @@ export function getTopicTrendData(
   const series: TopicTrendSeries[] = targetTopics.map((target, idx) => {
     const topicKey = `${target.subject}::${target.chapter}`;
     const yearCounts = new Map<number, number>();
+    const yearMarks = new Map<number, number>();
 
     ALL_PYQ_QUESTIONS.forEach((q) => {
       if (q.subject === target.subject && q.chapter === target.chapter) {
         const y = extractYearNumber(q.year);
         if (y >= min && y <= max) {
+          const m = q.marks || 1;
           yearCounts.set(y, (yearCounts.get(y) || 0) + 1);
+          yearMarks.set(y, (yearMarks.get(y) || 0) + m);
         }
       }
     });
 
     let totalInRange = 0;
+    let totalMarksInRange = 0;
     const data = years.map((y) => {
       const count = yearCounts.get(y) || 0;
+      const marks = yearMarks.get(y) || 0;
       totalInRange += count;
+      totalMarksInRange += marks;
       if (count > maxCount) maxCount = count;
       const yrTotal = annualExamTotals.get(y) || 1;
       const pct = (count / yrTotal) * 100;
       return {
         year: y,
         count,
+        marks,
         percentage: Math.round(pct * 10) / 10,
       };
     });
@@ -661,6 +709,7 @@ export function getTopicTrendData(
       color,
       data,
       totalInRange,
+      totalMarksInRange,
     };
   });
 

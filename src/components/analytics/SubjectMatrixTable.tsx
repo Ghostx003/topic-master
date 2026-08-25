@@ -32,6 +32,7 @@ interface ActiveCellPopoverData {
   subjectColor: string;
   year: number;
   count: number;
+  marks: number;
   percentage: number;
   isMvp: boolean;
   topTopics: SubjectYearTopicStat[];
@@ -147,6 +148,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
         subjectName: string;
         subjectColor: string;
         count: number;
+        marks: number;
         percentage: number;
         isMvp: boolean;
         rangeTotal: number;
@@ -164,6 +166,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
             subjectName: r.subjectName,
             subjectColor: r.subjectColor,
             count: cell ? cell.count : 0,
+            marks: cell ? cell.marks : 0,
             percentage: cell ? cell.percentage : 0,
             isMvp: cell ? cell.isMvp : false,
             rangeTotal: r.rangeTotal,
@@ -197,6 +200,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
       subjectColor: string;
       year: number;
       count: number;
+      marks: number;
       percentage: number;
       isMvp: boolean;
       topTopics: SubjectYearTopicStat[];
@@ -245,6 +249,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
       subjectColor: string;
       year: number;
       count: number;
+      marks: number;
       percentage: number;
       isMvp: boolean;
       topTopics: SubjectYearTopicStat[];
@@ -649,6 +654,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                                 subjectColor: item.subjectColor,
                                 year,
                                 count: item.count,
+                                marks: item.marks,
                                 percentage: item.percentage,
                                 isMvp,
                                 topTopics: item.topTopics,
@@ -661,6 +667,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                                 subjectColor: item.subjectColor,
                                 year,
                                 count: item.count,
+                                marks: item.marks,
                                 percentage: item.percentage,
                                 isMvp,
                                 topTopics: item.topTopics,
@@ -970,6 +977,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                                 subjectColor: row.subjectColor,
                                 year,
                                 count,
+                                marks: cell?.marks || 0,
                                 percentage: pct,
                                 isMvp,
                                 topTopics: cell?.topTopics || [],
@@ -982,6 +990,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                                 subjectColor: row.subjectColor,
                                 year,
                                 count,
+                                marks: cell?.marks || 0,
                                 percentage: pct,
                                 isMvp,
                                 topTopics: cell?.topTopics || [],
@@ -1167,7 +1176,8 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
 
             <div className="flex items-center justify-between text-[11px] font-mono text-slate-300 pt-0.5">
               <span>
-                <strong className="text-white">{activeCellData.count} Questions</strong> ({activeCellData.percentage}% of {activeCellData.year} Exam)
+                <strong className="text-white">{activeCellData.count} Questions</strong>
+                <span className="text-emerald-400 font-bold ml-1">({activeCellData.marks} Marks)</span> ({activeCellData.percentage}% of {activeCellData.year} Exam)
               </span>
               {activeCellData.isMvp && (
                 <span className="text-amber-400 font-black flex items-center gap-1 text-[10px] bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-500/40">
@@ -1210,7 +1220,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                       handleTopicClick(topic.topicName, activeCellData.subjectName, activeCellData.year);
                     }}
                     className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800/80 hover:border-brand-500/60 hover:bg-slate-800/90 transition-all group cursor-pointer shadow-sm active:scale-[0.98]"
-                    title={`Click to practice ${topic.count} questions from ${topic.topicName} in ${activeCellData.year}`}
+                    title={`Click to practice ${topic.count} questions (${topic.marks} Marks) from ${topic.topicName} in ${activeCellData.year}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 truncate">
@@ -1225,6 +1235,9 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                       <div className="flex items-center gap-2 shrink-0 font-mono text-xs">
                         <span className="font-black text-white group-hover:text-brand-200">
                           {topic.count} {topic.count === 1 ? 'Q' : 'Qs'}
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-500/30 px-1 rounded">
+                          {topic.marks}M
                         </span>
                         <span className="text-[10px] text-brand-300 font-bold">
                           {topic.percentageOfSubjectYear}%

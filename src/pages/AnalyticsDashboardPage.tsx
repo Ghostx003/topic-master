@@ -619,13 +619,37 @@ export const AnalyticsDashboardPage: React.FC = () => {
                           className="w-3.5 h-3.5 rounded-full shadow-glow-sm"
                           style={{ backgroundColor: report.subjectColor }}
                         />
-                        <h4 className="text-lg font-black text-white">{report.subjectName}</h4>
+                        <div>
+                          <h4 className="text-lg font-black text-white">{report.subjectName}</h4>
+                          {/* Question type breakdown pills */}
+                          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-blue-950/70 border border-blue-500/40 text-blue-300">
+                              {report.mcqCount} MCQ
+                            </span>
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-950/70 border border-amber-500/40 text-amber-300">
+                              {report.msqCount} MSQ
+                            </span>
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-cyan-950/70 border border-cyan-500/40 text-cyan-300">
+                              {report.natCount} NAT
+                            </span>
+                            {report.descriptiveCount > 0 && (
+                              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-purple-950/70 border border-purple-500/40 text-purple-300">
+                                {report.descriptiveCount} DESC
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className="text-sm font-mono font-black text-brand-300">
-                          {report.totalQuestionsInRange} Qs
-                        </span>
-                        <span className="text-[11px] text-slate-400 block">
+                      <div className="text-right shrink-0">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <span className="text-sm font-mono font-black text-brand-300">
+                            {report.totalQuestionsInRange} Qs
+                          </span>
+                          <span className="text-xs font-mono font-black text-emerald-300 bg-emerald-950/80 border border-emerald-500/50 px-2 py-0.5 rounded-lg shadow-[0_0_8px_rgba(16,185,129,0.2)]">
+                            {report.totalMarksInRange} Marks
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-slate-400 block mt-0.5">
                           {report.percentageOfExam}% of Exam
                         </span>
                       </div>
@@ -667,17 +691,22 @@ export const AnalyticsDashboardPage: React.FC = () => {
                                 {topic.topicName}
                               </span>
                               <span className="text-[10px] text-slate-400">
-                                {topic.totalHistoricalCount} All-time PYQs
+                                {topic.totalHistoricalCount} All-time PYQs <span className="text-emerald-400/90 font-mono font-semibold">({topic.totalHistoricalMarks}M)</span>
                               </span>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-3 shrink-0">
                             <div className="text-right">
-                              <span className="text-xs font-mono font-black text-white block">
-                                {topic.questionCount} Qs
-                              </span>
-                              <span className="text-[10px] text-slate-400">
+                              <div className="flex items-center justify-end gap-1">
+                                <span className="text-xs font-mono font-black text-white">
+                                  {topic.questionCount} Qs
+                                </span>
+                                <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-1 rounded">
+                                  {topic.marksInRange}M
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-slate-400 block mt-0.5">
                                 {topic.percentageOfSubject}% Share
                               </span>
                             </div>
