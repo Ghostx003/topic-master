@@ -58,7 +58,8 @@ export const PYQModal: React.FC<PYQModalProps> = ({
 }) => {
   const { yearFilter, setYearFilter } = useTopicMaster();
   const [progress, setProgress] = useState<PYQProgressMap>(() => loadPYQProgress());
-  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'marks_desc' | 'marks_asc'>('newest');
+  const [yearSort, setYearSort] = useState<'newest' | 'oldest'>('newest');
+  const [marksSort, setMarksSort] = useState<'none' | 'desc' | 'asc'>('none');
   const [typeFilter, setTypeFilter] = useState<'all' | 'MCQ' | 'MSQ' | 'NAT' | 'Descriptive'>('all');
   const [activeTab, setActiveTab] = useState<PYQFilterTab>('all');
   const [searchQuery, setSearchQuery] = useState(initialSearch || '');
@@ -118,31 +119,13 @@ export const PYQModal: React.FC<PYQModalProps> = ({
     return counts;
   }, [yearFilteredQuestions]);
 
-  // Apply Sorting (Newest, Oldest, Marks High to Low, Marks Low to High)
+  // Apply Multi-Level Sorting (Marks Sort + Year Sort combined seamlessly)
   const sortedQuestions = useMemo(() => {
     const sorted = [...yearFilteredQuestions].sort((a, b) => {
       const marksA = a.marks || 1;
       const marksB = b.marks || 1;
-
-      if (sortOrder === 'marks_desc') {
-        if (marksB !== marksA) return marksB - marksA;
-        const yA = extractYearNumber(a.year);
-        const yB = extractYearNumber(b.year);
-        return yB - yA;
-      }
-
-      if (sortOrder === 'marks_asc') {
-        if (marksA !== marksB) return marksA - marksB;
-        const yA = extractYearNumber(a.year);
-        const yB = extractYearNumber(b.year);
-        return yB - yA;
-      }
-
       const yA = extractYearNumber(a.year);
       const yB = extractYearNumber(b.year);
-      if (yA !== yB) {
-        return sortOrder === 'newest' ? yB - yA : yA - yB;
-      }
       const numA =
         typeof a.questionNumber === 'number'
           ? a.questionNumber
@@ -151,11 +134,28 @@ export const PYQModal: React.FC<PYQModalProps> = ({
         typeof b.questionNumber === 'number'
           ? b.questionNumber
           : parseFloat(String(b.questionNumber).replace(/[^0-9.]/g, '')) || 0;
-      if (numA !== numB) return sortOrder === 'newest' ? numB - numA : numA - numB;
+
+      // 1. Marks sorting (if active)
+      if (marksSort === 'desc') {
+        if (marksB !== marksA) return marksB - marksA; // 2 Marks before 1 Mark
+      } else if (marksSort === 'asc') {
+        if (marksA !== marksB) return marksA - marksB; // 1 Mark before 2 Marks
+      }
+
+      // 2. Year sorting (Newest first or Oldest first)
+      if (yA !== yB) {
+        return yearSort === 'newest' ? yB - yA : yA - yB;
+      }
+
+      // 3. Question number tie-breaker
+      if (numA !== numB) {
+        return yearSort === 'newest' ? numB - numA : numA - numB;
+      }
+
       return String(a.questionNumber).localeCompare(String(b.questionNumber));
     });
     return sorted;
-  }, [yearFilteredQuestions, sortOrder]);
+  }, [yearFilteredQuestions, yearSort, marksSort]);
 
   // Compute live statistics for current filtered set
   const stats = useMemo(() => {
@@ -421,8 +421,37 @@ export const PYQModal: React.FC<PYQModalProps> = ({
             })}
           </div>
 
-          {/* Right Section: Question Type, Sort Toggle, Search, View Mode & Batch Actions */}
-          <div className="flex items-center gap-2.5 shrink-0 flex-wrap justify-between xl:justify-end">
+          {/* Right Section: Question Type, Marks Sort, Year Sort, Search, View Mode */}
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-between xl:justify-end">
+            {/* Year Sort Selector */}
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs shadow-sm">
+              <ArrowUpDown className="w-3.5 h-3.5 text-brand-400 shrink-0" />
+              <select
+                value={yearSort}
+                onChange={(e) => setYearSort(e.target.value as any)}
+                className="bg-transparent text-xs font-bold text-slate-200 focus:outline-none cursor-pointer pr-1"
+                title="Sort by Year (Newest First or Oldest First)"
+              >
+                <option value="newest" className="bg-slate-950 text-slate-200 font-semibold">Newest First</option>
+                <option value="oldest" className="bg-slate-950 text-slate-200 font-semibold">Oldest First</option>
+              </select>
+            </div>
+
+            {/* Marks Sort Selector */}
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs shadow-sm">
+              <span className="text-slate-400 text-[11px] font-bold uppercase tracking-wider hidden sm:inline">Marks:</span>
+              <select
+                value={marksSort}
+                onChange={(e) => setMarksSort(e.target.value as any)}
+                className="bg-transparent text-xs font-bold text-emerald-400 focus:outline-none cursor-pointer pr-1"
+                title="Sort by Marks (Highest to Lowest or Lowest to Highest)"
+              >
+                <option value="none" className="bg-slate-950 text-slate-300">All Marks</option>
+                <option value="desc" className="bg-slate-950 text-emerald-300 font-bold">Marks: High → Low</option>
+                <option value="asc" className="bg-slate-950 text-emerald-300 font-bold">Marks: Low → High</option>
+              </select>
+            </div>
+
             {/* Question Type Filter Dropdown */}
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs shadow-sm">
               <span className="text-slate-400 text-[11px] font-bold uppercase tracking-wider hidden sm:inline">Type:</span>
@@ -437,22 +466,6 @@ export const PYQModal: React.FC<PYQModalProps> = ({
                 <option value="MSQ" className="bg-slate-950 text-purple-300 font-bold">MSQ ({typeCounts.MSQ})</option>
                 <option value="NAT" className="bg-slate-950 text-amber-300 font-bold">NAT ({typeCounts.NAT})</option>
                 <option value="Descriptive" className="bg-slate-950 text-indigo-300 font-bold">Descriptive ({typeCounts.Descriptive})</option>
-              </select>
-            </div>
-
-            {/* Sort Selector Dropdown */}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs shadow-sm">
-              <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <select
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value as any)}
-                className="bg-transparent text-xs font-bold text-slate-200 focus:outline-none cursor-pointer pr-1"
-                title="Sort questions by Year or Marks"
-              >
-                <option value="newest" className="bg-slate-950 text-slate-200 font-semibold">Newest First</option>
-                <option value="oldest" className="bg-slate-950 text-slate-200 font-semibold">Oldest First</option>
-                <option value="marks_desc" className="bg-slate-950 text-emerald-300 font-bold">Marks: High → Low</option>
-                <option value="marks_asc" className="bg-slate-950 text-emerald-300 font-bold">Marks: Low → High</option>
               </select>
             </div>
 
@@ -565,7 +578,8 @@ export const PYQModal: React.FC<PYQModalProps> = ({
                     <span>Active Questions ({activeQuestions.length})</span>
                   </h2>
                   <span className="text-xs text-slate-500 font-mono">
-                    Sorted by {sortOrder === 'newest' ? 'Newest to Oldest' : 'Oldest to Newest'}
+                    Sorted by {yearSort === 'newest' ? 'Newest to Oldest' : 'Oldest to Newest'}
+                    {marksSort === 'desc' ? ' (Highest Marks First)' : marksSort === 'asc' ? ' (Lowest Marks First)' : ''}
                   </span>
                 </div>
 
