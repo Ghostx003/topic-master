@@ -804,10 +804,8 @@ async function processNextInQueue() {
       } catch (_) {}
     }
 
-    await waitForTabComplete(tab.id, 25000);
-
-    const isSecurityChallenge = await checkForSecurityChallenge(tab.id);
-    if (isSecurityChallenge) {
+    const readyState = await waitForQuestionReady(tab.id, 12000);
+    if (readyState === 'CHALLENGE') {
       importState.status = 'PAUSED_CLOUDFLARE';
       saveState();
       await chrome.tabs.update(tab.id, { active: true });
@@ -816,9 +814,9 @@ async function processNextInQueue() {
     }
 
     const rect = await cleanPageForScreenshot(tab.id);
-    await new Promise((r) => setTimeout(r, 1400));
+    await new Promise((r) => setTimeout(r, 180));
 
-    const rawDataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 95 });
+    const rawDataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 92 });
 
     if (rawDataUrl && rawDataUrl.startsWith('data:image')) {
       const dataUrl = await cropImageInExtension(rawDataUrl, rect);
@@ -860,70 +858,77 @@ async function processNextInQueue() {
   saveState();
   broadcastState();
 
-  setTimeout(processNextInQueue, 500);
+  setTimeout(processNextInQueue, 80);
 }
 
 /**
- * Check if the loaded page is a Cloudflare / DDoS / Turnstile challenge
+ * Fast check: Wait until the question DOM container is rendered and ready
+ * (Does not wait for third-party scripts, ads, or slow analytics)
  */
-async function checkForSecurityChallenge(tabId) {
-  try {
-    const results = await chrome.scripting.executeScript({
-      target: { tabId },
-      func: () => {
-        const title = document.title.toLowerCase();
-        const bodyText = document.body ? document.body.innerText.toLowerCase() : '';
-        const hasChallengeId =
-          document.querySelector('#challenge-running') ||
-          document.querySelector('.cf-browser-verification') ||
-          document.querySelector('#cf-wrapper') ||
-          document.querySelector('.cf-turnstile-wrapper') ||
-          document.querySelector('#turnstile-wrapper');
+async function waitForQuestionReady(tabId, timeoutMs = 12000) {
+  const startTime = Date.now();
 
-        return (
-          title.includes('just a moment') ||
-          title.includes('attention required') ||
-          title.includes('cloudflare') ||
-          bodyText.includes('checking your browser') ||
-          bodyText.includes('verify you are human') ||
-          Boolean(hasChallengeId)
-        );
-      },
-    });
+  while (Date.now() - startTime < timeoutMs) {
+    if (importState.status !== 'IMPORTING') return 'ABORTED';
 
-    return results && results[0] && results[0].result === true;
-  } catch (_) {
-    return false;
+    try {
+      const results = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          // 1. Check for security challenge first
+          const title = document.title.toLowerCase();
+          const bodyText = document.body ? document.body.innerText.toLowerCase() : '';
+          const hasChallenge =
+            document.querySelector('#challenge-running') ||
+            document.querySelector('.cf-browser-verification') ||
+            document.querySelector('#cf-wrapper') ||
+            document.querySelector('.cf-turnstile-wrapper') ||
+            document.querySelector('#turnstile-wrapper');
+
+          if (
+            title.includes('just a moment') ||
+            title.includes('attention required') ||
+            title.includes('cloudflare') ||
+            bodyText.includes('checking your browser') ||
+            bodyText.includes('verify you are human') ||
+            Boolean(hasChallenge)
+          ) {
+            return { ready: false, challenge: true };
+          }
+
+          // 2. Check if question container exists and has content
+          const qElem =
+            document.querySelector('.qa-q-view') ||
+            document.querySelector('article.qa-post-view') ||
+            document.querySelector('.qa-main');
+
+          if (qElem) {
+            const rect = qElem.getBoundingClientRect();
+            if (rect.height > 40) {
+              // Check if MathJax formulas are still actively processing
+              const mathjax = window.MathJax;
+              if (mathjax?.Hub?.queue?.pending > 0) {
+                return { ready: false, challenge: false };
+              }
+              return { ready: true, challenge: false };
+            }
+          }
+
+          return { ready: false, challenge: false };
+        },
+      });
+
+      if (results && results[0]?.result) {
+        const { ready, challenge } = results[0].result;
+        if (challenge) return 'CHALLENGE';
+        if (ready) return 'READY';
+      }
+    } catch (_) {}
+
+    await new Promise((r) => setTimeout(r, 60));
   }
-}
 
-/**
- * Wait for a Chrome tab to report complete status
- */
-function waitForTabComplete(tabId, timeoutMs = 20000) {
-  return new Promise((resolve) => {
-    let resolved = false;
-
-    const listener = (updatedTabId, changeInfo) => {
-      if (updatedTabId === tabId && changeInfo.status === 'complete') {
-        chrome.tabs.onUpdated.removeListener(listener);
-        if (!resolved) {
-          resolved = true;
-          resolve();
-        }
-      }
-    };
-
-    chrome.tabs.onUpdated.addListener(listener);
-
-    setTimeout(() => {
-      chrome.tabs.onUpdated.removeListener(listener);
-      if (!resolved) {
-        resolved = true;
-        resolve();
-      }
-    }, timeoutMs);
-  });
+  return 'TIMEOUT';
 }
 
 /**
