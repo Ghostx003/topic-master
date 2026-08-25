@@ -1,6 +1,6 @@
 import React from 'react';
 import { Subject } from '../../types/subject';
-import { getAuthoritativeTopicPYQ } from '../../utils/pyqUtils';
+import { getAuthoritativeTopicPYQ, getAuthoritativeTopicMarks } from '../../utils/pyqUtils';
 import { getQuestionsForSubject } from '../../services/pyqService';
 import { SubjectImportancePill } from '../common/SubjectImportancePill';
 import { useTopicMaster } from '../../context/TopicMasterContext';
@@ -110,15 +110,28 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onEdit, onDel
               ? rootTopics.reduce((acc, t) => acc + getAuthoritativeTopicPYQ(t, topics, 'all', subject.Subject_Name), 0)
               : 0;
             const pyqCount = liveSum > 0 ? liveSum : getQuestionsForSubject(subject.Subject_Name).length;
+            const liveMarks = rootTopics.length > 0
+              ? rootTopics.reduce((acc, t) => acc + getAuthoritativeTopicMarks(t, topics, 'all', subject.Subject_Name), 0)
+              : 0;
+            const marksSum = liveMarks > 0 ? liveMarks : getQuestionsForSubject(subject.Subject_Name).reduce((acc, q) => acc + (q.marks || 1), 0);
+
             if (!pyqCount) return null;
             return (
-              <span
-                className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-black text-amber-300 bg-amber-950/50 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.2)]"
-                title={`${pyqCount} Previous Year Questions analyzed in GATE CSE`}
-              >
-                <Flame className="w-3.5 h-3.5 text-amber-400" />
-                <span>{pyqCount} PYQs</span>
-              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-black text-amber-300 bg-amber-950/50 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+                  title={`${pyqCount} Previous Year Questions analyzed in GATE CSE`}
+                >
+                  <Flame className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{pyqCount} PYQs</span>
+                </span>
+                <span
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-mono font-black text-emerald-300 bg-emerald-950/70 border border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.25)]"
+                  title={`${marksSum} Total Marks in GATE CSE`}
+                >
+                  <span>{marksSum} Marks</span>
+                </span>
+              </div>
             );
           })()}
         </div>

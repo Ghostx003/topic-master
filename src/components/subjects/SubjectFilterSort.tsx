@@ -3,7 +3,7 @@ import { SubjectImportance, IMPORTANCE_ORDER } from '../../types/subject';
 import { Search, SlidersHorizontal, ArrowUpDown, Flame, Zap, Star, X } from 'lucide-react';
 import { clsx } from 'clsx';
 
-export type SubjectSortOption = 'marks' | 'pyqs' | 'importance' | 'name' | 'progress' | 'hours' | 'recent';
+export type SubjectSortOption = 'marks' | 'pyqs' | 'high_scoring' | 'importance' | 'name' | 'progress' | 'hours' | 'recent';
 
 export interface SubjectFilterSortProps {
   searchQuery: string;
@@ -49,6 +49,21 @@ export const SubjectFilterSort: React.FC<SubjectFilterSortProps> = ({
 
         {/* Quick Filter / Rank Pills */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* High Scoring Button: Max Marks with Least Topics */}
+          <button
+            onClick={() => onSortChange(sortBy === 'high_scoring' ? 'importance' : 'high_scoring')}
+            className={clsx(
+              'flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border transition-all active:scale-95',
+              sortBy === 'high_scoring'
+                ? 'bg-rose-950/80 border-rose-500/60 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/30'
+                : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+            )}
+            title="Sort by High Scoring: Maximum Marks with Least Topics (Highest Yield Density)"
+          >
+            <Star className={clsx('w-3.5 h-3.5', sortBy === 'high_scoring' ? 'text-rose-400 fill-current' : 'text-slate-400')} />
+            <span>High Scoring</span>
+          </button>
+
           {/* Most Marks Button */}
           <button
             onClick={() => onSortChange(sortBy === 'marks' ? 'importance' : 'marks')}
@@ -77,21 +92,6 @@ export const SubjectFilterSort: React.FC<SubjectFilterSortProps> = ({
           >
             <Zap className={clsx('w-3.5 h-3.5', sortBy === 'pyqs' ? 'text-amber-400' : 'text-slate-400')} />
             <span>Most PYQs</span>
-          </button>
-
-          {/* High Scoring Priority Filter */}
-          <button
-            onClick={() => onImportanceChange(selectedImportance === 'High Scoring' ? 'all' : 'High Scoring')}
-            className={clsx(
-              'flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border transition-all active:scale-95',
-              selectedImportance === 'High Scoring'
-                ? 'bg-rose-950/80 border-rose-500/60 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/30'
-                : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-            )}
-            title="Filter to 'High Scoring' subjects"
-          >
-            <Star className={clsx('w-3.5 h-3.5', selectedImportance === 'High Scoring' ? 'text-rose-400 fill-current' : 'text-slate-400')} />
-            <span>High Scoring</span>
           </button>
         </div>
       </div>
@@ -123,6 +123,7 @@ export const SubjectFilterSort: React.FC<SubjectFilterSortProps> = ({
             onChange={(e) => onSortChange(e.target.value as SubjectSortOption)}
             className="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-500/50 cursor-pointer font-bold"
           >
+            <option value="high_scoring">Sort: High Scoring (Max Marks / Least Topics)</option>
             <option value="marks">Sort: Most Marks (High → Low)</option>
             <option value="pyqs">Sort: Most PYQs (High → Low)</option>
             <option value="importance">Sort: Priority / Importance</option>

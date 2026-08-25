@@ -53,6 +53,10 @@ export interface SubjectTopicStat {
   percentageOfSubject: number;
   totalHistoricalCount: number;
   totalHistoricalMarks: number;
+  mcqCount: number;
+  msqCount: number;
+  natCount: number;
+  descriptiveCount: number;
   isHighFrequency: boolean;
   yieldTier: 'ultra' | 'high' | 'core';
 }
@@ -426,7 +430,17 @@ export function getTopTopicsToMasterPerSubject(
       msqCount: number;
       natCount: number;
       descriptiveCount: number;
-      chaptersInRange: Map<string, { count: number; marks: number }>;
+      chaptersInRange: Map<
+        string,
+        {
+          count: number;
+          marks: number;
+          mcqCount: number;
+          msqCount: number;
+          natCount: number;
+          descriptiveCount: number;
+        }
+      >;
       chaptersAllTime: Map<string, { count: number; marks: number }>;
     }
   >();
@@ -464,19 +478,38 @@ export function getTopTopicsToMasterPerSubject(
       data.rangeMarks += qMarks;
 
       const rawType = (q.type_of_question || 'MCQ').toUpperCase();
+      let isMsq = false;
+      let isNat = false;
+      let isDesc = false;
+
       if (rawType.includes('MSQ')) {
         data.msqCount++;
+        isMsq = true;
       } else if (rawType.includes('NAT')) {
         data.natCount++;
+        isNat = true;
       } else if (rawType.includes('DESC')) {
         data.descriptiveCount++;
+        isDesc = true;
       } else {
         data.mcqCount++;
       }
 
-      const r = data.chaptersInRange.get(q.chapter) || { count: 0, marks: 0 };
+      const r = data.chaptersInRange.get(q.chapter) || {
+        count: 0,
+        marks: 0,
+        mcqCount: 0,
+        msqCount: 0,
+        natCount: 0,
+        descriptiveCount: 0,
+      };
       r.count++;
       r.marks += qMarks;
+      if (isMsq) r.msqCount++;
+      else if (isNat) r.natCount++;
+      else if (isDesc) r.descriptiveCount++;
+      else r.mcqCount++;
+
       data.chaptersInRange.set(q.chapter, r);
       if (includedSubjectNames.has(q.subject)) {
         totalQuestionsInRangeAllSubjects++;
@@ -508,6 +541,10 @@ export function getTopTopicsToMasterPerSubject(
         percentageOfSubject: Math.round(pctOfSubj * 10) / 10,
         totalHistoricalCount: hist.count,
         totalHistoricalMarks: hist.marks,
+        mcqCount: stat.mcqCount,
+        msqCount: stat.msqCount,
+        natCount: stat.natCount,
+        descriptiveCount: stat.descriptiveCount,
         isHighFrequency: stat.count >= 3,
         yieldTier,
       };

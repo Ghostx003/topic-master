@@ -690,9 +690,34 @@ export const AnalyticsDashboardPage: React.FC = () => {
                               <span className="font-bold text-xs text-slate-200 block truncate group-hover:text-brand-300 transition-colors">
                                 {topic.topicName}
                               </span>
-                              <span className="text-[10px] text-slate-400">
-                                {topic.totalHistoricalCount} All-time PYQs <span className="text-emerald-400/90 font-mono font-semibold">({topic.totalHistoricalMarks}M)</span>
-                              </span>
+                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                <span className="text-[10px] text-slate-400">
+                                  {topic.totalHistoricalCount} All-time PYQs <span className="text-emerald-400/90 font-mono font-semibold">({topic.totalHistoricalMarks}M)</span>
+                                </span>
+                                <span className="text-slate-600 text-[10px] hidden sm:inline">•</span>
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  {topic.mcqCount > 0 && (
+                                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-blue-950/70 text-blue-300 border border-blue-500/30">
+                                      {topic.mcqCount} MCQ
+                                    </span>
+                                  )}
+                                  {topic.msqCount > 0 && (
+                                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-950/70 text-amber-300 border border-amber-500/30">
+                                      {topic.msqCount} MSQ
+                                    </span>
+                                  )}
+                                  {topic.natCount > 0 && (
+                                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-cyan-950/70 text-cyan-300 border border-cyan-500/30">
+                                      {topic.natCount} NAT
+                                    </span>
+                                  )}
+                                  {topic.descriptiveCount > 0 && (
+                                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-950/70 text-purple-300 border border-purple-500/30">
+                                      {topic.descriptiveCount} DESC
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           </div>
 

@@ -22,17 +22,20 @@ export const MySubjectsPage: React.FC = () => {
   const [subjectToEdit, setSubjectToEdit] = useState<Subject | null>(null);
   const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
 
-  // Subject metrics map for PYQ count and Total Marks
+  // Subject metrics map for PYQ count, Total Marks, and Marks Density (High Scoring = Max Marks / Least Topics)
   const subjectMetrics = useMemo(() => {
-    const map = new Map<string, { pyqs: number; marks: number }>();
+    const map = new Map<string, { pyqs: number; marks: number; topicCount: number; density: number }>();
     subjects.forEach((s) => {
       const qs = getQuestionsForSubject(s.Subject_Name);
       const pyqs = qs.length;
       const marks = qs.reduce((acc, q) => acc + (q.marks || 1), 0);
-      map.set(s.id, { pyqs, marks });
+      const sTopics = topics.filter((t) => t.Subject_Id === s.id);
+      const topicCount = Math.max(1, sTopics.length);
+      const density = marks / topicCount;
+      map.set(s.id, { pyqs, marks, topicCount, density });
     });
     return map;
-  }, [subjects]);
+  }, [subjects, topics]);
 
   // Filter & Sort Subjects
   const filteredAndSortedSubjects = useMemo(() => {
@@ -55,6 +58,12 @@ export const MySubjectsPage: React.FC = () => {
 
     // Sort
     result.sort((a, b) => {
+      if (sortBy === 'high_scoring') {
+        const dA = subjectMetrics.get(a.id)?.density || 0;
+        const dB = subjectMetrics.get(b.id)?.density || 0;
+        if (dB !== dA) return dB - dA;
+        return a.Subject_Name.localeCompare(b.Subject_Name);
+      }
       if (sortBy === 'marks') {
         const mA = subjectMetrics.get(a.id)?.marks || 0;
         const mB = subjectMetrics.get(b.id)?.marks || 0;
