@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { PYQProgressMap, PYQDifficultyStatus, PYQYearFilter } from '../../types/pyq';
+import { PYQProgressMap, PYQDifficultyStatus, PYQYearFilter, PYQItemProgress } from '../../types/pyq';
 import {
   getQuestionsForTopic,
   loadPYQProgress,
@@ -22,8 +22,10 @@ import {
   Calendar,
   ArrowUpDown,
   CheckCheck,
+  Play,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { PYQPracticeWorkspace } from './PYQPracticeWorkspace';
 
 export interface PYQModalProps {
   isOpen: boolean;
@@ -68,6 +70,8 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const [isCompletedSectionOpen, setIsCompletedSectionOpen] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isPracticeOpen, setIsPracticeOpen] = useState<boolean>(false);
+  const [practiceQuestionIndex, setPracticeQuestionIndex] = useState<number>(0);
 
   useEffect(() => {
     if (isOpen) {
@@ -252,6 +256,20 @@ export const PYQModal: React.FC<PYQModalProps> = ({
     }
   };
 
+  const handleUpdateQuestionProgress = (questionId: string, updates: Partial<PYQItemProgress>) => {
+    updateProgressState((prev) => {
+      const existing = prev[questionId] || { completed: false };
+      return {
+        ...prev,
+        [questionId]: {
+          ...existing,
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  };
+
   // Filter questions according to active tab and search query
   const filteredQuestions = useMemo(() => {
     const qTrim = searchQuery.trim().toLowerCase();
@@ -336,6 +354,17 @@ export const PYQModal: React.FC<PYQModalProps> = ({
 
         {/* Right Header Actions */}
         <div className="flex items-center gap-3">
+          {/* Practice Workspace Button (Minimal & Icon-Only, No Tooltip, No Label) */}
+          <button
+            onClick={() => {
+              setPracticeQuestionIndex(0);
+              setIsPracticeOpen(true);
+            }}
+            className="p-2.5 rounded-2xl bg-brand-500/20 hover:bg-brand-500/35 text-brand-300 hover:text-white border border-brand-500/40 shadow-sm transition-all active:scale-95 flex items-center justify-center"
+          >
+            <Play className="w-4 h-4 fill-current text-brand-400" />
+          </button>
+
           {/* Mark all Done */}
           <button
             onClick={handleMarkAllCompleted}
@@ -721,6 +750,20 @@ export const PYQModal: React.FC<PYQModalProps> = ({
           Done Practicing
         </button>
       </footer>
+
+      {/* Split-Screen PYQ Practice Workspace */}
+      {isPracticeOpen && (
+        <PYQPracticeWorkspace
+          isOpen={isPracticeOpen}
+          onClose={() => setIsPracticeOpen(false)}
+          topicName={topicName}
+          subjectName={subjectName}
+          questions={filteredQuestions.length > 0 ? filteredQuestions : sortedQuestions}
+          initialQuestionIndex={practiceQuestionIndex}
+          progress={progress}
+          onUpdateProgress={handleUpdateQuestionProgress}
+        />
+      )}
     </div>
   );
 };
