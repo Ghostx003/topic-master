@@ -58,6 +58,7 @@ export const MainLayout: React.FC = () => {
           topicName={activePYQTopic.topicName}
           subjectName={activePYQTopic.subjectName}
           subtopicNames={activePYQTopic.subtopicNames}
+          initialSearch={activePYQTopic.initialSearch}
         />
       )}
 

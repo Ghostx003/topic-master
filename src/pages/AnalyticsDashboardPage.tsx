@@ -163,8 +163,8 @@ export const AnalyticsDashboardPage: React.FC = () => {
   const topMvpSubject = matrixResult.rows.find((r) => r.rank === 1);
   const topOverallTopic = favouriteTopics[0];
 
-  // Helper to trigger PYQ modal for any topic
-  const handlePracticeTopic = (topicName: string, subjectName: string) => {
+  // Helper to trigger PYQ modal for any topic (optionally pre-filtered by year)
+  const handlePracticeTopic = (topicName: string, subjectName: string, year?: number | string) => {
     const match = topics.find(
       (t) => t.Topic_Name.toLowerCase() === topicName.toLowerCase()
     );
@@ -172,7 +172,8 @@ export const AnalyticsDashboardPage: React.FC = () => {
       match?.id || `topic-${topicName.replace(/\s+/g, '-').toLowerCase()}`,
       topicName,
       subjectName,
-      []
+      [],
+      year ? String(year) : undefined
     );
   };
 

@@ -34,6 +34,7 @@ export interface PYQModalProps {
   topicName: string;
   subjectName: string;
   subtopicNames?: string[];
+  initialSearch?: string;
 }
 
 export type PYQFilterTab = 'all' | 'active' | 'completed' | 'doubts' | 'easy' | 'medium' | 'hard' | 'skip';
@@ -55,14 +56,21 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   topicName,
   subjectName,
   subtopicNames = [],
+  initialSearch,
 }) => {
   const { yearFilter, setYearFilter } = useTopicMaster();
   const [progress, setProgress] = useState<PYQProgressMap>(() => loadPYQProgress());
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [activeTab, setActiveTab] = useState<PYQFilterTab>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const [isCompletedSectionOpen, setIsCompletedSectionOpen] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  useEffect(() => {
+    if (isOpen) {
+      setSearchQuery(initialSearch || '');
+    }
+  }, [isOpen, initialSearch, topicName, subjectName]);
 
   // Handle ESC key to close modal
   useEffect(() => {

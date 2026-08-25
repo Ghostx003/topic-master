@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { SubjectMatrixResult, SubjectYearTopicStat } from '../../services/analyticsService';
 import {
   Crown,
@@ -30,7 +30,7 @@ interface SubjectMatrixTableProps {
   onToggleSubject: (subjectName: string) => void;
   onSelectAllSubjects: () => void;
   onDeselectAllSubjects: () => void;
-  onPracticeTopic?: (topicName: string, subjectName: string) => void;
+  onPracticeTopic?: (topicName: string, subjectName: string, year?: string | number) => void;
 }
 
 export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
@@ -47,7 +47,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
   const [activeSortYear, setActiveSortYear] = useState<number | null>(null);
   const [yearSortDir, setYearSortDir] = useState<'desc' | 'asc'>('desc');
 
-  // 2. Hover Tooltip Popover State
+  // 2. Hover Tooltip Popover State & Timeout Ref for Interactive Hovering
   const [hoveredCellData, setHoveredCellData] = useState<{
     subjectName: string;
     subjectColor: string;
@@ -59,6 +59,8 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
     otherTopicsCount: number;
     rect: { top: number; left: number; right: number; bottom: number };
   } | null>(null);
+
+  const leaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { years, rows, yearTotals, yearMvps, grandTotal } = matrixResult;
 
@@ -176,6 +178,11 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
       otherTopicsCount: number;
     }
   ) => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+
     if (data.count === 0) {
       setHoveredCellData(null);
       return;
@@ -193,7 +200,30 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
   };
 
   const handleCellMouseLeave = () => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+    }
+    // Give user 300ms grace period to move mouse into the popover
+    leaveTimeoutRef.current = setTimeout(() => {
+      setHoveredCellData(null);
+    }, 300);
+  };
+
+  const handlePopoverMouseEnter = () => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+  };
+
+  const handlePopoverMouseLeave = () => {
     setHoveredCellData(null);
+  };
+
+  const handleTopicClick = (topicName: string, subjectName: string, year: number) => {
+    if (onPracticeTopic) {
+      onPracticeTopic(topicName, subjectName, year);
+    }
   };
 
   return (
@@ -212,7 +242,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
               </span>
             </h3>
             <p className="text-xs text-slate-400">
-              💡 <strong>Hover over any subject cell</strong> to see the top 4–5 topics asked in that subject in that year.
+              💡 <strong>Hover over any subject cell</strong> to see top topics asked in that year, then <strong>click any topic</strong> to practice its questions!
             </p>
           </div>
         </div>
@@ -948,7 +978,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
           className="fixed z-50 p-4 rounded-2xl bg-slate-950/95 border border-brand-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.8)] backdrop-blur-2xl text-xs space-y-3 w-80 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150 ring-1 ring-white/10"
           style={{
             top: Math.min(
-              window.innerHeight - 340,
+              window.innerHeight - 350,
               Math.max(15, hoveredCellData.rect.bottom + 10)
             ),
             left: Math.min(
@@ -956,8 +986,8 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
               Math.max(15, hoveredCellData.rect.left - 40)
             ),
           }}
-          onMouseEnter={() => {}}
-          onMouseLeave={() => setHoveredCellData(null)}
+          onMouseEnter={handlePopoverMouseEnter}
+          onMouseLeave={handlePopoverMouseLeave}
         >
           {/* Header */}
           <div className="space-y-1">
@@ -996,7 +1026,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                 <Sparkles className="w-3 h-3 text-brand-400" />
                 <span>Top Topics in {hoveredCellData.year}</span>
               </span>
-              <span>Weight</span>
+              <span className="text-brand-400 text-[10px] lowercase italic">click to practice</span>
             </div>
 
             {hoveredCellData.topTopics.length === 0 ? (
@@ -1008,7 +1038,12 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                 {hoveredCellData.topTopics.map((topic, idx) => (
                   <div
                     key={`hover-topic-${topic.topicName}-${idx}`}
-                    className="p-2 rounded-xl bg-slate-900/90 border border-slate-800/80 hover:border-brand-500/50 hover:bg-slate-850/90 transition-all group"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTopicClick(topic.topicName, hoveredCellData.subjectName, hoveredCellData.year);
+                    }}
+                    className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800/80 hover:border-brand-500/60 hover:bg-slate-800/90 transition-all group cursor-pointer shadow-sm active:scale-[0.98]"
+                    title={`Click to practice ${topic.count} questions from ${topic.topicName} in ${hoveredCellData.year}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 truncate">
@@ -1021,25 +1056,16 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0 font-mono text-xs">
-                        <span className="font-black text-white">
+                        <span className="font-black text-white group-hover:text-brand-200">
                           {topic.count} {topic.count === 1 ? 'Q' : 'Qs'}
                         </span>
                         <span className="text-[10px] text-brand-300 font-bold">
                           {topic.percentageOfSubjectYear}%
                         </span>
 
-                        {onPracticeTopic && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onPracticeTopic(topic.topicName, hoveredCellData.subjectName);
-                            }}
-                            className="p-1 rounded-md bg-brand-500/20 hover:bg-brand-500/40 text-brand-300 transition-all opacity-0 group-hover:opacity-100"
-                            title={`Practice ${topic.topicName}`}
-                          >
-                            <Play className="w-2.5 h-2.5 fill-current" />
-                          </button>
-                        )}
+                        <span className="p-1 rounded-md bg-brand-500/20 group-hover:bg-brand-500/40 text-brand-300 transition-all">
+                          <Play className="w-2.5 h-2.5 fill-current" />
+                        </span>
                       </div>
                     </div>
 

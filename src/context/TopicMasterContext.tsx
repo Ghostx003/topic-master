@@ -16,6 +16,7 @@ export interface ActivePYQTopicInfo {
   topicName: string;
   subjectName: string;
   subtopicNames?: string[];
+  initialSearch?: string;
 }
 
 interface TopicMasterContextType extends TopicMasterState, TopicMasterActions {
@@ -23,7 +24,13 @@ interface TopicMasterContextType extends TopicMasterState, TopicMasterActions {
   openTopicDetailModal: (topicId: string | null) => void;
   closeTopicDetailModal: () => void;
   activePYQTopic: ActivePYQTopicInfo | null;
-  openPYQModal: (topicId: string, topicName: string, subjectName: string, subtopicNames?: string[]) => void;
+  openPYQModal: (
+    topicId: string,
+    topicName: string,
+    subjectName: string,
+    subtopicNames?: string[],
+    initialSearch?: string
+  ) => void;
   closePYQModal: () => void;
   yearFilter: PYQYearFilter;
   setYearFilter: (filter: PYQYearFilter) => void;
@@ -1121,12 +1128,19 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
   // ================= UNIVERSAL PYQ PRACTICE MODAL =================
 
   const openPYQModal = useCallback(
-    (topicId: string, topicName: string, subjectName: string, subtopicNames?: string[]) => {
+    (
+      topicId: string,
+      topicName: string,
+      subjectName: string,
+      subtopicNames?: string[],
+      initialSearch?: string
+    ) => {
       setActivePYQTopic({
         topicId,
         topicName,
         subjectName,
         subtopicNames,
+        initialSearch,
       });
     },
     []
