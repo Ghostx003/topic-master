@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { PYQQuestion, PYQItemProgress, PYQDifficultyStatus } from '../../types/pyq';
+import {
+  hasQuestionScreenshot,
+  requestCaptureSpecificPage,
+} from '../../services/screenshotService';
 import {
   CheckCircle2,
   Circle,
@@ -7,6 +11,7 @@ import {
   HelpCircle,
   Calendar,
   Camera,
+  Loader2,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -33,8 +38,61 @@ export const PYQCard: React.FC<PYQCardProps> = ({
   const difficulty = progress?.difficulty || 'none';
   const isDoubt = Boolean(progress?.isDoubt);
 
+  const [hasScreenshot, setHasScreenshot] = useState<boolean>(false);
+  const [isCapturing, setIsCapturing] = useState<boolean>(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    hasQuestionScreenshot(question.id).then((present) => {
+      if (isMounted) setHasScreenshot(present);
+    });
+
+    const handleScreenshotUpdated = (event: any) => {
+      if (event.detail && event.detail.questionId === question.id) {
+        setHasScreenshot(true);
+      }
+    };
+
+    const handleScreenshotsCleared = (event: any) => {
+      if (
+        !event.detail?.subjects ||
+        event.detail.subjects.includes(question.subject)
+      ) {
+        setHasScreenshot(false);
+      }
+    };
+
+    window.addEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
+    window.addEventListener('pyq_screenshots_cleared', handleScreenshotsCleared);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
+      window.removeEventListener('pyq_screenshots_cleared', handleScreenshotsCleared);
+    };
+  }, [question.id, question.subject]);
+
+  const handleCaptureClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isCapturing) return;
+    setIsCapturing(true);
+
+    try {
+      const result = await requestCaptureSpecificPage(
+        question.id,
+        question.link,
+        question.subject
+      );
+      if (result) {
+        setHasScreenshot(true);
+        if (onOpenScreenshot) onOpenScreenshot(question);
+      }
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
   const handleCardClick = (e: React.MouseEvent) => {
-    // If clicked on interactive elements (button, link, select), let them handle it
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('a') || target.closest('select')) {
       return;
@@ -111,19 +169,36 @@ export const PYQCard: React.FC<PYQCardProps> = ({
             </span>
           )}
 
-          {/* Screenshot Preview Trigger */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onOpenScreenshot) onOpenScreenshot(question);
-            }}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-950 hover:bg-brand-950/60 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95 cursor-pointer shrink-0"
-            title="View Question Screenshot"
-          >
-            <Camera className="w-3 h-3 text-slate-400 group-hover:text-brand-400" />
-            <span className="hidden sm:inline">View</span>
-          </button>
+          {/* Screenshot View / Capture Trigger */}
+          {hasScreenshot ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onOpenScreenshot) onOpenScreenshot(question);
+              }}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-950 hover:bg-brand-950/60 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95 cursor-pointer shrink-0"
+              title="View Question Screenshot"
+            >
+              <Camera className="w-3 h-3 text-slate-400 group-hover:text-brand-400" />
+              <span className="hidden sm:inline">View</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleCaptureClick}
+              disabled={isCapturing}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-950 hover:bg-amber-950/60 text-slate-400 hover:text-amber-300 border border-slate-800 hover:border-amber-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95 cursor-pointer shrink-0 disabled:opacity-50"
+              title="Capture Screenshot for this Question"
+            >
+              {isCapturing ? (
+                <Loader2 className="w-3 h-3 text-amber-400 animate-spin" />
+              ) : (
+                <Camera className="w-3 h-3 text-slate-500 group-hover:text-amber-400" />
+              )}
+              <span className="hidden sm:inline">{isCapturing ? 'Capturing...' : 'Capture'}</span>
+            </button>
+          )}
 
           {/* Discussion External Link */}
           <a
@@ -145,38 +220,34 @@ export const PYQCard: React.FC<PYQCardProps> = ({
           {question.chapter}
         </span>
 
-        {/* Badges: Marks (Green) & Question Type */}
-        <div className="flex items-center gap-1.5 shrink-0 font-mono text-[10px]">
-          {/* Marks Badge in Vibrant Green */}
-          <span
-            className="px-2 py-0.5 rounded-md font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm"
-            title={`${question.marks || 1} Mark(s)`}
-          >
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="font-mono font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.5 rounded text-[10px]">
             {question.marks || 1} {question.marks === 1 ? 'Mark' : 'Marks'}
           </span>
 
-          {/* Question Type Badge */}
           <span
             className={clsx(
-              'px-2 py-0.5 rounded-md font-bold border shadow-sm',
+              'font-mono font-bold px-1.5 py-0.5 rounded border text-[10px]',
               question.type_of_question === 'MSQ'
-                ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
+                ? 'bg-purple-950/70 text-purple-300 border-purple-500/30'
                 : question.type_of_question === 'NAT'
-                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                ? 'bg-amber-950/70 text-amber-300 border-amber-500/30'
                 : question.type_of_question === 'Descriptive'
-                ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30'
-                : 'bg-sky-500/15 text-sky-300 border-sky-500/30'
+                ? 'bg-indigo-950/70 text-indigo-300 border-indigo-500/30'
+                : 'bg-blue-950/70 text-blue-300 border-blue-500/30'
             )}
-            title={`Question Type: ${question.type_of_question || 'MCQ'}`}
           >
             {question.type_of_question || 'MCQ'}
           </span>
         </div>
       </div>
 
-      {/* Bottom Row: Doubt Flag + Difficulty Level Selector */}
-      <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
-        {/* Doubt Button */}
+      {/* Bottom Row: Doubt Flag Button + Difficulty Level Badges */}
+      <div
+        className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Doubt Button (Left) */}
         <button
           type="button"
           onClick={(e) => {
@@ -184,41 +255,41 @@ export const PYQCard: React.FC<PYQCardProps> = ({
             onToggleDoubt(question.id);
           }}
           className={clsx(
-            'flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all active:scale-95',
+            'flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold transition-all active:scale-95',
             isDoubt
-              ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
-              : 'bg-slate-950 text-slate-500 hover:text-slate-300 border-slate-800 hover:border-slate-700'
+              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+              : 'bg-slate-950 text-slate-500 hover:text-slate-300 border border-slate-800'
           )}
-          title={isDoubt ? 'Remove Doubt Flag' : 'Mark as Doubt / Need Review'}
+          title={isDoubt ? 'Marked as Doubt (Click to remove)' : 'Mark as Doubt'}
         >
-          <HelpCircle className={clsx('w-3.5 h-3.5', isDoubt ? 'text-amber-400' : 'text-slate-500')} />
+          <HelpCircle className={clsx('w-3.5 h-3.5', isDoubt && 'fill-current')} />
           <span>{isDoubt ? 'Doubt' : 'Flag'}</span>
         </button>
 
-        {/* Difficulty Status Selector Buttons */}
-        <div
-          className="flex items-center bg-slate-950 p-0.5 rounded-xl border border-slate-800 text-[11px] font-semibold"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {(['easy', 'medium', 'hard', 'skip'] as PYQDifficultyStatus[]).map((status) => (
+        {/* Difficulty Selector (Right) */}
+        <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-xl border border-slate-800">
+          {(['easy', 'medium', 'hard', 'skip'] as PYQDifficultyStatus[]).map((lvl) => (
             <button
-              key={status}
+              key={lvl}
               type="button"
-              onClick={() => onSetDifficulty(question.id, status)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSetDifficulty(question.id, lvl);
+              }}
               className={clsx(
-                'px-2 py-0.5 rounded-lg capitalize transition-all',
-                difficulty === status
-                  ? status === 'easy'
-                    ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                    : status === 'medium'
-                    ? 'bg-amber-950 text-amber-300 border border-amber-500/40 shadow-sm'
-                    : status === 'hard'
-                    ? 'bg-rose-950 text-rose-300 border border-rose-500/40 shadow-sm'
-                    : 'bg-slate-800 text-slate-300'
-                  : 'text-slate-500 hover:text-slate-300'
+                'px-2 py-0.5 rounded-lg text-[11px] font-bold capitalize transition-all active:scale-95',
+                difficulty === lvl
+                  ? lvl === 'easy'
+                    ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50 shadow-sm'
+                    : lvl === 'medium'
+                    ? 'bg-amber-950 text-amber-300 border border-amber-500/50 shadow-sm'
+                    : lvl === 'hard'
+                    ? 'bg-rose-950 text-rose-300 border border-rose-500/50 shadow-sm'
+                    : 'bg-slate-800 text-slate-200 border border-slate-600'
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'
               )}
             >
-              {status}
+              {lvl}
             </button>
           ))}
         </div>
