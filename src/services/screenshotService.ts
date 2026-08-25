@@ -366,14 +366,52 @@ export async function importScreenshots(
   }
 }
 
-// Global window message listener from Chrome extension to sync incoming batch captures
+/**
+ * Get list of all question IDs currently present in IndexedDB
+ */
+export async function getAllStoredQuestionIds(): Promise<string[]> {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const transaction = db.transaction([STORE_NAME], 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.getAllKeys();
+
+      request.onsuccess = () => {
+        const keys = (request.result as string[]) || [];
+        resolve(keys);
+      };
+      request.onerror = () => {
+        resolve([]);
+      };
+    });
+  } catch (err) {
+    console.error('Failed to get stored screenshot IDs:', err);
+    return [];
+  }
+}
+
+// Global window message listener from Chrome extension to sync incoming batch captures & queries
 if (typeof window !== 'undefined') {
-  window.addEventListener('message', (event: MessageEvent) => {
-    if (event.data && event.data.type === 'PYQ_SCREENSHOT_BATCH_CAPTURE') {
+  window.addEventListener('message', async (event: MessageEvent) => {
+    if (!event.data) return;
+
+    if (event.data.type === 'PYQ_SCREENSHOT_BATCH_CAPTURE') {
       const { questionId, dataUrl, subject, url } = event.data;
       if (questionId && dataUrl) {
         saveQuestionScreenshot(questionId, dataUrl, subject || 'General', url || '');
       }
+    } else if (event.data.type === 'GET_STORED_SCREENSHOT_IDS_REQUEST') {
+      const ids = await getAllStoredQuestionIds();
+      window.postMessage(
+        {
+          type: 'GET_STORED_SCREENSHOT_IDS_RESPONSE',
+          reqId: event.data.reqId,
+          ids,
+        },
+        '*'
+      );
     }
   });
 }
+

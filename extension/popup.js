@@ -57,7 +57,7 @@ async function loadData() {
         subjectCounts[subj] = { total: 0, captured: 0 };
       }
       subjectCounts[subj].total++;
-      if (capturedStatusMap[q.id] === 'CAPTURED' || storage[`pyq_img_${q.id}`]) {
+      if (capturedStatusMap[q.id] === 'CAPTURED' && storage[`pyq_img_${q.id}`]) {
         subjectCounts[subj].captured++;
       }
     });
@@ -104,6 +104,41 @@ function renderSubjectList() {
     left.appendChild(checkbox);
     left.appendChild(name);
 
+    const right = document.createElement('div');
+    right.className = 'subject-item-right';
+
+    // Dedicated Force Check Button
+    const forceBtn = document.createElement('button');
+    forceBtn.className = 'force-check-btn';
+    forceBtn.innerHTML = '⚡ Force Check';
+    forceBtn.title = `Verify each question in ${subj} against website & capture missing screenshots`;
+    forceBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      forceBtn.disabled = true;
+      forceBtn.innerHTML = 'Checking...';
+
+      try {
+        const res = await chrome.runtime.sendMessage({
+          type: 'FORCE_CHECK_SUBJECT',
+          subject: subj,
+          forceAll: false,
+        });
+
+        if (res && res.message) {
+          activeQuestionText.textContent = res.message;
+          activeQuestionText.style.color = '#34d399';
+        }
+
+        await loadData();
+        await syncStateWithBackground();
+      } catch (err) {
+        console.error('Force check error:', err);
+      } finally {
+        forceBtn.disabled = false;
+        forceBtn.innerHTML = '⚡ Force Check';
+      }
+    });
+
     const count = document.createElement('span');
     count.className = 'subject-count';
     count.textContent = `${data.captured}/${data.total}`;
@@ -112,11 +147,14 @@ function renderSubjectList() {
       count.style.borderColor = 'rgba(16, 185, 129, 0.4)';
     }
 
+    right.appendChild(forceBtn);
+    right.appendChild(count);
+
     row.appendChild(left);
-    row.appendChild(count);
+    row.appendChild(right);
 
     row.addEventListener('click', (e) => {
-      if (e.target !== checkbox) {
+      if (e.target !== checkbox && !e.target.closest('.force-check-btn')) {
         checkbox.checked = !checkbox.checked;
         checkbox.dispatchEvent(new Event('change'));
       }
@@ -215,10 +253,11 @@ function setupListeners() {
     await syncStateWithBackground();
   });
 
-  // Stop Import
+  // Stop Import (Immediately resets to normal IDLE state)
   stopBtn.addEventListener('click', async () => {
     stopBtn.disabled = true;
     await chrome.runtime.sendMessage({ type: 'STOP_IMPORT' });
+    await loadData();
     await syncStateWithBackground();
   });
 
@@ -279,6 +318,7 @@ function setupListeners() {
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === 'STATE_UPDATED') {
       applyStateToUI(message.state);
+      loadData();
     }
   });
 }
@@ -291,7 +331,7 @@ async function syncStateWithBackground() {
 }
 
 function applyStateToUI(state) {
-  const { status, currentIndex, queue, stats, currentQuestion, selectedSubjects: activeSubjects } = state;
+  const { status, currentIndex, queue, stats, currentQuestion } = state;
 
   // 1. Status Badge
   statusBadge.className = `status-pill status-${status.toLowerCase().replace('_', '-')}`;
@@ -318,14 +358,11 @@ function applyStateToUI(state) {
     activeQuestionText.textContent = `Capturing: ${currentQuestion.subject} • Q${currentQuestion.questionNumber} (${currentQuestion.year})`;
     activeQuestionText.style.color = '#60a5fa';
   } else if (status === 'COMPLETED') {
-    activeQuestionText.textContent = `✓ Import complete! All ${captured} selected questions captured.`;
+    activeQuestionText.textContent = `✓ Import complete! All selected questions captured.`;
     activeQuestionText.style.color = '#34d399';
   } else if (status === 'PAUSED_CLOUDFLARE') {
     activeQuestionText.textContent = `Paused for security verification on active question.`;
     activeQuestionText.style.color = '#fbbf24';
-  } else if (status === 'STOPPED') {
-    activeQuestionText.textContent = `Import stopped. Click Resume to continue from Q${currentIndex + 1}.`;
-    activeQuestionText.style.color = '#94a3b8';
   } else {
     activeQuestionText.textContent = `Select subjects below and click Begin Import.`;
     activeQuestionText.style.color = '#cbd5e1';
@@ -343,12 +380,8 @@ function applyStateToUI(state) {
     resumeBtn.disabled = false;
     stopBtn.style.display = 'flex';
     stopBtn.disabled = false;
-  } else if (status === 'STOPPED' && queue.length > 0) {
-    startBtn.style.display = 'none';
-    resumeBtn.style.display = 'flex';
-    resumeBtn.disabled = false;
-    stopBtn.style.display = 'none';
   } else {
+    // Normal / IDLE / Clean Stopped State
     startBtn.style.display = 'flex';
     startBtn.disabled = selectedSubjects.size === 0;
     resumeBtn.style.display = 'none';

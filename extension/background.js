@@ -72,6 +72,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       handleStopImport().then(sendResponse);
       return true;
 
+    case 'FORCE_CHECK_SUBJECT':
+      handleForceCheckSubject(message.subject, Boolean(message.forceAll)).then(sendResponse);
+      return true;
+
+    case 'FORCE_CHECK_ALL':
+      handleForceCheckAll().then(sendResponse);
+      return true;
+
     case 'CAPTURE_SPECIFIC_PAGE':
       handleCaptureSpecific(message.questionId, message.url, message.subject).then(sendResponse);
       return true;
@@ -85,6 +93,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
   }
 });
+
+/**
+ * Query active Topic Master tabs for IDs currently present in IndexedDB
+ */
+async function getStoredIdsFromWebsite() {
+  const storedIds = new Set();
+  try {
+    const tabs = await chrome.tabs.query({});
+    for (const t of tabs) {
+      if (t.id) {
+        try {
+          const res = await chrome.tabs.sendMessage(t.id, { type: 'GET_STORED_SCREENSHOT_IDS' });
+          if (res && Array.isArray(res.ids)) {
+            res.ids.forEach((id) => storedIds.add(id));
+          }
+        } catch (_) {}
+      }
+    }
+  } catch (_) {}
+  return storedIds;
+}
 
 /**
  * Start or resume batch import for selected subjects
@@ -124,6 +153,152 @@ async function handleStartImport(subjects) {
 }
 
 /**
+ * Forcefully check all questions for a subject:
+ * Cross-references with website IndexedDB and chrome.storage.local,
+ * clears false/stale 'CAPTURED' marks, and sequentially captures any missing questions!
+ */
+async function handleForceCheckSubject(subject, forceAll = false) {
+  const response = await fetch(chrome.runtime.getURL('questions.json'));
+  const allQuestions = await response.json();
+
+  const targetQuestions = allQuestions.filter((q) => q.subject === subject);
+  if (targetQuestions.length === 0) {
+    return { success: false, error: 'No questions found for subject' };
+  }
+
+  // 1. Get exact screenshot IDs present in Topic Master's IndexedDB
+  const storedIdsOnWebsite = await getStoredIdsFromWebsite();
+
+  const storageData = await chrome.storage.local.get(null);
+  const statuses = storageData.pyq_question_statuses || {};
+
+  const questionsToProcess = [];
+  const keysToRemove = [];
+
+  for (const q of targetQuestions) {
+    const hasOnWebsite = storedIdsOnWebsite.has(q.id);
+    const hasInExtStorage = Boolean(storageData[`pyq_img_${q.id}`]?.dataUrl);
+
+    // If website is missing it, or extension storage is missing it, or in forceAll mode
+    if (forceAll || !hasOnWebsite || !hasInExtStorage) {
+      delete statuses[q.id];
+      keysToRemove.push(`pyq_img_${q.id}`);
+      questionsToProcess.push(q);
+    } else if (hasInExtStorage) {
+      // Re-relay to website just to ensure 100% sync
+      notifyWebTabs({
+        type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
+        questionId: q.id,
+        url: q.link,
+        subject: q.subject,
+        dataUrl: storageData[`pyq_img_${q.id}`].dataUrl,
+      });
+    }
+  }
+
+  // Clean stale keys
+  if (keysToRemove.length > 0) {
+    await chrome.storage.local.remove(keysToRemove);
+  }
+  await chrome.storage.local.set({ pyq_question_statuses: statuses });
+
+  // If no questions missing
+  if (questionsToProcess.length === 0) {
+    return {
+      success: true,
+      message: `All ${targetQuestions.length} questions in ${subject} verified and synchronized!`,
+      missingCount: 0,
+    };
+  }
+
+  // Enqueue missing questions for live sequential capture
+  importState.queue = questionsToProcess;
+  importState.selectedSubjects = [subject];
+  importState.currentIndex = 0;
+  importState.status = 'IMPORTING';
+  importState.stats = {
+    total: questionsToProcess.length,
+    captured: 0,
+    failed: 0,
+    skipped: 0,
+  };
+
+  saveState();
+  broadcastState();
+  processNextInQueue();
+
+  return {
+    success: true,
+    missingCount: questionsToProcess.length,
+    state: importState,
+  };
+}
+
+/**
+ * Force check all subjects across entire database
+ */
+async function handleForceCheckAll() {
+  const response = await fetch(chrome.runtime.getURL('questions.json'));
+  const allQuestions = await response.json();
+
+  const storedIdsOnWebsite = await getStoredIdsFromWebsite();
+  const storageData = await chrome.storage.local.get(null);
+  const statuses = storageData.pyq_question_statuses || {};
+
+  const questionsToProcess = [];
+  const keysToRemove = [];
+
+  for (const q of allQuestions) {
+    const hasOnWebsite = storedIdsOnWebsite.has(q.id);
+    const hasInExtStorage = Boolean(storageData[`pyq_img_${q.id}`]?.dataUrl);
+
+    if (!hasOnWebsite || !hasInExtStorage) {
+      delete statuses[q.id];
+      keysToRemove.push(`pyq_img_${q.id}`);
+      questionsToProcess.push(q);
+    } else if (hasInExtStorage) {
+      notifyWebTabs({
+        type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
+        questionId: q.id,
+        url: q.link,
+        subject: q.subject,
+        dataUrl: storageData[`pyq_img_${q.id}`].dataUrl,
+      });
+    }
+  }
+
+  if (keysToRemove.length > 0) {
+    await chrome.storage.local.remove(keysToRemove);
+  }
+  await chrome.storage.local.set({ pyq_question_statuses: statuses });
+
+  if (questionsToProcess.length === 0) {
+    return { success: true, message: 'All questions across all subjects are 100% verified!', missingCount: 0 };
+  }
+
+  importState.queue = questionsToProcess;
+  importState.selectedSubjects = Array.from(new Set(questionsToProcess.map((q) => q.subject)));
+  importState.currentIndex = 0;
+  importState.status = 'IMPORTING';
+  importState.stats = {
+    total: questionsToProcess.length,
+    captured: 0,
+    failed: 0,
+    skipped: 0,
+  };
+
+  saveState();
+  broadcastState();
+  processNextInQueue();
+
+  return {
+    success: true,
+    missingCount: questionsToProcess.length,
+    state: importState,
+  };
+}
+
+/**
  * Resume from paused/stopped state
  */
 async function handleResumeImport() {
@@ -141,11 +316,20 @@ async function handleResumeImport() {
 }
 
 /**
- * Stop active import queue
+ * Stop active import queue and reset completely to normal IDLE state
  */
 async function handleStopImport() {
-  importState.status = 'STOPPED';
-  saveState();
+  importState.status = 'IDLE';
+  importState.queue = [];
+  importState.currentIndex = 0;
+  importState.currentQuestion = null;
+  importState.selectedSubjects = [];
+  importState.stats = {
+    total: 0,
+    captured: 0,
+    failed: 0,
+    skipped: 0,
+  };
 
   if (importState.workerTabId) {
     try {
@@ -153,6 +337,9 @@ async function handleStopImport() {
     } catch (_) {}
     importState.workerTabId = null;
   }
+
+  await chrome.storage.local.remove('pyq_import_state');
+  broadcastState();
 
   return { success: true, state: importState };
 }
@@ -787,15 +974,14 @@ function broadcastState() {
  * Send captured screenshot payload to all active Topic Master web tabs
  */
 async function notifyWebTabs(payload) {
-  const tabs = await chrome.tabs.query({});
-  for (const t of tabs) {
-    if (
-      t.url &&
-      (t.url.includes('localhost') || t.url.includes('127.0.0.1') || t.url.includes('topic-master') || t.url.includes('vercel.app'))
-    ) {
-      chrome.tabs.sendMessage(t.id, payload).catch(() => {});
+  try {
+    const tabs = await chrome.tabs.query({});
+    for (const t of tabs) {
+      if (t.id) {
+        chrome.tabs.sendMessage(t.id, payload).catch(() => {});
+      }
     }
-  }
+  } catch (_) {}
 }
 
 /**
