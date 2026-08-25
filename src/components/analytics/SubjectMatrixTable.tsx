@@ -1109,18 +1109,13 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
 
       {/* ================= RICH INTERACTIVE & PINNABLE POPOVER ================= */}
       {activeCellData && (() => {
-        const popoverEstimatedHeight = 340;
-        const spaceBelow = window.innerHeight - activeCellData.rect.bottom;
-        const placeAbove = spaceBelow < popoverEstimatedHeight && activeCellData.rect.top > popoverEstimatedHeight;
-
-        const topPosition = placeAbove
-          ? Math.max(12, activeCellData.rect.top - popoverEstimatedHeight - 8)
-          : activeCellData.rect.bottom + 6;
-
+        // ALWAYS place directly downwards underneath the subject cell so the subject is 100% visible
+        const topPosition = activeCellData.rect.bottom + 6;
         const leftPosition = Math.max(
           12,
           Math.min(window.innerWidth - 340, activeCellData.rect.left - 12)
         );
+        const maxAvailableHeight = Math.max(220, window.innerHeight - topPosition - 20);
 
         return (
           <div
@@ -1134,19 +1129,13 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
             style={{
               top: `${topPosition}px`,
               left: `${leftPosition}px`,
+              maxHeight: `${maxAvailableHeight}px`,
             }}
             onMouseEnter={handlePopoverMouseEnter}
             onMouseLeave={handlePopoverMouseLeave}
           >
-            {/* Pointer arrow pointing to the subject cell */}
-            <div
-              className={clsx(
-                'absolute w-3 h-3 bg-slate-950 rotate-45 pointer-events-none',
-                placeAbove
-                  ? '-bottom-1.5 left-6 border-r border-b border-brand-500/50'
-                  : '-top-1.5 left-6 border-l border-t border-brand-500/50'
-              )}
-            />
+            {/* Pointer arrow always pointing up directly to the subject cell above */}
+            <div className="absolute -top-1.5 left-6 w-3 h-3 bg-slate-950 rotate-45 border-l border-t border-brand-500/50 pointer-events-none" />
           {/* Header */}
           <div className="space-y-1">
             <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-800">
