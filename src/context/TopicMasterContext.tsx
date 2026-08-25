@@ -1059,15 +1059,21 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
   }, [state]);
 
   const importData = useCallback(
-    (jsonData: string, mode: 'overwrite' | 'merge'): { success: boolean; message: string } => {
-      const validation = BackupService.validateBackup(jsonData);
-      if (!validation.valid || !validation.data) {
-        return { success: false, message: validation.error || 'Invalid backup structure.' };
+    (data: string | any, mode: 'overwrite' | 'merge'): { success: boolean; message: string } => {
+      let payload: any;
+      if (typeof data === 'string') {
+        const validation = BackupService.validateBackup(data);
+        if (!validation.valid || !validation.data) {
+          return { success: false, message: validation.error || 'Invalid backup structure.' };
+        }
+        payload = validation.data;
+      } else {
+        payload = data;
       }
 
       const { nextState, removedSubjects, removedTopics } = BackupService.importBackup(
         state,
-        validation.data,
+        payload,
         mode
       );
       setState(nextState);

@@ -3,6 +3,7 @@ import { Subject } from '../types/subject';
 import { Topic } from '../types/topic';
 import { Schedule } from '../types/schedule';
 import { exportAllScreenshots, importScreenshots } from './screenshotService';
+import JSZip from 'jszip';
 
 export interface BackupPayload {
   version: string;
@@ -137,6 +138,9 @@ export function deduplicateDatabase(
 }
 
 export const BackupService = {
+  /**
+   * Synchronous export for basic state
+   */
   exportBackup(state: TopicMasterState): string {
     const payload: BackupPayload = {
       version: '1.0.0',
@@ -152,6 +156,9 @@ export const BackupService = {
     return JSON.stringify(payload, null, 2);
   },
 
+  /**
+   * Export all Topic Master data as a stringified JSON payload
+   */
   async exportBackupAsync(state: TopicMasterState): Promise<string> {
     let screenshotsMap: Record<string, any> = {};
     try {
@@ -160,7 +167,9 @@ export const BackupService = {
 
     let pyqProgress: Record<string, any> = {};
     try {
-      const storedProgress = localStorage.getItem('topic_master_pyq_progress_v1') || localStorage.getItem('pyq_progress_v1');
+      const storedProgress =
+        localStorage.getItem('topic_master_pyq_progress_v1') ||
+        localStorage.getItem('pyq_progress_v1');
       if (storedProgress) {
         pyqProgress = JSON.parse(storedProgress);
       }
@@ -182,6 +191,114 @@ export const BackupService = {
     return JSON.stringify(payload, null, 2);
   },
 
+  /**
+   * Export everything into a complete ZIP archive including screenshots directory
+   */
+  async exportBackupZipAsync(
+    state: TopicMasterState,
+    onProgress?: (percent: number, msg: string) => void
+  ): Promise<Blob> {
+    onProgress?.(5, 'Gathering database records...');
+    const zip = new JSZip();
+
+    let pyqProgress: Record<string, any> = {};
+    try {
+      const storedProgress =
+        localStorage.getItem('topic_master_pyq_progress_v1') ||
+        localStorage.getItem('pyq_progress_v1');
+      if (storedProgress) {
+        pyqProgress = JSON.parse(storedProgress);
+      }
+    } catch (_) {}
+
+    const stateData = {
+      version: '1.0.0',
+      app: 'Topic Master',
+      exported_at: new Date().toISOString(),
+      data: {
+        subjects: state.subjects,
+        topics: state.topics,
+        schedules: state.schedules,
+        settings: state.settings,
+        pyqProgress,
+      },
+    };
+
+    zip.file('data.json', JSON.stringify(stateData, null, 2));
+
+    // Gather screenshots from IndexedDB
+    onProgress?.(15, 'Extracting PYQ screenshots from IndexedDB...');
+    let screenshotsMap: Record<string, any> = {};
+    try {
+      screenshotsMap = await exportAllScreenshots();
+    } catch (err) {
+      console.warn('Screenshot export failed:', err);
+    }
+
+    const screenshotsFolder = zip.folder('screenshots');
+    const screenshotsMetadata: Record<string, any> = {};
+
+    const entries = Object.entries(screenshotsMap);
+    const totalScreenshots = entries.length;
+
+    for (let i = 0; i < totalScreenshots; i++) {
+      const [qId, item] = entries[i];
+      if (item && item.dataUrl) {
+        const base64Data = item.dataUrl.replace(/^data:image\/\w+;base64,/, '');
+        const filename = `${qId}.jpg`;
+        screenshotsFolder?.file(filename, base64Data, { base64: true });
+
+        screenshotsMetadata[qId] = {
+          questionId: item.questionId || qId,
+          url: item.url,
+          subject: item.subject,
+          timestamp: item.timestamp || Date.now(),
+          filename: filename,
+        };
+      }
+
+      if (totalScreenshots > 0 && i % 5 === 0) {
+        const percent = 15 + Math.round((i / totalScreenshots) * 65);
+        onProgress?.(percent, `Packing screenshots (${i + 1}/${totalScreenshots})...`);
+      }
+    }
+
+    zip.file('screenshots.json', JSON.stringify(screenshotsMetadata, null, 2));
+
+    onProgress?.(85, 'Compressing ZIP archive...');
+    const zipBlob = await zip.generateAsync(
+      { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
+      (metadata) => {
+        onProgress?.(85 + Math.round(metadata.percent * 0.14), `Compressing: ${Math.round(metadata.percent)}%`);
+      }
+    );
+
+    onProgress?.(100, 'Done!');
+    return zipBlob;
+  },
+
+  /**
+   * Download a complete ZIP backup of Topic Master
+   */
+  async downloadBackupZip(
+    state: TopicMasterState,
+    onProgress?: (percent: number, msg: string) => void
+  ): Promise<void> {
+    const blob = await this.exportBackupZipAsync(state, onProgress);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.href = url;
+    link.download = `TopicMaster_Complete_Backup_${dateStr}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  },
+
+  /**
+   * Download a single JSON backup file
+   */
   async downloadBackupFile(state: TopicMasterState): Promise<void> {
     const json = await this.exportBackupAsync(state);
     const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
@@ -196,6 +313,56 @@ export const BackupService = {
     URL.revokeObjectURL(url);
   },
 
+  /**
+   * Parse a ZIP file and return a full BackupPayload
+   */
+  async parseBackupZip(file: File | Blob): Promise<BackupPayload> {
+    const zip = await JSZip.loadAsync(file);
+    const dataFile = zip.file('data.json');
+    if (!dataFile) {
+      throw new Error('Invalid Topic Master backup archive: data.json not found inside zip.');
+    }
+
+    const dataJsonStr = await dataFile.async('string');
+    const validated = this.validateBackup(dataJsonStr);
+    if (!validated.valid || !validated.data) {
+      throw new Error(validated.error || 'Corrupt data.json inside archive.');
+    }
+
+    const payload = validated.data;
+    payload.data.screenshots = payload.data.screenshots || {};
+
+    const metaFile = zip.file('screenshots.json');
+    let meta: Record<string, any> = {};
+    if (metaFile) {
+      try {
+        meta = JSON.parse(await metaFile.async('string'));
+      } catch (_) {}
+    }
+
+    const screenshotsFolder = zip.folder('screenshots');
+    if (screenshotsFolder) {
+      const imgFiles = screenshotsFolder.file(/.*\.(jpg|jpeg|png|webp)$/i);
+      for (const imgFile of imgFiles) {
+        const base64 = await imgFile.async('base64');
+        const qId = imgFile.name.replace(/^screenshots\//, '').replace(/\.[^/.]+$/, '');
+        const metaItem = meta[qId] || {};
+        payload.data.screenshots[qId] = {
+          questionId: metaItem.questionId || qId,
+          url: metaItem.url || '',
+          subject: metaItem.subject || '',
+          dataUrl: `data:image/jpeg;base64,${base64}`,
+          timestamp: metaItem.timestamp || Date.now(),
+        };
+      }
+    }
+
+    return payload;
+  },
+
+  /**
+   * Validate a stringified JSON backup payload
+   */
   validateBackup(jsonString: string): { valid: boolean; data?: BackupPayload; error?: string } {
     try {
       if (!jsonString || typeof jsonString !== 'string') {
@@ -253,6 +420,9 @@ export const BackupService = {
     }
   },
 
+  /**
+   * Apply validated backup to the current state with deduplication and screenshot importing
+   */
   importBackup(
     currentState: TopicMasterState,
     payload: BackupPayload,
@@ -282,13 +452,23 @@ export const BackupService = {
       removedTopicsCount,
     } = deduplicateDatabase(targetSubjects, targetTopics, targetSchedules);
 
-    if (incoming.screenshots && typeof incoming.screenshots === 'object' && Object.keys(incoming.screenshots).length > 0) {
+    // Import screenshots into IndexedDB if present
+    if (
+      incoming.screenshots &&
+      typeof incoming.screenshots === 'object' &&
+      Object.keys(incoming.screenshots).length > 0
+    ) {
       importScreenshots(incoming.screenshots).catch((err) => {
         console.error('Failed to import screenshots from backup:', err);
       });
     }
 
-    if (incoming.pyqProgress && typeof incoming.pyqProgress === 'object' && Object.keys(incoming.pyqProgress).length > 0) {
+    // Restore PYQ solve progress into localStorage
+    if (
+      incoming.pyqProgress &&
+      typeof incoming.pyqProgress === 'object' &&
+      Object.keys(incoming.pyqProgress).length > 0
+    ) {
       try {
         const currentProgressStr = localStorage.getItem('topic_master_pyq_progress_v1') || '{}';
         const currentProgress = JSON.parse(currentProgressStr);

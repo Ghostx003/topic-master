@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { useTopicMaster } from '../context/TopicMasterContext';
 import { useToast } from '../context/ToastContext';
-import { BackupService } from '../services/backupService';
+import { BackupService, BackupPayload } from '../services/backupService';
 import { Modal } from '../components/common/Modal';
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { ThemePalette } from '../types/store';
 import { ResetScreenshotsModal } from './ResetScreenshotsModal';
 import {
   Settings,
-  Download,
   Upload,
   RotateCcw,
   Trash2,
@@ -18,6 +17,9 @@ import {
   Palette,
   Sparkles,
   Camera,
+  Archive,
+  Loader2,
+  FileArchive,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -53,53 +55,124 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [isResetScreenshotsOpen, setIsResetScreenshotsOpen] = useState(false);
-  const [importFileContent, setImportFileContent] = useState<string | null>(null);
+
+  // ZIP / JSON Export Progress
+  const [isExportingZip, setIsExportingZip] = useState(false);
+  const [zipExportProgress, setZipExportProgress] = useState<{ percent: number; msg: string } | null>(null);
+
+  // Import State
+  const [importPayload, setImportPayload] = useState<BackupPayload | null>(null);
+  const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [importPreview, setImportPreview] = useState<{
     subjectsCount: number;
     topicsCount: number;
     schedulesCount: number;
+    screenshotsCount: number;
   } | null>(null);
   const [confirmImportMode, setConfirmImportMode] = useState<'overwrite' | 'merge' | null>(null);
 
-  const handleExport = async () => {
+  const getExportState = () => ({
+    subjects,
+    topics,
+    schedules,
+    activeScheduleId: null,
+    settings: {
+      theme: 'dark' as const,
+      themePalette: settings.themePalette || 'blue',
+      enableSound: true,
+      autoSaveIntervalMs: 5000,
+    },
+    activeTimer: {
+      topicId: null,
+      subjectId: null,
+      startTime: null,
+      elapsedSeconds: 0,
+      isRunning: false,
+    },
+  });
+
+  const handleExportZip = async () => {
+    if (isExportingZip) return;
+    setIsExportingZip(true);
+    setZipExportProgress({ percent: 5, msg: 'Preparing backup archive...' });
+
     try {
-      const stateToExport = {
-        subjects,
-        topics,
-        schedules,
-        activeScheduleId: null,
-        settings: { theme: 'dark' as const, themePalette: settings.themePalette || 'blue', enableSound: true, autoSaveIntervalMs: 5000 },
-        activeTimer: { topicId: null, subjectId: null, startTime: null, elapsedSeconds: 0, isRunning: false },
-      };
-      await BackupService.downloadBackupFile(stateToExport);
-      toast.success('Backup Exported', 'Downloaded complete Topic Master JSON backup including all question screenshots.');
+      await BackupService.downloadBackupZip(getExportState(), (percent, msg) => {
+        setZipExportProgress({ percent, msg });
+      });
+      toast.success(
+        'ZIP Archive Exported',
+        'Downloaded complete Topic Master backup (.ZIP) containing all data and question screenshots!'
+      );
     } catch (err: any) {
-      toast.error('Export Failed', err.message);
+      toast.error('ZIP Export Failed', err.message || 'Failed to generate ZIP archive.');
+    } finally {
+      setIsExportingZip(false);
+      setZipExportProgress(null);
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExportJson = async () => {
+    try {
+      await BackupService.downloadBackupFile(getExportState());
+      toast.success('JSON Backup Exported', 'Downloaded Topic Master JSON backup.');
+    } catch (err: any) {
+      toast.error('JSON Export Failed', err.message);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      const validation = BackupService.validateBackup(text);
-      if (!validation.valid || !validation.data) {
-        toast.error('Invalid Backup File', validation.error || 'The file is corrupt.');
-        setImportFileContent(null);
-        setImportPreview(null);
-      } else {
-        setImportFileContent(text);
+    setIsLoadingFile(true);
+    setImportPayload(null);
+    setImportPreview(null);
+
+    try {
+      if (file.name.toLowerCase().endsWith('.zip')) {
+        const payload = await BackupService.parseBackupZip(file);
+        setImportPayload(payload);
         setImportPreview({
-          subjectsCount: validation.data.data.subjects.length,
-          topicsCount: validation.data.data.topics.length,
-          schedulesCount: validation.data.data.schedules.length,
+          subjectsCount: payload.data.subjects.length,
+          topicsCount: payload.data.topics.length,
+          schedulesCount: payload.data.schedules.length,
+          screenshotsCount: Object.keys(payload.data.screenshots || {}).length,
         });
+        toast.success(
+          'ZIP Backup Loaded',
+          `Archive contains ${payload.data.subjects.length} subjects, ${payload.data.topics.length} topics, and ${Object.keys(payload.data.screenshots || {}).length} question screenshots.`
+        );
+      } else {
+        const text = await file.text();
+        const validation = BackupService.validateBackup(text);
+        if (!validation.valid || !validation.data) {
+          toast.error('Invalid Backup File', validation.error || 'The file is corrupt.');
+          setImportPayload(null);
+          setImportPreview(null);
+        } else {
+          setImportPayload(validation.data);
+          setImportPreview({
+            subjectsCount: validation.data.data.subjects.length,
+            topicsCount: validation.data.data.topics.length,
+            schedulesCount: validation.data.data.schedules.length,
+            screenshotsCount: Object.keys(validation.data.data.screenshots || {}).length,
+          });
+          toast.success(
+            'JSON Backup Loaded',
+            `Backup contains ${validation.data.data.subjects.length} subjects and ${validation.data.data.topics.length} topics.`
+          );
+        }
       }
-    };
-    reader.readAsText(file);
+    } catch (err: any) {
+      toast.error('File Read Failed', err.message || 'Could not parse backup file.');
+      setImportPayload(null);
+      setImportPreview(null);
+    } finally {
+      setIsLoadingFile(false);
+      // Reset input value so same file can be selected again if needed
+      e.target.value = '';
+    }
   };
 
   const handleRemoveDuplicates = () => {
@@ -115,11 +188,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   };
 
   const executeImport = (mode: 'overwrite' | 'merge') => {
-    if (!importFileContent) return;
-    const result = importData(importFileContent, mode);
+    if (!importPayload) return;
+    const result = importData(importPayload, mode);
     if (result.success) {
       toast.success('Import Successful', result.message);
-      setImportFileContent(null);
+      setImportPayload(null);
       setImportPreview(null);
       setConfirmImportMode(null);
       onClose();
@@ -141,8 +214,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             </div>
             <div>
               <h3 className="text-lg font-black tracking-tight">Application Settings & Data</h3>
-              <p className="text-xs text-slate-400">
-                Custom color palettes, local persistence, JSON backup exports & maintenance
+              <p className="text-xs text-slate-400 font-medium mt-0.5">
+                Customize appearance, manage local storage, and export full ZIP backups
               </p>
             </div>
           </div>
@@ -217,72 +290,122 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             </span>
           </div>
 
-          {/* Backup Export */}
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-2">
-            <div className="flex items-center justify-between">
+          {/* Full ZIP / JSON Export Card */}
+          <div className="p-5 rounded-3xl bg-slate-900/70 border border-slate-800/90 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Download className="w-4 h-4 text-cyan-400" />
-                  <span>Export Database Backup</span>
+                  <Archive className="w-4 h-4 text-emerald-400" />
+                  <span>Export Everything (.ZIP Archive)</span>
                 </h4>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Export subjects, hierarchical topics, tags, content blocks, and study sessions as a portable JSON file.
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed max-w-md">
+                  Export all subjects, hierarchical topics, notes, study sessions, PYQ progress, and all high-resolution question screenshot images packed into a compressed ZIP file.
                 </p>
               </div>
-              <button
-                onClick={handleExport}
-                className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white transition-all shrink-0"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Export JSON</span>
-              </button>
+
+              <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                {/* Main ZIP Export Button */}
+                <button
+                  type="button"
+                  onClick={handleExportZip}
+                  disabled={isExportingZip}
+                  className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-lg shadow-emerald-600/20 active:scale-95 disabled:opacity-50 cursor-pointer"
+                >
+                  {isExportingZip ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  ) : (
+                    <Archive className="w-4 h-4 text-white" />
+                  )}
+                  <span>{isExportingZip ? 'Exporting ZIP...' : 'Export Everything (.ZIP)'}</span>
+                </button>
+
+                {/* Secondary JSON Export Button */}
+                <button
+                  type="button"
+                  onClick={handleExportJson}
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors active:scale-95 cursor-pointer"
+                  title="Export database structure as JSON only"
+                >
+                  <FileJson className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>JSON Only</span>
+                </button>
+              </div>
             </div>
+
+            {/* ZIP Export Progress Indicator */}
+            {isExportingZip && zipExportProgress && (
+              <div className="p-3 rounded-2xl bg-slate-950/80 border border-emerald-500/30 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-emerald-400 font-semibold flex items-center gap-1.5">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    {zipExportProgress.msg}
+                  </span>
+                  <span className="font-mono font-bold text-emerald-300">
+                    {zipExportProgress.percent}%
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-300 ease-out shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                    style={{ width: `${zipExportProgress.percent}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Backup Import */}
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-3">
+          {/* Backup Import Card (.ZIP or .JSON) */}
+          <div className="p-5 rounded-3xl bg-slate-900/70 border border-slate-800/90 space-y-4">
             <div>
               <h4 className="text-sm font-bold text-white flex items-center gap-2">
                 <Upload className="w-4 h-4 text-purple-400" />
-                <span>Import Backup</span>
+                <span>Import Backup (.ZIP or .JSON)</span>
               </h4>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Restore a previously exported Topic Master JSON backup with schema validation.
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Restore a previously exported Topic Master `.zip` archive (with screenshots) or `.json` file with full schema validation and deduplication.
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer border border-slate-700 transition-colors">
-                <FileJson className="w-4 h-4 text-brand-400" />
-                <span>Select JSON File</span>
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 cursor-pointer border border-slate-700 transition-all hover:border-purple-500/50 shadow-sm active:scale-95">
+                {isLoadingFile ? (
+                  <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                ) : (
+                  <FileArchive className="w-4 h-4 text-purple-400" />
+                )}
+                <span>{isLoadingFile ? 'Reading file...' : 'Choose .ZIP or .JSON File'}</span>
                 <input
                   type="file"
-                  accept=".json,application/json"
+                  accept=".zip,.json,application/zip,application/x-zip-compressed,application/json"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
               </label>
 
               {importPreview && (
-                <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold bg-emerald-950/40 border border-emerald-500/30 px-3 py-1.5 rounded-xl">
+                <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold bg-emerald-950/40 border border-emerald-500/30 px-3.5 py-2 rounded-xl">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>
-                    Valid: {importPreview.subjectsCount} subjects, {importPreview.topicsCount} topics
+                    Valid Backup: {importPreview.subjectsCount} subjects, {importPreview.topicsCount} topics
+                    {importPreview.screenshotsCount > 0 && `, ${importPreview.screenshotsCount} screenshots`}
                   </span>
                 </div>
               )}
             </div>
 
             {importPreview && (
-              <div className="pt-2 flex items-center gap-3 border-t border-slate-800">
+              <div className="pt-3 flex flex-wrap items-center gap-3 border-t border-slate-800">
                 <button
+                  type="button"
                   onClick={() => setConfirmImportMode('merge')}
-                  className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                  className="px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-md shadow-indigo-600/20 active:scale-95 cursor-pointer"
                 >
                   Merge with Existing
                 </button>
                 <button
+                  type="button"
                   onClick={() => setConfirmImportMode('overwrite')}
-                  className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-500 text-white transition-colors"
+                  className="px-4 py-2 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-500 text-white transition-all shadow-md shadow-rose-600/20 active:scale-95 cursor-pointer"
                 >
                   Overwrite Entire Database
                 </button>
@@ -302,8 +425,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               </p>
             </div>
             <button
+              type="button"
               onClick={handleRemoveDuplicates}
-              className="px-4 py-2.5 text-xs font-bold rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 transition-all flex items-center gap-2 shrink-0 active:scale-95 shadow-glow-sm"
+              className="px-4 py-2.5 text-xs font-bold rounded-xl bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 transition-all flex items-center gap-2 shrink-0 active:scale-95 shadow-glow-sm cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-cyan-400" />
               <span>Remove Duplicates</span>
@@ -322,6 +446,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
               </p>
             </div>
             <button
+              type="button"
               onClick={() => setIsResetScreenshotsOpen(true)}
               className="px-4 py-2.5 text-xs font-bold rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 transition-all flex items-center gap-2 shrink-0 active:scale-95 shadow-glow-sm cursor-pointer"
             >
@@ -335,16 +460,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <h4 className="text-sm font-bold text-white">Database Reset & Maintenance</h4>
             <div className="flex flex-wrap items-center gap-3">
               <button
+                type="button"
                 onClick={() => setConfirmResetOpen(true)}
-                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors cursor-pointer active:scale-95"
               >
                 <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
                 <span>Reset to Sample CS Data</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => setConfirmClearOpen(true)}
-                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-rose-950/40 hover:bg-rose-950/70 text-rose-300 border border-rose-600/40 transition-colors"
+                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-rose-950/40 hover:bg-rose-950/70 text-rose-300 border border-rose-600/40 transition-colors cursor-pointer active:scale-95"
               >
                 <Trash2 className="w-3.5 h-3.5 text-rose-400" />
                 <span>Clear All Data</span>
@@ -360,13 +487,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         onClose={() => setConfirmResetOpen(false)}
         onConfirm={() => {
           resetToDemoData();
-          toast.success('Reset to Sample Data', 'Loaded standard CS subjects and topics.');
+          setConfirmResetOpen(false);
           onClose();
+          toast.success('Database Reset', 'Reset all subjects and topics to official sample syllabus.');
         }}
         variant="warning"
         title="Reset to Sample Data"
-        message="This will reload the initial Computer Science sample subjects and topic hierarchy. Any unsaved custom data will be replaced."
-        confirmText="Reset to Sample Data"
+        message="This will replace all your current subjects, topics, and study schedules with the default GATE CSE syllabus. Are you sure?"
+        confirmText="Yes, Reset Data"
       />
 
       {/* Confirmation for Clear All */}
@@ -375,33 +503,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         onClose={() => setConfirmClearOpen(false)}
         onConfirm={() => {
           clearAllData();
-          toast.info('Database Cleared', 'All subjects and topics have been removed.');
+          setConfirmClearOpen(false);
           onClose();
+          toast.success('Database Cleared', 'All subjects and topics have been removed.');
         }}
         variant="danger"
-        title="Clear All Study Data"
-        message="Are you sure you want to permanently clear all subjects, topics, notes, and study sessions? This cannot be undone."
-        confirmText="Clear Everything"
+        title="Clear All Data"
+        message="This will permanently delete all your custom subjects, topics, and schedules. This cannot be undone."
+        confirmText="Yes, Clear Everything"
       />
 
-      {/* Confirmation for Import Overwrite */}
+      {/* Confirmation for Import Overwrite / Merge */}
       <ConfirmationModal
         isOpen={confirmImportMode !== null}
         onClose={() => setConfirmImportMode(null)}
         onConfirm={() => {
-          if (confirmImportMode) executeImport(confirmImportMode);
+          if (confirmImportMode) {
+            executeImport(confirmImportMode);
+          }
         }}
         variant={confirmImportMode === 'overwrite' ? 'danger' : 'primary'}
-        title={`Confirm Backup Import (${confirmImportMode === 'overwrite' ? 'Overwrite' : 'Merge'})`}
+        title={confirmImportMode === 'overwrite' ? 'Overwrite Entire Database?' : 'Merge Backup Data?'}
         message={
           confirmImportMode === 'overwrite'
-            ? 'Warning: Overwrite mode will completely replace your current database with the backup data. Existing subjects and topics will be deleted.'
-            : 'Merge mode will add missing subjects and topics while updating existing matches.'
+            ? 'This will completely replace all existing subjects, topics, and question screenshots with the incoming backup archive.'
+            : 'This will add incoming subjects and topics to your existing database, deduplicating matching names automatically.'
         }
-        confirmText={`Proceed to ${confirmImportMode === 'overwrite' ? 'Overwrite' : 'Merge'}`}
+        confirmText={confirmImportMode === 'overwrite' ? 'Yes, Overwrite Database' : 'Yes, Merge Backup'}
       />
 
-      {/* Reset PYQ Screenshots by Subject Modal */}
+      {/* Reset PYQ Screenshots Subject-Wise Modal */}
       <ResetScreenshotsModal
         isOpen={isResetScreenshotsOpen}
         onClose={() => setIsResetScreenshotsOpen(false)}

@@ -83,7 +83,7 @@ export interface TopicMasterActions {
 
   // Global backup & maintenance
   exportData: () => string;
-  importData: (jsonData: string, mode: 'overwrite' | 'merge') => { success: boolean; message: string };
+  importData: (data: string | any, mode: 'overwrite' | 'merge') => { success: boolean; message: string };
   removeDuplicates: () => { removedSubjects: number; removedTopics: number };
   resetToDemoData: () => void;
   clearAllData: () => void;
