@@ -424,6 +424,20 @@ async function cleanPageForScreenshot(tabId) {
 }
 
 /**
+ * Convert Blob to Base64 in Service Worker without FileReader
+ */
+async function blobToBase64(blob) {
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+  }
+  return `data:${blob.type || 'image/jpeg'};base64,${btoa(binary)}`;
+}
+
+/**
  * Native OffscreenCanvas cropping inside service worker (CSP-proof)
  */
 async function cropImageInExtension(dataUrl, rect) {
@@ -449,11 +463,7 @@ async function cropImageInExtension(dataUrl, rect) {
     ctx.drawImage(imageBitmap, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
     const croppedBlob = await offscreen.convertToBlob({ type: 'image/jpeg', quality: 0.92 });
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(croppedBlob);
-    });
+    return await blobToBase64(croppedBlob);
   } catch (err) {
     console.warn('Offscreen crop fallback:', err);
     return dataUrl;
