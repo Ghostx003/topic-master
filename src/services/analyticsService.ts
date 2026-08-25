@@ -57,6 +57,10 @@ export interface SubjectTopicStat {
   msqCount: number;
   natCount: number;
   descriptiveCount: number;
+  historicalMcqCount: number;
+  historicalMsqCount: number;
+  historicalNatCount: number;
+  historicalDescriptiveCount: number;
   isHighFrequency: boolean;
   yieldTier: 'ultra' | 'high' | 'core';
 }
@@ -441,7 +445,17 @@ export function getTopTopicsToMasterPerSubject(
           descriptiveCount: number;
         }
       >;
-      chaptersAllTime: Map<string, { count: number; marks: number }>;
+      chaptersAllTime: Map<
+        string,
+        {
+          count: number;
+          marks: number;
+          mcqCount: number;
+          msqCount: number;
+          natCount: number;
+          descriptiveCount: number;
+        }
+      >;
     }
   >();
 
@@ -466,10 +480,34 @@ export function getTopTopicsToMasterPerSubject(
     const data = subjectMap.get(q.subject);
     if (!data) return;
 
+    const rawType = (q.type_of_question || 'MCQ').toUpperCase();
+    let isMsq = false;
+    let isNat = false;
+    let isDesc = false;
+
+    if (rawType.includes('MSQ')) {
+      isMsq = true;
+    } else if (rawType.includes('NAT')) {
+      isNat = true;
+    } else if (rawType.includes('DESC')) {
+      isDesc = true;
+    }
+
     // All-time count & marks
-    const hist = data.chaptersAllTime.get(q.chapter) || { count: 0, marks: 0 };
+    const hist = data.chaptersAllTime.get(q.chapter) || {
+      count: 0,
+      marks: 0,
+      mcqCount: 0,
+      msqCount: 0,
+      natCount: 0,
+      descriptiveCount: 0,
+    };
     hist.count++;
     hist.marks += qMarks;
+    if (isMsq) hist.msqCount++;
+    else if (isNat) hist.natCount++;
+    else if (isDesc) hist.descriptiveCount++;
+    else hist.mcqCount++;
     data.chaptersAllTime.set(q.chapter, hist);
 
     // In-range count & marks
@@ -477,20 +515,12 @@ export function getTopTopicsToMasterPerSubject(
       data.rangeTotal++;
       data.rangeMarks += qMarks;
 
-      const rawType = (q.type_of_question || 'MCQ').toUpperCase();
-      let isMsq = false;
-      let isNat = false;
-      let isDesc = false;
-
-      if (rawType.includes('MSQ')) {
+      if (isMsq) {
         data.msqCount++;
-        isMsq = true;
-      } else if (rawType.includes('NAT')) {
+      } else if (isNat) {
         data.natCount++;
-        isNat = true;
-      } else if (rawType.includes('DESC')) {
+      } else if (isDesc) {
         data.descriptiveCount++;
-        isDesc = true;
       } else {
         data.mcqCount++;
       }
@@ -545,6 +575,10 @@ export function getTopTopicsToMasterPerSubject(
         msqCount: stat.msqCount,
         natCount: stat.natCount,
         descriptiveCount: stat.descriptiveCount,
+        historicalMcqCount: hist.mcqCount,
+        historicalMsqCount: hist.msqCount,
+        historicalNatCount: hist.natCount,
+        historicalDescriptiveCount: hist.descriptiveCount,
         isHighFrequency: stat.count >= 3,
         yieldTier,
       };

@@ -695,25 +695,25 @@ export const AnalyticsDashboardPage: React.FC = () => {
                                   {topic.totalHistoricalCount} All-time PYQs <span className="text-emerald-400/90 font-mono font-semibold">({topic.totalHistoricalMarks}M)</span>
                                 </span>
                                 <span className="text-slate-600 text-[10px] hidden sm:inline">•</span>
-                                <div className="flex items-center gap-1 flex-wrap">
-                                  {topic.mcqCount > 0 && (
+                                <div className="flex items-center gap-1 flex-wrap" title="All-time Question Type Breakdown">
+                                  {topic.historicalMcqCount > 0 && (
                                     <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-blue-950/70 text-blue-300 border border-blue-500/30">
-                                      {topic.mcqCount} MCQ
+                                      {topic.historicalMcqCount} MCQ
                                     </span>
                                   )}
-                                  {topic.msqCount > 0 && (
+                                  {topic.historicalMsqCount > 0 && (
                                     <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-950/70 text-amber-300 border border-amber-500/30">
-                                      {topic.msqCount} MSQ
+                                      {topic.historicalMsqCount} MSQ
                                     </span>
                                   )}
-                                  {topic.natCount > 0 && (
+                                  {topic.historicalNatCount > 0 && (
                                     <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-cyan-950/70 text-cyan-300 border border-cyan-500/30">
-                                      {topic.natCount} NAT
+                                      {topic.historicalNatCount} NAT
                                     </span>
                                   )}
-                                  {topic.descriptiveCount > 0 && (
+                                  {topic.historicalDescriptiveCount > 0 && (
                                     <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-950/70 text-purple-300 border border-purple-500/30">
-                                      {topic.descriptiveCount} DESC
+                                      {topic.historicalDescriptiveCount} DESC
                                     </span>
                                   )}
                                 </div>
