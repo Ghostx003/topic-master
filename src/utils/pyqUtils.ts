@@ -1,14 +1,69 @@
 import { Topic, TopicTreeNodeType } from '../types/topic';
 import { PYQYearFilter, PYQQuestion } from '../types/pyq';
-import { getQuestionsForTopic, filterQuestionsByYear } from '../services/pyqService';
+import {
+  getQuestionsForTopic,
+  getQuestionsForSubject,
+  filterQuestionsByYear,
+} from '../services/pyqService';
 import { INITIAL_SUBJECTS } from './sampleData';
 
 const AUTHORITATIVE_PYQ_CACHE = new Map<string, number>();
 const AUTHORITATIVE_MARKS_CACHE = new Map<string, number>();
+const AUTHORITATIVE_SUBJECT_PYQ_CACHE = new Map<string, number>();
+const AUTHORITATIVE_SUBJECT_MARKS_CACHE = new Map<string, number>();
 
 export function clearAuthoritativePYQCache(): void {
   AUTHORITATIVE_PYQ_CACHE.clear();
   AUTHORITATIVE_MARKS_CACHE.clear();
+  AUTHORITATIVE_SUBJECT_PYQ_CACHE.clear();
+  AUTHORITATIVE_SUBJECT_MARKS_CACHE.clear();
+}
+
+/**
+ * Universal authoritative resolver for full Subject PYQ counts.
+ * Returns the exact count of unique questions for this subject in the database.
+ */
+export function getAuthoritativeSubjectPYQ(
+  subjectName: string,
+  yearFilter: PYQYearFilter = 'all'
+): number {
+  if (!subjectName) return 0;
+  const cacheKey = `${subjectName}::${yearFilter}`;
+  const cached = AUTHORITATIVE_SUBJECT_PYQ_CACHE.get(cacheKey);
+  if (cached !== undefined) return cached;
+
+  const allQuestions = getQuestionsForSubject(subjectName);
+  const filtered =
+    yearFilter === 'all' ? allQuestions : filterQuestionsByYear(allQuestions, yearFilter);
+  const result = filtered.length;
+
+  AUTHORITATIVE_SUBJECT_PYQ_CACHE.set(cacheKey, result);
+  return result;
+}
+
+/**
+ * Universal authoritative resolver for full Subject Total Marks.
+ */
+export function getAuthoritativeSubjectMarks(
+  subjectName: string,
+  yearFilter: PYQYearFilter = 'all'
+): number {
+  if (!subjectName) return 0;
+  const cacheKey = `${subjectName}::marks::${yearFilter}`;
+  const cached = AUTHORITATIVE_SUBJECT_MARKS_CACHE.get(cacheKey);
+  if (cached !== undefined) return cached;
+
+  const allQuestions = getQuestionsForSubject(subjectName);
+  const filtered =
+    yearFilter === 'all' ? allQuestions : filterQuestionsByYear(allQuestions, yearFilter);
+
+  let marksSum = 0;
+  for (const q of filtered) {
+    marksSum += q.marks || 1;
+  }
+
+  AUTHORITATIVE_SUBJECT_MARKS_CACHE.set(cacheKey, marksSum);
+  return marksSum;
 }
 
 /**
@@ -35,18 +90,20 @@ export function getAuthoritativeTopicPYQ(
   const collectedQuestionsMap = new Map<string, PYQQuestion>();
 
   function collect(node: any) {
-    const children = allTopics.length > 0
-      ? allTopics.filter((t) => t.Parent_Id === node.id)
-      : ('children' in node && Array.isArray(node.children))
-      ? node.children
-      : [];
+    const children =
+      allTopics.length > 0
+        ? allTopics.filter((t) => t.Parent_Id === node.id)
+        : 'children' in node && Array.isArray(node.children)
+        ? node.children
+        : [];
 
     if (children.length > 0) {
       children.forEach(collect);
     } else if (effSubjectName) {
       const name = node.Topic_Name || node.name || '';
       const matched = getQuestionsForTopic(effSubjectName, name, []);
-      const filtered = yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
+      const filtered =
+        yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
       filtered.forEach((q) => collectedQuestionsMap.set(q.id, q));
     }
   }
@@ -56,7 +113,8 @@ export function getAuthoritativeTopicPYQ(
   // If node itself had direct questions (e.g. leaf node or direct match)
   if (collectedQuestionsMap.size === 0 && effSubjectName) {
     const matched = getQuestionsForTopic(effSubjectName, topicOrNode.Topic_Name, []);
-    const filtered = yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
+    const filtered =
+      yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
     filtered.forEach((q) => collectedQuestionsMap.set(q.id, q));
   }
 
@@ -88,18 +146,20 @@ export function getAuthoritativeTopicMarks(
   const collectedQuestionsMap = new Map<string, PYQQuestion>();
 
   function collect(node: any) {
-    const children = allTopics.length > 0
-      ? allTopics.filter((t) => t.Parent_Id === node.id)
-      : ('children' in node && Array.isArray(node.children))
-      ? node.children
-      : [];
+    const children =
+      allTopics.length > 0
+        ? allTopics.filter((t) => t.Parent_Id === node.id)
+        : 'children' in node && Array.isArray(node.children)
+        ? node.children
+        : [];
 
     if (children.length > 0) {
       children.forEach(collect);
     } else if (effSubjectName) {
       const name = node.Topic_Name || node.name || '';
       const matched = getQuestionsForTopic(effSubjectName, name, []);
-      const filtered = yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
+      const filtered =
+        yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
       filtered.forEach((q) => collectedQuestionsMap.set(q.id, q));
     }
   }
@@ -108,7 +168,8 @@ export function getAuthoritativeTopicMarks(
 
   if (collectedQuestionsMap.size === 0 && effSubjectName) {
     const matched = getQuestionsForTopic(effSubjectName, topicOrNode.Topic_Name, []);
-    const filtered = yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
+    const filtered =
+      yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
     filtered.forEach((q) => collectedQuestionsMap.set(q.id, q));
   }
 
@@ -148,10 +209,9 @@ export function getPyqBadgeStyle(pyqCount: number): {
       label: 'text-amber-200',
     };
   }
-  // 1–14: green
   return {
     wrapper:
-      'bg-emerald-950/70 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)] ring-1 ring-emerald-500/20',
+      'bg-emerald-950/70 border-emerald-500/40 shadow-[0_0_8px_rgba(16,185,129,0.2)]',
     icon: 'text-emerald-400',
     label: 'text-emerald-200',
   };

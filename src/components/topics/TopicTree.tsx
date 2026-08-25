@@ -5,7 +5,11 @@ import { PYQYearFilter } from '../../types/pyq';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { buildTopicTree, calculateTopicProgress } from '../../utils/hierarchyUtils';
 import { formatHours } from '../../utils/timeUtils';
-import { getAuthoritativeTopicPYQ, getAuthoritativeTopicMarks } from '../../utils/pyqUtils';
+import {
+  getAuthoritativeTopicPYQ,
+  getAuthoritativeTopicMarks,
+  getAuthoritativeSubjectPYQ,
+} from '../../utils/pyqUtils';
 import { TopicTreeNode } from './TopicTreeNode';
 import { EmptyState } from '../common/EmptyState';
 import { Button } from '../common/Button';
@@ -76,14 +80,10 @@ export const TopicTree: React.FC<TopicTreeProps> = ({
     };
   }, [activeMenuTopicId]);
 
-  // Subject total PYQ sum based on active year filter
+  // Subject total PYQ count based on active year filter (Exact count from authoritative database)
   const subjectPYQs = useMemo(() => {
-    const rootTopics = topics.filter((t) => t.Subject_Id === subject.id && !t.Parent_Id);
-    const liveSum = rootTopics.length > 0
-      ? rootTopics.reduce((acc, t) => acc + getAuthoritativeTopicPYQ(t, topics, yearFilter, subject.Subject_Name), 0)
-      : 0;
-    return liveSum;
-  }, [topics, subject, yearFilter]);
+    return getAuthoritativeSubjectPYQ(subject.Subject_Name, yearFilter);
+  }, [subject.Subject_Name, yearFilter]);
 
   const getNodePYQ = (node: TopicTreeNodeType): number => {
     return getAuthoritativeTopicPYQ(node, topics, yearFilter, subject.Subject_Name);

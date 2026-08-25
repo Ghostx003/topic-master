@@ -1,7 +1,9 @@
 import React from 'react';
 import { Subject } from '../../types/subject';
-import { getAuthoritativeTopicPYQ, getAuthoritativeTopicMarks } from '../../utils/pyqUtils';
-import { getQuestionsForSubject } from '../../services/pyqService';
+import {
+  getAuthoritativeSubjectPYQ,
+  getAuthoritativeSubjectMarks,
+} from '../../utils/pyqUtils';
 import { SubjectImportancePill } from '../common/SubjectImportancePill';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { calculateTopicProgress } from '../../utils/hierarchyUtils';
@@ -105,15 +107,8 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onEdit, onDel
             size="md"
           />
           {(() => {
-            const rootTopics = topics.filter((t) => t.Subject_Id === subject.id && !t.Parent_Id);
-            const liveSum = rootTopics.length > 0
-              ? rootTopics.reduce((acc, t) => acc + getAuthoritativeTopicPYQ(t, topics, 'all', subject.Subject_Name), 0)
-              : 0;
-            const pyqCount = liveSum > 0 ? liveSum : getQuestionsForSubject(subject.Subject_Name).length;
-            const liveMarks = rootTopics.length > 0
-              ? rootTopics.reduce((acc, t) => acc + getAuthoritativeTopicMarks(t, topics, 'all', subject.Subject_Name), 0)
-              : 0;
-            const marksSum = liveMarks > 0 ? liveMarks : getQuestionsForSubject(subject.Subject_Name).reduce((acc, q) => acc + (q.marks || 1), 0);
+            const pyqCount = getAuthoritativeSubjectPYQ(subject.Subject_Name, 'all');
+            const marksSum = getAuthoritativeSubjectMarks(subject.Subject_Name, 'all');
 
             if (!pyqCount) return null;
             return (
