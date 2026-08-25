@@ -39,9 +39,9 @@ export type PYQFilterTab = 'all' | 'active' | 'completed' | 'doubts' | 'easy' | 
 
 const YEAR_FILTER_OPTIONS: { id: PYQYearFilter; label: string; desc: string }[] = [
   { id: 'all', label: 'All Years', desc: '1987 - 2026' },
-  { id: 'last_5_years', label: 'Last 5 Years', desc: '2020 - 2026' },
-  { id: 'last_10_years', label: 'Last 10 Years', desc: '2015 - 2026' },
-  { id: 'last_15_years', label: 'Last 15 Years', desc: '2010 - 2026' },
+  { id: 'last_5_years', label: 'Last 5 Years', desc: '2022 - 2026' },
+  { id: 'last_10_years', label: 'Last 10 Years', desc: '2017 - 2026' },
+  { id: 'last_15_years', label: 'Last 15 Years', desc: '2012 - 2026' },
   { id: '2008_2026', label: '2008 - 2026', desc: 'Online Era' },
   { id: 'older_than_2000', label: 'Older than 2000', desc: '< 2000' },
 ];

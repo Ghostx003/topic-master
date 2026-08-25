@@ -29,7 +29,8 @@ interface TopicMasterContextType extends TopicMasterState, TopicMasterActions {
     topicName: string,
     subjectName: string,
     subtopicNames?: string[],
-    initialSearch?: string
+    initialSearch?: string,
+    initialYearFilter?: PYQYearFilter
   ) => void;
   closePYQModal: () => void;
   yearFilter: PYQYearFilter;
@@ -1133,8 +1134,13 @@ export const TopicMasterProvider: React.FC<{ children: ReactNode }> = ({ childre
       topicName: string,
       subjectName: string,
       subtopicNames?: string[],
-      initialSearch?: string
+      initialSearch?: string,
+      initialYearFilter?: PYQYearFilter
     ) => {
+      if (initialYearFilter) {
+        setYearFilterState(initialYearFilter);
+        savePYQYearFilter(initialYearFilter);
+      }
       setActivePYQTopic({
         topicId,
         topicName,

@@ -210,11 +210,11 @@ export function filterQuestionsByYear(
     if (!y) return true;
     switch (filter) {
       case 'last_5_years':
-        return y >= 2020;
+        return y >= 2022 && y <= 2026;
       case 'last_10_years':
-        return y >= 2015;
+        return y >= 2017 && y <= 2026;
       case 'last_15_years':
-        return y >= 2010;
+        return y >= 2012 && y <= 2026;
       case '2008_2026':
         return y >= 2008 && y <= 2026;
       case 'older_than_2000':
