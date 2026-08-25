@@ -1176,12 +1176,12 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
             )}
           </div>
 
-          {/* Top Topics Breakdown */}
+          {/* Top Topics Breakdown (Scrollable List) */}
           <div className="space-y-2 pt-1 border-t border-slate-850">
             <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               <span className="flex items-center gap-1 text-brand-300">
                 <Sparkles className="w-3 h-3 text-brand-400" />
-                <span>Top Topics in {activeCellData.year}</span>
+                <span>Topics in {activeCellData.year} ({activeCellData.topTopics.length})</span>
               </span>
               <span className="text-brand-400 text-[10px] lowercase italic">click to practice</span>
             </div>
@@ -1191,7 +1191,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                 No specific topic breakdown available.
               </div>
             ) : (
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 max-h-[220px] sm:max-h-[260px] overflow-y-auto pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-slate-900/50">
                 {activeCellData.topTopics.map((topic, idx) => (
                   <div
                     key={`hover-topic-${topic.topicName}-${idx}`}

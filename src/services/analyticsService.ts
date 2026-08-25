@@ -309,7 +309,7 @@ export function getSubjectYearMatrix(
       const isMvp = isIncluded && count > 0 && yearMvps[y]?.subjectNames?.includes(subj);
       const pct = yTotal > 0 && isIncluded ? (count / yTotal) * 100 : 0;
 
-      // Extract top 5 topics for this subject in this year
+      // Extract all topics for this subject in this year (ranked by question count)
       const chapMap = countsBySubjYearChapter.get(subj)?.get(y);
       const topTopics: SubjectYearTopicStat[] = [];
       let topTopicsSum = 0;
@@ -318,7 +318,7 @@ export function getSubjectYearMatrix(
         const sortedChaps = Array.from(chapMap.entries())
           .sort((a, b) => b[1] - a[1]);
 
-        sortedChaps.slice(0, 5).forEach(([chapName, chapCount]) => {
+        sortedChaps.forEach(([chapName, chapCount]) => {
           topTopicsSum += chapCount;
           topTopics.push({
             topicName: chapName,
