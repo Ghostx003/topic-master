@@ -116,7 +116,7 @@ async function getStoredIdsFromWebsite() {
 }
 
 /**
- * Start or resume batch import for selected subjects
+ * Start or resume batch import for selected subjects (Only captures missing questions)
  */
 async function handleStartImport(subjects) {
   const response = await fetch(chrome.runtime.getURL('questions.json'));
@@ -125,37 +125,82 @@ async function handleStartImport(subjects) {
   const subjectSet = new Set(subjects);
   const targetQuestions = allQuestions.filter((q) => subjectSet.has(q.subject));
 
+  const storedIdsOnWebsite = await getStoredIdsFromWebsite();
   const storageData = await chrome.storage.local.get(null);
   const statuses = storageData.pyq_question_statuses || {};
 
-  importState.queue = targetQuestions;
+  const missingQuestions = [];
+  let existingCount = 0;
+
+  for (const q of targetQuestions) {
+    const hasInExt = Boolean(
+      storageData[`pyq_img_${q.id}`]?.dataUrl &&
+      storageData[`pyq_img_${q.id}`].dataUrl.startsWith('data:image')
+    );
+    const hasOnWeb = storedIdsOnWebsite.has(q.id);
+
+    if (hasInExt || hasOnWeb || statuses[q.id] === 'CAPTURED') {
+      existingCount++;
+      statuses[q.id] = 'CAPTURED';
+      if (hasInExt && !hasOnWeb) {
+        notifyWebTabs({
+          type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
+          questionId: q.id,
+          url: q.link,
+          subject: q.subject,
+          dataUrl: storageData[`pyq_img_${q.id}`].dataUrl,
+        });
+      }
+    } else {
+      missingQuestions.push(q);
+    }
+  }
+
+  await chrome.storage.local.set({ pyq_question_statuses: statuses });
+
+  if (missingQuestions.length === 0) {
+    importState.status = 'COMPLETED';
+    importState.queue = [];
+    importState.stats = {
+      total: targetQuestions.length,
+      captured: existingCount,
+      failed: 0,
+      skipped: existingCount,
+    };
+    saveState();
+    broadcastState();
+    return {
+      success: true,
+      missingCount: 0,
+      message: `✓ All ${targetQuestions.length} selected questions already have screenshots!`,
+      state: importState,
+    };
+  }
+
+  // Queue ONLY missing questions
+  importState.queue = missingQuestions;
   importState.selectedSubjects = subjects;
   importState.currentIndex = 0;
   importState.status = 'IMPORTING';
-
-  let alreadyCaptured = 0;
-  targetQuestions.forEach((q) => {
-    if (statuses[q.id] === 'CAPTURED' || storageData[`pyq_img_${q.id}`]) {
-      alreadyCaptured++;
-    }
-  });
-
   importState.stats = {
-    total: targetQuestions.length,
-    captured: alreadyCaptured,
+    total: missingQuestions.length,
+    captured: 0,
     failed: 0,
     skipped: 0,
   };
 
   saveState();
+  broadcastState();
   processNextInQueue();
-  return { success: true, state: importState };
+  return { success: true, missingCount: missingQuestions.length, state: importState };
 }
 
 /**
  * Forcefully check all questions for a subject:
- * Cross-references with website IndexedDB and chrome.storage.local,
- * clears false/stale 'CAPTURED' marks, and sequentially captures any missing questions!
+ * 1. Checks which questions already have screenshots in chrome.storage.local or website IndexedDB.
+ * 2. If already captured -> SKIPS IT and immediately relays to website tabs if needed.
+ * 3. If missing -> ENQUEUES ONLY THE MISSING QUESTIONS and captures them.
+ * 4. Informs the user of the exact number of missing questions.
  */
 async function handleForceCheckSubject(subject, forceAll = false) {
   const response = await fetch(chrome.runtime.getURL('questions.json'));
@@ -172,52 +217,62 @@ async function handleForceCheckSubject(subject, forceAll = false) {
   const storageData = await chrome.storage.local.get(null);
   const statuses = storageData.pyq_question_statuses || {};
 
-  const questionsToProcess = [];
-  const keysToRemove = [];
+  const missingQuestions = [];
+  let existingCount = 0;
 
   for (const q of targetQuestions) {
+    const hasInExtStorage = Boolean(
+      storageData[`pyq_img_${q.id}`]?.dataUrl &&
+      storageData[`pyq_img_${q.id}`].dataUrl.startsWith('data:image')
+    );
     const hasOnWebsite = storedIdsOnWebsite.has(q.id);
-    const hasInExtStorage = Boolean(storageData[`pyq_img_${q.id}`]?.dataUrl);
 
-    // If website is missing it, or extension storage is missing it, or in forceAll mode
-    if (forceAll || !hasOnWebsite || !hasInExtStorage) {
+    if (!forceAll && hasInExtStorage) {
+      existingCount++;
+      statuses[q.id] = 'CAPTURED';
+
+      // Relay to website tabs in case website didn't have it in its IndexedDB yet
+      if (!hasOnWebsite) {
+        notifyWebTabs({
+          type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
+          questionId: q.id,
+          url: q.link,
+          subject: q.subject,
+          dataUrl: storageData[`pyq_img_${q.id}`].dataUrl,
+        });
+      }
+    } else if (!forceAll && hasOnWebsite) {
+      existingCount++;
+      statuses[q.id] = 'CAPTURED';
+    } else {
+      // TRULY MISSING: Neither in extension storage nor in website IndexedDB
       delete statuses[q.id];
-      keysToRemove.push(`pyq_img_${q.id}`);
-      questionsToProcess.push(q);
-    } else if (hasInExtStorage) {
-      // Re-relay to website just to ensure 100% sync
-      notifyWebTabs({
-        type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
-        questionId: q.id,
-        url: q.link,
-        subject: q.subject,
-        dataUrl: storageData[`pyq_img_${q.id}`].dataUrl,
-      });
+      missingQuestions.push(q);
     }
   }
 
-  // Clean stale keys
-  if (keysToRemove.length > 0) {
-    await chrome.storage.local.remove(keysToRemove);
-  }
+  // Save updated statuses
   await chrome.storage.local.set({ pyq_question_statuses: statuses });
 
-  // If no questions missing
-  if (questionsToProcess.length === 0) {
+  // If 0 questions missing -> everything already exists!
+  if (missingQuestions.length === 0) {
+    broadcastState();
     return {
       success: true,
-      message: `All ${targetQuestions.length} questions in ${subject} verified and synchronized!`,
       missingCount: 0,
+      totalCount: targetQuestions.length,
+      existingCount: targetQuestions.length,
+      message: `✓ 0 missing! All ${targetQuestions.length} questions in ${subject} already have screenshots.`,
     };
   }
 
-  // Enqueue missing questions for live sequential capture
-  importState.queue = questionsToProcess;
+  // Enqueue ONLY the missing questions!
+  importState.queue = missingQuestions;
   importState.selectedSubjects = [subject];
   importState.currentIndex = 0;
   importState.status = 'IMPORTING';
   importState.stats = {
-    total: questionsToProcess.length,
+    total: missingQuestions.length,
     captured: 0,
     failed: 0,
     skipped: 0,
@@ -229,7 +284,10 @@ async function handleForceCheckSubject(subject, forceAll = false) {
 
   return {
     success: true,
-    missingCount: questionsToProcess.length,
+    missingCount: missingQuestions.length,
+    totalCount: targetQuestions.length,
+    existingCount: existingCount,
+    message: `Found ${missingQuestions.length} missing screenshot(s) in ${subject} (${existingCount} already exist). Capturing now...`,
     state: importState,
   };
 }
@@ -245,43 +303,50 @@ async function handleForceCheckAll() {
   const storageData = await chrome.storage.local.get(null);
   const statuses = storageData.pyq_question_statuses || {};
 
-  const questionsToProcess = [];
-  const keysToRemove = [];
+  const missingQuestions = [];
+  let existingCount = 0;
 
   for (const q of allQuestions) {
+    const hasInExtStorage = Boolean(
+      storageData[`pyq_img_${q.id}`]?.dataUrl &&
+      storageData[`pyq_img_${q.id}`].dataUrl.startsWith('data:image')
+    );
     const hasOnWebsite = storedIdsOnWebsite.has(q.id);
-    const hasInExtStorage = Boolean(storageData[`pyq_img_${q.id}`]?.dataUrl);
 
-    if (!hasOnWebsite || !hasInExtStorage) {
+    if (hasInExtStorage || hasOnWebsite) {
+      existingCount++;
+      statuses[q.id] = 'CAPTURED';
+      if (hasInExtStorage && !hasOnWebsite) {
+        notifyWebTabs({
+          type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
+          questionId: q.id,
+          url: q.link,
+          subject: q.subject,
+          dataUrl: storageData[`pyq_img_${q.id}`].dataUrl,
+        });
+      }
+    } else {
       delete statuses[q.id];
-      keysToRemove.push(`pyq_img_${q.id}`);
-      questionsToProcess.push(q);
-    } else if (hasInExtStorage) {
-      notifyWebTabs({
-        type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
-        questionId: q.id,
-        url: q.link,
-        subject: q.subject,
-        dataUrl: storageData[`pyq_img_${q.id}`].dataUrl,
-      });
+      missingQuestions.push(q);
     }
   }
 
-  if (keysToRemove.length > 0) {
-    await chrome.storage.local.remove(keysToRemove);
-  }
   await chrome.storage.local.set({ pyq_question_statuses: statuses });
 
-  if (questionsToProcess.length === 0) {
-    return { success: true, message: 'All questions across all subjects are 100% verified!', missingCount: 0 };
+  if (missingQuestions.length === 0) {
+    return {
+      success: true,
+      missingCount: 0,
+      message: `✓ 0 missing! All ${allQuestions.length} questions across all subjects already have screenshots.`,
+    };
   }
 
-  importState.queue = questionsToProcess;
-  importState.selectedSubjects = Array.from(new Set(questionsToProcess.map((q) => q.subject)));
+  importState.queue = missingQuestions;
+  importState.selectedSubjects = Array.from(new Set(missingQuestions.map((q) => q.subject)));
   importState.currentIndex = 0;
   importState.status = 'IMPORTING';
   importState.stats = {
-    total: questionsToProcess.length,
+    total: missingQuestions.length,
     captured: 0,
     failed: 0,
     skipped: 0,
@@ -293,7 +358,10 @@ async function handleForceCheckAll() {
 
   return {
     success: true,
-    missingCount: questionsToProcess.length,
+    missingCount: missingQuestions.length,
+    totalCount: allQuestions.length,
+    existingCount: existingCount,
+    message: `Found ${missingQuestions.length} missing screenshot(s) across all subjects (${existingCount} exist). Capturing now...`,
     state: importState,
   };
 }
@@ -693,11 +761,23 @@ async function processNextInQueue() {
   const storageData = await chrome.storage.local.get(['pyq_question_statuses', `pyq_img_${q.id}`]);
   const statuses = storageData.pyq_question_statuses || {};
 
-  if ((statuses[q.id] === 'CAPTURED' && storageData[`pyq_img_${q.id}`]) || storageData[`pyq_img_${q.id}`]) {
+  const hasExistingScreenshot = Boolean(
+    storageData[`pyq_img_${q.id}`]?.dataUrl &&
+    storageData[`pyq_img_${q.id}`].dataUrl.startsWith('data:image')
+  );
+
+  if (hasExistingScreenshot) {
     importState.currentIndex++;
     importState.stats.skipped = (importState.stats.skipped || 0) + 1;
+    notifyWebTabs({
+      type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
+      questionId: q.id,
+      url: q.link,
+      subject: q.subject,
+      dataUrl: storageData[`pyq_img_${q.id}`].dataUrl,
+    });
     broadcastState();
-    setTimeout(processNextInQueue, 30);
+    setTimeout(processNextInQueue, 20);
     return;
   }
 

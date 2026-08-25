@@ -124,9 +124,17 @@ function renderSubjectList() {
           forceAll: false,
         });
 
-        if (res && res.message) {
-          activeQuestionText.textContent = res.message;
-          activeQuestionText.style.color = '#34d399';
+        if (res) {
+          if (res.missingCount === 0) {
+            activeQuestionText.textContent = `✓ 0 missing! All ${data.total} questions in ${subj} already have screenshots.`;
+            activeQuestionText.style.color = '#34d399';
+          } else if (res.missingCount > 0) {
+            activeQuestionText.textContent = `Found ${res.missingCount} missing screenshots in ${subj} (${data.total - res.missingCount} already exist). Capturing ${res.missingCount} missing questions...`;
+            activeQuestionText.style.color = '#60a5fa';
+          } else if (res.message) {
+            activeQuestionText.textContent = res.message;
+            activeQuestionText.style.color = '#34d399';
+          }
         }
 
         await loadData();
