@@ -18,6 +18,8 @@ export interface PYQQuestion {
   questionNumber: number | string; // 1, 2, 3... or "1.3", "1-V"
   question_number?: string;
   text?: string; // e.g. "Balls In Bins: GATE CSE 1999 | Question: 1.3"
+  marks?: number; // 1, 2, 5 marks
+  type_of_question?: string; // "MCQ", "MSQ", "NAT", "Descriptive"
 }
 
 export interface PYQItemProgress {
