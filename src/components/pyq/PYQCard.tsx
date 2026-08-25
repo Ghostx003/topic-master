@@ -52,9 +52,9 @@ export const PYQCard: React.FC<PYQCardProps> = ({
       )}
     >
       {/* Top Row: Checkbox + Question Number + GATE Year + Solve Link */}
-      <div className="flex items-center justify-between gap-3 w-full">
-        {/* Left: Checkbox + Question # */}
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center justify-between gap-2.5 w-full flex-wrap sm:flex-nowrap">
+        {/* Left: Checkbox + Question # (Never Truncate) */}
+        <div className="flex items-center gap-2.5 shrink-0">
           <button
             type="button"
             onClick={(e) => {
@@ -76,26 +76,29 @@ export const PYQCard: React.FC<PYQCardProps> = ({
             )}
           </button>
 
-          <div className="min-w-0">
-            <span
-              className={clsx(
-                'text-sm sm:text-base font-bold tracking-tight block truncate transition-colors',
-                isCompleted
-                  ? 'text-slate-400 line-through'
-                  : 'text-white group-hover:text-brand-300'
-              )}
-            >
-              Question {question.questionNumber}
-            </span>
-          </div>
+          <span
+            className={clsx(
+              'text-sm sm:text-base font-bold tracking-tight whitespace-nowrap transition-colors',
+              isCompleted
+                ? 'text-slate-400 line-through'
+                : 'text-white group-hover:text-brand-300'
+            )}
+          >
+            Question {question.questionNumber}
+          </span>
         </div>
 
         {/* Right: GATE Year Badge + Solve Anchor Link */}
-        <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 shrink-0 min-w-0" onClick={(e) => e.stopPropagation()}>
           {question.year && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-mono font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-500/40 shadow-sm">
-              <Calendar className="w-3 h-3 text-indigo-400" />
-              <span>{question.year.startsWith('GATE') ? question.year : `GATE ${question.year}`}</span>
+            <span
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-mono font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-500/40 shadow-sm truncate max-w-[190px] sm:max-w-none"
+              title={question.year}
+            >
+              <Calendar className="w-3 h-3 text-indigo-400 shrink-0" />
+              <span className="truncate">
+                {question.year.startsWith('GATE') ? question.year : `GATE ${question.year}`}
+              </span>
             </span>
           )}
 
@@ -104,7 +107,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-950 hover:bg-brand-950/60 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95 cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-950 hover:bg-brand-950/60 text-slate-300 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95 cursor-pointer shrink-0"
             title="Open question on GateOverflow in a new tab"
           >
             <span>Solve</span>
