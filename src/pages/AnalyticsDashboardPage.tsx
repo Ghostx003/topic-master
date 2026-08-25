@@ -86,14 +86,15 @@ export const AnalyticsDashboardPage: React.FC = () => {
   const [masterySortAlpha, setMasterySortAlpha] = useState<boolean>(false);
 
   const [favouritesSearch, setFavouritesSearch] = useState<string>('');
-  const [favouritesSortDir, setFavouritesSortDir] = useState<SortDirection>('desc');
-  const [favouritesSortAlpha, setFavouritesSortAlpha] = useState<boolean>(false);
+  const [favouritesSortMode, setFavouritesSortMode] = useState<
+    'count_desc' | 'count_asc' | 'marks_desc' | 'marks_asc' | 'alpha'
+  >('count_desc');
 
   const [intelligenceSubTab, setIntelligenceSubTab] = useState<IntelligenceSubTab>('rising');
   const [intelligenceSearch, setIntelligenceSearch] = useState<string>('');
   const [intelligenceSortDir, setIntelligenceSortDir] = useState<SortDirection>('desc');
   const [intelligenceSortKey, setIntelligenceSortKey] = useState<
-    'range_count' | 'growth' | 'total_historical' | 'repeatability' | 'alpha'
+    'range_count' | 'range_marks' | 'growth' | 'total_historical' | 'total_historical_marks' | 'repeatability' | 'alpha'
   >('range_count');
 
   // Compute effective start and end years
@@ -203,20 +204,23 @@ export const AnalyticsDashboardPage: React.FC = () => {
         f.subjectName.toLowerCase().includes(favouritesSearch.toLowerCase())
     );
 
-    if (favouritesSortAlpha) {
-      return list.sort((a, b) =>
-        favouritesSortDir === 'desc'
-          ? b.topicName.localeCompare(a.topicName)
-          : a.topicName.localeCompare(b.topicName)
-      );
-    }
-
-    return list.sort((a, b) =>
-      favouritesSortDir === 'desc'
-        ? b.countInRange - a.countInRange || b.totalHistoricalCount - a.totalHistoricalCount
-        : a.countInRange - b.countInRange || a.totalHistoricalCount - b.totalHistoricalCount
-    );
-  }, [favouriteTopics, favouritesSearch, favouritesSortDir, favouritesSortAlpha]);
+    return list.sort((a, b) => {
+      if (favouritesSortMode === 'marks_desc') {
+        return (b.marksInRange || 0) - (a.marksInRange || 0) || b.countInRange - a.countInRange;
+      }
+      if (favouritesSortMode === 'marks_asc') {
+        return (a.marksInRange || 0) - (b.marksInRange || 0) || a.countInRange - b.countInRange;
+      }
+      if (favouritesSortMode === 'count_asc') {
+        return a.countInRange - b.countInRange || a.totalHistoricalCount - b.totalHistoricalCount;
+      }
+      if (favouritesSortMode === 'alpha') {
+        return a.topicName.localeCompare(b.topicName);
+      }
+      // Default: count_desc
+      return b.countInRange - a.countInRange || b.totalHistoricalCount - a.totalHistoricalCount;
+    });
+  }, [favouriteTopics, favouritesSearch, favouritesSortMode]);
 
   return (
     <div className="space-y-8 pb-28">
@@ -729,53 +733,58 @@ export const AnalyticsDashboardPage: React.FC = () => {
                 />
               </div>
 
-              {/* Sort Highest to Lowest / Lowest to Highest */}
-              <div className="flex items-center p-1 rounded-xl bg-slate-950 border border-slate-800">
+              {/* Sort Buttons */}
+              <div className="flex flex-wrap items-center p-1 rounded-xl bg-slate-950 border border-slate-800">
                 <span className="text-[11px] font-bold text-slate-400 px-2 uppercase tracking-wider hidden sm:inline">
                   Sort:
                 </span>
                 <button
-                  onClick={() => {
-                    setFavouritesSortAlpha(false);
-                    setFavouritesSortDir('desc');
-                  }}
+                  onClick={() => setFavouritesSortMode('count_desc')}
                   className={clsx(
                     'flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all',
-                    !favouritesSortAlpha && favouritesSortDir === 'desc'
+                    favouritesSortMode === 'count_desc'
                       ? 'bg-brand-500/20 text-brand-300 border border-brand-500/40 shadow-sm'
                       : 'text-slate-400 hover:text-white'
                   )}
-                  title="Sort Highest Questions to Lowest (Rank #1 first)"
+                  title="Sort Highest Questions to Lowest"
                 >
                   <ArrowDownWideNarrow className="w-3.5 h-3.5" />
-                  <span>Highest → Lowest</span>
+                  <span>Questions (High → Low)</span>
                 </button>
 
                 <button
-                  onClick={() => {
-                    setFavouritesSortAlpha(false);
-                    setFavouritesSortDir('asc');
-                  }}
+                  onClick={() => setFavouritesSortMode('marks_desc')}
                   className={clsx(
                     'flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all',
-                    !favouritesSortAlpha && favouritesSortDir === 'asc'
-                      ? 'bg-brand-500/20 text-brand-300 border border-brand-500/40 shadow-sm'
+                    favouritesSortMode === 'marks_desc'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
                       : 'text-slate-400 hover:text-white'
                   )}
-                  title="Sort Lowest Questions to Highest"
+                  title="Sort Highest Marks to Lowest"
                 >
-                  <ArrowUpNarrowWide className="w-3.5 h-3.5" />
-                  <span>Lowest → Highest</span>
+                  <ArrowDownWideNarrow className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Marks (High → Low)</span>
                 </button>
 
                 <button
-                  onClick={() => {
-                    setFavouritesSortAlpha(true);
-                    setFavouritesSortDir(favouritesSortDir === 'desc' ? 'asc' : 'desc');
-                  }}
+                  onClick={() => setFavouritesSortMode('marks_asc')}
+                  className={clsx(
+                    'flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all',
+                    favouritesSortMode === 'marks_asc'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  )}
+                  title="Sort Lowest Marks to Highest"
+                >
+                  <ArrowUpNarrowWide className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Marks (Low → High)</span>
+                </button>
+
+                <button
+                  onClick={() => setFavouritesSortMode('alpha')}
                   className={clsx(
                     'flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-all',
-                    favouritesSortAlpha
+                    favouritesSortMode === 'alpha'
                       ? 'bg-brand-500/20 text-brand-300 border border-brand-500/40 shadow-sm'
                       : 'text-slate-400 hover:text-white'
                   )}
@@ -796,21 +805,32 @@ export const AnalyticsDashboardPage: React.FC = () => {
                   <tr className="bg-slate-900/90 border-b border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
                     <th className="px-4 py-3.5 text-center min-w-[70px]">Rank</th>
                     <th className="px-4 py-3.5 min-w-[220px]">Topic & Chapter</th>
-                    <th className="px-4 py-3.5 min-w-[200px]">Subject</th>
+                    <th className="px-4 py-3.5 min-w-[180px]">Subject</th>
                     <th
-                      onClick={() => {
-                        setFavouritesSortAlpha(false);
-                        setFavouritesSortDir(favouritesSortDir === 'desc' ? 'asc' : 'desc');
-                      }}
-                      className="px-4 py-3.5 text-center min-w-[130px] cursor-pointer hover:bg-slate-850 select-none"
+                      onClick={() =>
+                        setFavouritesSortMode(favouritesSortMode === 'count_desc' ? 'count_asc' : 'count_desc')
+                      }
+                      className="px-4 py-3.5 text-center min-w-[120px] cursor-pointer hover:bg-slate-850 select-none"
                       title="Click to sort by questions in range"
                     >
                       <div className="flex items-center justify-center gap-1">
-                        <span>Questions in Range</span>
-                        <span>{favouritesSortDir === 'desc' ? '↓' : '↑'}</span>
+                        <span>Questions</span>
+                        <span>{favouritesSortMode === 'count_desc' ? '↓' : favouritesSortMode === 'count_asc' ? '↑' : ''}</span>
                       </div>
                     </th>
-                    <th className="px-4 py-3.5 text-center min-w-[110px]">Exam Share %</th>
+                    <th
+                      onClick={() =>
+                        setFavouritesSortMode(favouritesSortMode === 'marks_desc' ? 'marks_asc' : 'marks_desc')
+                      }
+                      className="px-4 py-3.5 text-center min-w-[120px] cursor-pointer hover:bg-slate-850 select-none text-emerald-400 font-black"
+                      title="Click to sort by marks in range"
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Marks in Range</span>
+                        <span>{favouritesSortMode === 'marks_desc' ? '↓' : favouritesSortMode === 'marks_asc' ? '↑' : ''}</span>
+                      </div>
+                    </th>
+                    <th className="px-4 py-3.5 text-center min-w-[100px]">Exam Share %</th>
                     <th className="px-4 py-3.5 text-center min-w-[110px]">All-Time PYQs</th>
                     <th className="px-4 py-3.5 text-center min-w-[100px]">Yield Tier</th>
                     <th className="px-4 py-3.5 text-right min-w-[100px]">Action</th>
@@ -864,6 +884,13 @@ export const AnalyticsDashboardPage: React.FC = () => {
                         {item.countInRange} Qs
                       </td>
 
+                      {/* Marks in Range */}
+                      <td className="px-4 py-3.5 text-center font-mono font-black text-xs">
+                        <span className="px-2 py-0.5 rounded-md font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                          {item.marksInRange} {item.marksInRange === 1 ? 'Mark' : 'Marks'}
+                        </span>
+                      </td>
+
                       {/* Exam Share */}
                       <td className="px-4 py-3.5 text-center font-mono font-bold text-brand-300">
                         {item.percentageOfRangeTotal}%
@@ -871,7 +898,7 @@ export const AnalyticsDashboardPage: React.FC = () => {
 
                       {/* All-time PYQs */}
                       <td className="px-4 py-3.5 text-center font-mono text-slate-400">
-                        {item.totalHistoricalCount} Qs
+                        {item.totalHistoricalCount} Qs ({item.totalHistoricalMarks} Marks)
                       </td>
 
                       {/* Yield Tier */}
@@ -1039,14 +1066,16 @@ export const AnalyticsDashboardPage: React.FC = () => {
                     value={intelligenceSortKey}
                     onChange={(e) =>
                       setIntelligenceSortKey(
-                        e.target.value as 'range_count' | 'growth' | 'total_historical' | 'repeatability' | 'alpha'
+                        e.target.value as 'range_count' | 'range_marks' | 'growth' | 'total_historical' | 'total_historical_marks' | 'repeatability' | 'alpha'
                       )
                     }
                     className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-white focus:border-brand-500 focus:outline-none"
                   >
                     <option value="range_count">Questions in Range</option>
+                    <option value="range_marks">Marks in Range</option>
                     <option value="growth">Growth / Delta</option>
                     <option value="total_historical">All-Time PYQs</option>
+                    <option value="total_historical_marks">All-Time Total Marks</option>
                     <option value="repeatability">Repeatability Score</option>
                     <option value="alpha">Topic Name (A-Z)</option>
                   </select>
@@ -1126,7 +1155,11 @@ export const AnalyticsDashboardPage: React.FC = () => {
                 diff = a.topicName.localeCompare(b.topicName);
                 return intelligenceSortDir === 'desc' ? -diff : diff;
               }
-              if (intelligenceSortKey === 'growth') {
+              if (intelligenceSortKey === 'range_marks') {
+                diff = (a.marksInRange || 0) - (b.marksInRange || 0) || a.countInRange - b.countInRange;
+              } else if (intelligenceSortKey === 'total_historical_marks') {
+                diff = (a.totalHistoricalMarks || 0) - (b.totalHistoricalMarks || 0) || a.totalHistorical - b.totalHistorical;
+              } else if (intelligenceSortKey === 'growth') {
                 diff = a.growthDelta - b.growthDelta;
               } else if (intelligenceSortKey === 'total_historical') {
                 diff = a.totalHistorical - b.totalHistorical;
@@ -1174,9 +1207,16 @@ export const AnalyticsDashboardPage: React.FC = () => {
                               </span>
                             </div>
 
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800 text-slate-300 border border-slate-700">
-                              {card.countInRange} Qs in Range
-                            </span>
+                            <div className="flex items-center gap-1.5 shrink-0 font-mono text-[10px]">
+                              <span className="px-2 py-0.5 rounded-md font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                                {card.countInRange} Qs
+                              </span>
+                              {card.marksInRange > 0 && (
+                                <span className="px-2 py-0.5 rounded-md font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                  {card.marksInRange} {card.marksInRange === 1 ? 'Mark' : 'Marks'}
+                                </span>
+                              )}
+                            </div>
                           </div>
 
                           {/* Topic Name */}

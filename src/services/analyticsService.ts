@@ -47,8 +47,10 @@ export interface SubjectMatrixResult {
 export interface SubjectTopicStat {
   topicName: string;
   questionCount: number;
+  marksInRange: number;
   percentageOfSubject: number;
   totalHistoricalCount: number;
+  totalHistoricalMarks: number;
   isHighFrequency: boolean;
   yieldTier: 'ultra' | 'high' | 'core';
 }
@@ -57,6 +59,7 @@ export interface SubjectMasteryReport {
   subjectName: string;
   subjectColor: string;
   totalQuestionsInRange: number;
+  totalMarksInRange: number;
   percentageOfExam: number;
   headsUpSummary: string;
   topTopics: SubjectTopicStat[];
@@ -69,7 +72,9 @@ export interface FavouriteTopicItem {
   subjectName: string;
   subjectColor: string;
   countInRange: number;
+  marksInRange: number;
   totalHistoricalCount: number;
+  totalHistoricalMarks: number;
   percentageOfRangeTotal: number;
   yieldTier: 'ultra' | 'high' | 'core';
   yearlyAverage: number;
@@ -95,7 +100,9 @@ export interface TopicIntelligenceCard {
   subjectName: string;
   subjectColor: string;
   countInRange: number;
+  marksInRange: number;
   totalHistorical: number;
+  totalHistoricalMarks: number;
   earlyRangeCount: number;
   lateRangeCount: number;
   growthDelta: number; // late - early
@@ -397,16 +404,18 @@ export function getTopTopicsToMasterPerSubject(
     string,
     {
       rangeTotal: number;
-      chaptersInRange: Map<string, number>;
-      chaptersAllTime: Map<string, number>;
+      rangeMarks: number;
+      chaptersInRange: Map<string, { count: number; marks: number }>;
+      chaptersAllTime: Map<string, { count: number; marks: number }>;
     }
   >();
 
   DEFAULT_SUBJECT_NAMES.forEach((subj) => {
     subjectMap.set(subj, {
       rangeTotal: 0,
-      chaptersInRange: new Map<string, number>(),
-      chaptersAllTime: new Map<string, number>(),
+      rangeMarks: 0,
+      chaptersInRange: new Map(),
+      chaptersAllTime: new Map(),
     });
   });
 
@@ -414,16 +423,24 @@ export function getTopTopicsToMasterPerSubject(
 
   ALL_PYQ_QUESTIONS.forEach((q) => {
     const y = extractYearNumber(q.year);
+    const qMarks = q.marks || 1;
     const data = subjectMap.get(q.subject);
     if (!data) return;
 
-    // All-time count
-    data.chaptersAllTime.set(q.chapter, (data.chaptersAllTime.get(q.chapter) || 0) + 1);
+    // All-time count & marks
+    const hist = data.chaptersAllTime.get(q.chapter) || { count: 0, marks: 0 };
+    hist.count++;
+    hist.marks += qMarks;
+    data.chaptersAllTime.set(q.chapter, hist);
 
-    // In-range count
+    // In-range count & marks
     if (y >= min && y <= max) {
       data.rangeTotal++;
-      data.chaptersInRange.set(q.chapter, (data.chaptersInRange.get(q.chapter) || 0) + 1);
+      data.rangeMarks += qMarks;
+      const r = data.chaptersInRange.get(q.chapter) || { count: 0, marks: 0 };
+      r.count++;
+      r.marks += qMarks;
+      data.chaptersInRange.set(q.chapter, r);
       if (includedSubjectNames.has(q.subject)) {
         totalQuestionsInRangeAllSubjects++;
       }
@@ -437,22 +454,24 @@ export function getTopTopicsToMasterPerSubject(
 
     const data = subjectMap.get(subj)!;
     const sortedChapters = Array.from(data.chaptersInRange.entries()).sort(
-      (a, b) => b[1] - a[1]
+      (a, b) => b[1].count - a[1].count
     );
 
-    const topTopics: SubjectTopicStat[] = sortedChapters.map(([chapter, count]) => {
-      const pctOfSubj = data.rangeTotal > 0 ? (count / data.rangeTotal) * 100 : 0;
-      const histCount = data.chaptersAllTime.get(chapter) || count;
+    const topTopics: SubjectTopicStat[] = sortedChapters.map(([chapter, stat]) => {
+      const pctOfSubj = data.rangeTotal > 0 ? (stat.count / data.rangeTotal) * 100 : 0;
+      const hist = data.chaptersAllTime.get(chapter) || stat;
       let yieldTier: 'ultra' | 'high' | 'core' = 'core';
-      if (count >= 10 || histCount >= 30) yieldTier = 'ultra';
-      else if (count >= 5 || histCount >= 15) yieldTier = 'high';
+      if (stat.count >= 10 || hist.count >= 30) yieldTier = 'ultra';
+      else if (stat.count >= 5 || hist.count >= 15) yieldTier = 'high';
 
       return {
         topicName: chapter,
-        questionCount: count,
+        questionCount: stat.count,
+        marksInRange: stat.marks,
         percentageOfSubject: Math.round(pctOfSubj * 10) / 10,
-        totalHistoricalCount: histCount,
-        isHighFrequency: count >= 3,
+        totalHistoricalCount: hist.count,
+        totalHistoricalMarks: hist.marks,
+        isHighFrequency: stat.count >= 3,
         yieldTier,
       };
     });
@@ -463,10 +482,10 @@ export function getTopTopicsToMasterPerSubject(
       const top1 = topTopics[0];
       const top2 = topTopics[1];
       const combinedPct = Math.round((top1.percentageOfSubject + top2.percentageOfSubject) * 10) / 10;
-      headsUpSummary = `Dominant topics: "${top1.topicName}" (${top1.questionCount} Qs) and "${top2.topicName}" (${top2.questionCount} Qs) account for ${combinedPct}% of ${subj} in ${min}–${max}.`;
+      headsUpSummary = `Dominant topics: "${top1.topicName}" (${top1.questionCount} Qs • ${top1.marksInRange} Marks) and "${top2.topicName}" (${top2.questionCount} Qs • ${top2.marksInRange} Marks) account for ${combinedPct}% of ${subj} in ${min}–${max}.`;
     } else if (topTopics.length === 1) {
       const top1 = topTopics[0];
-      headsUpSummary = `Primary focus: "${top1.topicName}" with ${top1.questionCount} questions (${top1.percentageOfSubject}% share) in ${min}–${max}.`;
+      headsUpSummary = `Primary focus: "${top1.topicName}" with ${top1.questionCount} questions (${top1.marksInRange} Marks, ${top1.percentageOfSubject}% share) in ${min}–${max}.`;
     } else {
       headsUpSummary = `No questions recorded for ${subj} in the ${min}–${max} window.`;
     }
@@ -480,6 +499,7 @@ export function getTopTopicsToMasterPerSubject(
       subjectName: subj,
       subjectColor: SUBJECT_COLOR_MAP[subj] || '#6366f1',
       totalQuestionsInRange: data.rangeTotal,
+      totalMarksInRange: data.rangeMarks,
       percentageOfExam: Math.round(pctOfExam * 10) / 10,
       headsUpSummary,
       topTopics,
@@ -510,7 +530,9 @@ export function getOverallFavouriteTopics(
       subjectName: string;
       topicName: string;
       rangeCount: number;
+      rangeMarks: number;
       historicalCount: number;
+      historicalMarks: number;
     }
   >();
 
@@ -520,21 +542,26 @@ export function getOverallFavouriteTopics(
     if (!includedSubjectNames.has(q.subject)) return;
 
     const key = `${q.subject}::${q.chapter}`;
+    const qMarks = q.marks || 1;
     if (!topicMap.has(key)) {
       topicMap.set(key, {
         subjectName: q.subject,
         topicName: q.chapter,
         rangeCount: 0,
+        rangeMarks: 0,
         historicalCount: 0,
+        historicalMarks: 0,
       });
     }
 
     const item = topicMap.get(key)!;
     item.historicalCount++;
+    item.historicalMarks += qMarks;
 
     const y = extractYearNumber(q.year);
     if (y >= min && y <= max) {
       item.rangeCount++;
+      item.rangeMarks += qMarks;
       totalRangeQuestions++;
     }
   });
@@ -558,7 +585,9 @@ export function getOverallFavouriteTopics(
       subjectName: t.subjectName,
       subjectColor: SUBJECT_COLOR_MAP[t.subjectName] || '#6366f1',
       countInRange: t.rangeCount,
+      marksInRange: t.rangeMarks,
       totalHistoricalCount: t.historicalCount,
+      totalHistoricalMarks: t.historicalMarks,
       percentageOfRangeTotal: Math.round(pct * 10) / 10,
       yieldTier,
       yearlyAverage: Math.round((t.rangeCount / numYears) * 100) / 100,
@@ -673,7 +702,9 @@ export function getTopicIntelligence(
       subject: string;
       chapter: string;
       totalHistorical: number;
+      totalHistoricalMarks: number;
       byYear: Record<number, number>;
+      byYearMarks: Record<number, number>;
     }
   >();
 
@@ -681,20 +712,25 @@ export function getTopicIntelligence(
     if (!includedSubjectNames.has(q.subject)) return;
 
     const key = `${q.subject}::${q.chapter}`;
+    const qMarks = q.marks || 1;
     if (!topicMap.has(key)) {
       topicMap.set(key, {
         subject: q.subject,
         chapter: q.chapter,
         totalHistorical: 0,
+        totalHistoricalMarks: 0,
         byYear: {},
+        byYearMarks: {},
       });
     }
 
     const entry = topicMap.get(key)!;
     entry.totalHistorical++;
+    entry.totalHistoricalMarks += qMarks;
     const y = extractYearNumber(q.year);
     if (y > 0) {
       entry.byYear[y] = (entry.byYear[y] || 0) + 1;
+      entry.byYearMarks[y] = (entry.byYearMarks[y] || 0) + qMarks;
     }
   });
 
@@ -707,13 +743,16 @@ export function getTopicIntelligence(
 
   topicMap.forEach((entry) => {
     let countInRange = 0;
+    let marksInRange = 0;
     let earlyCount = 0;
     let lateCount = 0;
     let yearsActiveInRange = 0;
 
     for (let y = min; y <= max; y++) {
       const c = entry.byYear[y] || 0;
+      const m = entry.byYearMarks[y] || 0;
       countInRange += c;
+      marksInRange += m;
       if (c > 0) yearsActiveInRange++;
       if (y <= midYear) earlyCount += c;
       else lateCount += c;
@@ -737,7 +776,9 @@ export function getTopicIntelligence(
       subjectName: entry.subject,
       subjectColor: SUBJECT_COLOR_MAP[entry.subject] || '#6366f1',
       countInRange,
+      marksInRange,
       totalHistorical: entry.totalHistorical,
+      totalHistoricalMarks: entry.totalHistoricalMarks,
       earlyRangeCount: earlyCount,
       lateRangeCount: lateCount,
       growthDelta,

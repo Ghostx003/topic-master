@@ -60,7 +60,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
 }) => {
   const { yearFilter, setYearFilter } = useTopicMaster();
   const [progress, setProgress] = useState<PYQProgressMap>(() => loadPYQProgress());
-  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'marks_desc' | 'marks_asc'>('newest');
   const [activeTab, setActiveTab] = useState<PYQFilterTab>('all');
   const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const [isCompletedSectionOpen, setIsCompletedSectionOpen] = useState(true);
@@ -104,9 +104,26 @@ export const PYQModal: React.FC<PYQModalProps> = ({
     return filterQuestionsByYear(rawTopicQuestions, yearFilter);
   }, [rawTopicQuestions, yearFilter, searchQuery]);
 
-  // Apply Sorting (Newest to Oldest or Oldest to Newest)
+  // Apply Sorting (Newest, Oldest, Marks High to Low, Marks Low to High)
   const sortedQuestions = useMemo(() => {
     const sorted = [...yearFilteredQuestions].sort((a, b) => {
+      const marksA = a.marks || 1;
+      const marksB = b.marks || 1;
+
+      if (sortOrder === 'marks_desc') {
+        if (marksB !== marksA) return marksB - marksA;
+        const yA = extractYearNumber(a.year);
+        const yB = extractYearNumber(b.year);
+        return yB - yA;
+      }
+
+      if (sortOrder === 'marks_asc') {
+        if (marksA !== marksB) return marksA - marksB;
+        const yA = extractYearNumber(a.year);
+        const yB = extractYearNumber(b.year);
+        return yB - yA;
+      }
+
       const yA = extractYearNumber(a.year);
       const yB = extractYearNumber(b.year);
       if (yA !== yB) {
@@ -391,15 +408,21 @@ export const PYQModal: React.FC<PYQModalProps> = ({
 
           {/* Right Section: Sort Toggle, Search, View Mode & Batch Actions */}
           <div className="flex items-center gap-2.5 shrink-0 flex-wrap justify-between xl:justify-end">
-            {/* Sort Toggle (Newest vs Oldest) */}
-            <button
-              onClick={() => setSortOrder((prev) => (prev === 'newest' ? 'oldest' : 'newest'))}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-300 border border-slate-800 transition-all select-none"
-              title="Toggle sort order"
-            >
-              <ArrowUpDown className="w-3.5 h-3.5 text-brand-400" />
-              <span>{sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}</span>
-            </button>
+            {/* Sort Selector Dropdown */}
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs shadow-sm">
+              <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as any)}
+                className="bg-transparent text-xs font-bold text-slate-200 focus:outline-none cursor-pointer pr-1"
+                title="Sort questions by Year or Marks"
+              >
+                <option value="newest" className="bg-slate-950 text-slate-200 font-semibold">Newest First</option>
+                <option value="oldest" className="bg-slate-950 text-slate-200 font-semibold">Oldest First</option>
+                <option value="marks_desc" className="bg-slate-950 text-emerald-300 font-bold">Marks: High → Low</option>
+                <option value="marks_asc" className="bg-slate-950 text-emerald-300 font-bold">Marks: Low → High</option>
+              </select>
+            </div>
 
             {/* Search Box */}
             <div className="relative flex-1 sm:w-56">

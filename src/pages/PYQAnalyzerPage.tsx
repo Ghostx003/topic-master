@@ -5,6 +5,7 @@ import { getAuthoritativeTopicPYQ } from '../utils/pyqUtils';
 import {
   ALL_PYQ_QUESTIONS,
   getQuestionsForSubject,
+  getQuestionsForTopic,
   filterQuestionsByYear,
   loadPYQProgress,
 } from '../services/pyqService';
@@ -27,6 +28,7 @@ import {
   CheckCircle2,
   CircleDot,
   Calendar,
+  ArrowUpDown,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -57,19 +59,24 @@ export const PYQAnalyzerPage: React.FC = () => {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [frequencyFilter, setFrequencyFilter] = useState<'all' | 'ultra' | 'high' | 'core' | 'done' | 'pending'>('all');
+  const [sortBy, setSortBy] = useState<'questions_desc' | 'questions_asc' | 'marks_desc' | 'marks_asc' | 'name_asc'>('questions_desc');
 
   const subjectsMap = useMemo(() => new Map(subjects.map((s) => [s.id, s])), [subjects]);
 
-  // Precompute O(1) PYQ count maps strictly from actually attached questions (filtered by yearFilter)
-  const { topicPyqMap, subjectPyqMap } = useMemo(() => {
+  // Precompute O(1) PYQ count & marks maps strictly from actually attached questions (filtered by yearFilter)
+  const { topicPyqMap, topicMarksMap, subjectPyqMap, subjectMarksMap } = useMemo(() => {
     const tMap = new Map<string, number>();
+    const tMarksMap = new Map<string, number>();
     const sMap = new Map<string, number>();
+    const sMarksMap = new Map<string, number>();
 
     // 1. Calculate for subjects once (strictly count attached questions in DB for yearFilter)
     subjects.forEach((s) => {
       const rawQs = getQuestionsForSubject(s.Subject_Name);
       const filteredQs = filterQuestionsByYear(rawQs, yearFilter);
       sMap.set(s.id, filteredQs.length);
+      const totalMarks = filteredQs.reduce((acc, q) => acc + (q.marks || 1), 0);
+      sMarksMap.set(s.id, totalMarks);
     });
 
     // 2. Calculate for every topic once (strictly attached questions in DB or sum of subtopics)
@@ -77,11 +84,21 @@ export const PYQAnalyzerPage: React.FC = () => {
       const subj = subjectsMap.get(t.Subject_Id);
       const count = getAuthoritativeTopicPYQ(t, topics, yearFilter, subj?.Subject_Name);
       tMap.set(t.id, count);
+
+      const subtopicNames = topics
+        .filter((child) => child.Parent_Id === t.id)
+        .map((c) => c.Topic_Name);
+      const qs = getQuestionsForTopic(subj?.Subject_Name || '', t.Topic_Name, subtopicNames);
+      const filteredTopicQs = filterQuestionsByYear(qs, yearFilter);
+      const marks = filteredTopicQs.reduce((acc, q) => acc + (q.marks || 1), 0);
+      tMarksMap.set(t.id, marks);
     });
 
     return {
       topicPyqMap: tMap,
+      topicMarksMap: tMarksMap,
       subjectPyqMap: sMap,
+      subjectMarksMap: sMarksMap,
     };
   }, [topics, subjects, subjectsMap, yearFilter]);
 
@@ -89,8 +106,16 @@ export const PYQAnalyzerPage: React.FC = () => {
     return topicPyqMap.get(topic.id) || 0;
   };
 
+  const getTopicMarks = (topic: Topic): number => {
+    return topicMarksMap.get(topic.id) || 0;
+  };
+
   const getSubjectPYQs = (subj: Subject): number => {
     return subjectPyqMap.get(subj.id) || 0;
+  };
+
+  const getSubjectMarks = (subj: Subject): number => {
+    return subjectMarksMap.get(subj.id) || 0;
   };
 
   // Overall Statistics - STRICTLY count actually attached questions for active yearFilter
@@ -101,6 +126,13 @@ export const PYQAnalyzerPage: React.FC = () => {
     const subj = subjectsMap.get(selectedSubjectId);
     return subj ? (subjectPyqMap.get(subj.id) || 0) : 0;
   }, [selectedSubjectId, subjectsMap, subjectPyqMap, yearFilter]);
+
+  const totalMarks = useMemo(() => {
+    const questions = selectedSubjectId === 'all'
+      ? filterQuestionsByYear(ALL_PYQ_QUESTIONS, yearFilter)
+      : filterQuestionsByYear(getQuestionsForSubject(subjectsMap.get(selectedSubjectId)?.Subject_Name || ''), yearFilter);
+    return questions.reduce((acc, q) => acc + (q.marks || 1), 0);
+  }, [selectedSubjectId, subjectsMap, yearFilter]);
 
   const completedPYQs = useMemo(() => {
     const progress = loadPYQProgress();
@@ -152,7 +184,7 @@ export const PYQAnalyzerPage: React.FC = () => {
     return counts;
   }, [topics, selectedSubjectId, topicPyqMap]);
 
-  // Filtered & Sorted Topics with PYQs (O(1) lookups)
+  // Filtered & Sorted Topics with PYQs and Marks
   const filteredTopics = useMemo(() => {
     let list = topics.filter((t) => (topicPyqMap.get(t.id) || 0) > 0 || t.Topic_Tags?.Star);
 
@@ -184,10 +216,35 @@ export const PYQAnalyzerPage: React.FC = () => {
       list = list.filter((t) => !t.Topic_Tags?.Done);
     }
 
-    // Sort descending by PYQ count
-    list.sort((a, b) => (topicPyqMap.get(b.id) || 0) - (topicPyqMap.get(a.id) || 0));
+    // Sort based on selected sortBy option
+    list.sort((a, b) => {
+      const countA = topicPyqMap.get(a.id) || 0;
+      const countB = topicPyqMap.get(b.id) || 0;
+      const marksA = topicMarksMap.get(a.id) || 0;
+      const marksB = topicMarksMap.get(b.id) || 0;
+
+      if (sortBy === 'marks_desc') {
+        if (marksB !== marksA) return marksB - marksA;
+        return countB - countA;
+      }
+      if (sortBy === 'marks_asc') {
+        if (marksA !== marksB) return marksA - marksB;
+        return countA - countB;
+      }
+      if (sortBy === 'questions_asc') {
+        if (countA !== countB) return countA - countB;
+        return a.Topic_Name.localeCompare(b.Topic_Name);
+      }
+      if (sortBy === 'name_asc') {
+        return a.Topic_Name.localeCompare(b.Topic_Name);
+      }
+      // Default: questions_desc
+      if (countB !== countA) return countB - countA;
+      return marksB - marksA;
+    });
+
     return list;
-  }, [topics, selectedSubjectId, searchQuery, frequencyFilter, topicPyqMap]);
+  }, [topics, selectedSubjectId, searchQuery, frequencyFilter, sortBy, topicPyqMap, topicMarksMap]);
 
   return (
     <div className="space-y-8 pb-28">
@@ -202,7 +259,10 @@ export const PYQAnalyzerPage: React.FC = () => {
               <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3 flex-wrap">
                 <span>GATE CSE PYQ Frequency Analyzer</span>
                 <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300">
-                  {totalPYQs} PYQs Active ({YEAR_FILTER_OPTIONS.find((o) => o.id === yearFilter)?.label})
+                  {totalPYQs} PYQs ({YEAR_FILTER_OPTIONS.find((o) => o.id === yearFilter)?.label})
+                </span>
+                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/40 text-emerald-300">
+                  {totalMarks} Marks
                 </span>
               </h1>
               <p className="text-sm text-slate-400 mt-1">
@@ -368,6 +428,7 @@ export const PYQAnalyzerPage: React.FC = () => {
           {/* Individual Subjects */}
           {sortedSubjects.map((subj) => {
             const pyqs = getSubjectPYQs(subj);
+            const marks = getSubjectMarks(subj);
             const isSelected = selectedSubjectId === subj.id;
 
             return (
@@ -397,10 +458,17 @@ export const PYQAnalyzerPage: React.FC = () => {
                   <span className="text-[10px] text-slate-400 font-mono">
                     {siteTotalYearPYQs > 0 ? Math.round((pyqs / siteTotalYearPYQs) * 100) : 0}% wt
                   </span>
-                  <span className="text-xs font-black font-mono text-amber-300 flex items-center gap-0.5">
-                    <Flame className="w-3 h-3 text-amber-400" />
-                    {pyqs}
-                  </span>
+                  <div className="flex items-center gap-1.5 font-mono text-xs font-black">
+                    <span className="text-amber-300 flex items-center gap-0.5">
+                      <Flame className="w-3 h-3 text-amber-400" />
+                      {pyqs}
+                    </span>
+                    {marks > 0 && (
+                      <span className="text-[10px] text-emerald-400 font-bold">
+                        • {marks}M
+                      </span>
+                    )}
+                  </div>
                 </div>
               </button>
             );
@@ -410,7 +478,7 @@ export const PYQAnalyzerPage: React.FC = () => {
 
       {/* Main Filter Toolbar & Ranked Topics Table */}
       <div className="space-y-4 pt-4">
-        {/* Search & Yield Category Filters */}
+        {/* Search & Sort Controls */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
@@ -431,8 +499,30 @@ export const PYQAnalyzerPage: React.FC = () => {
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
-            <span>Showing {filteredTopics.length} Ranked Topics</span>
+          <div className="flex items-center gap-3">
+            {/* Sort By Dropdown */}
+            <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs shadow-sm">
+              <ArrowUpDown className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="text-slate-400 text-[11px] font-bold uppercase tracking-wider hidden sm:inline">
+                Sort:
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="bg-transparent text-xs font-bold text-slate-200 focus:outline-none cursor-pointer pr-1"
+                title="Sort topics by questions, marks, or name"
+              >
+                <option value="questions_desc" className="bg-slate-950 text-slate-200">Most Questions First</option>
+                <option value="questions_asc" className="bg-slate-950 text-slate-200">Least Questions First</option>
+                <option value="marks_desc" className="bg-slate-950 text-emerald-300 font-bold">Highest Marks First</option>
+                <option value="marks_asc" className="bg-slate-950 text-emerald-300 font-bold">Lowest Marks First</option>
+                <option value="name_asc" className="bg-slate-950 text-slate-200">Topic Name (A → Z)</option>
+              </select>
+            </div>
+
+            <div className="text-xs font-semibold text-slate-400 whitespace-nowrap hidden lg:inline">
+              <span>{filteredTopics.length} Topics</span>
+            </div>
           </div>
         </div>
 
@@ -533,10 +623,10 @@ export const PYQAnalyzerPage: React.FC = () => {
             <thead className="bg-slate-950/80 text-[10px] uppercase font-bold text-slate-400 tracking-wider sticky top-0 z-10 border-b border-slate-800">
               <tr>
                 <th className="px-4 py-3 w-[8%] text-center">Done</th>
-                <th className="px-4 py-3 w-[45%]">Topic & Key Concept Summary</th>
-                <th className="px-4 py-3 w-[17%]">Subject</th>
-                <th className="px-4 py-3 w-[15%] text-center">PYQ Frequency</th>
-                <th className="px-4 py-3 w-[15%] text-right">Quick Actions</th>
+                <th className="px-4 py-3 w-[42%]">Topic & Key Concept Summary</th>
+                <th className="px-4 py-3 w-[16%]">Subject</th>
+                <th className="px-4 py-3 w-[18%] text-center">PYQs & Total Marks</th>
+                <th className="px-4 py-3 w-[16%] text-right">Quick Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">
@@ -549,6 +639,7 @@ export const PYQAnalyzerPage: React.FC = () => {
               ) : (
                 filteredTopics.map((topic) => {
                   const pyqs = getTopicPYQs(topic);
+                  const marks = getTopicMarks(topic);
                   const subj = subjectsMap.get(topic.Subject_Id);
                   const isStarred = Boolean(topic.Topic_Tags?.Star);
                   const isDone = Boolean(topic.Topic_Tags?.Done);
@@ -633,12 +724,12 @@ export const PYQAnalyzerPage: React.FC = () => {
                         </span>
                       </td>
 
-                      {/* PYQ Count Metric */}
+                      {/* PYQ Count & Total Marks Metric */}
                       <td className="px-4 py-3.5 text-center">
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 shadow-inner">
                           <span
                             className={clsx(
-                              'font-mono font-black text-sm',
+                              'font-mono font-black text-xs',
                               pyqs >= 30
                                 ? 'text-rose-400'
                                 : pyqs >= 15
@@ -648,6 +739,15 @@ export const PYQAnalyzerPage: React.FC = () => {
                           >
                             {pyqs > 0 ? `${pyqs} PYQs` : 'Core Concept'}
                           </span>
+
+                          {marks > 0 && (
+                            <span
+                              className="px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                              title={`${marks} Total Marks`}
+                            >
+                              {marks} {marks === 1 ? 'Mark' : 'Marks'}
+                            </span>
+                          )}
                         </div>
                       </td>
 
