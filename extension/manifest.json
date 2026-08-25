@@ -7,13 +7,11 @@
     "tabs",
     "activeTab",
     "storage",
+    "unlimitedStorage",
     "scripting"
   ],
   "host_permissions": [
-    "https://gateoverflow.in/*",
-    "http://localhost/*",
-    "http://127.0.0.1/*",
-    "*://*/*"
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "background.js"

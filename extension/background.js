@@ -241,7 +241,7 @@ async function processNextInQueue() {
     await new Promise((r) => setTimeout(r, 1400));
 
     // Step 5: Capture visible tab
-    const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
+    const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 90 });
 
     if (dataUrl && dataUrl.startsWith('data:image')) {
       // Step 6: Store screenshot in local storage
@@ -387,7 +387,7 @@ async function handleCaptureSpecific(questionId, url, subject) {
     await new Promise((r) => setTimeout(r, 1500));
 
     // 4. Capture visible tab
-    const dataUrl = await chrome.tabs.captureVisibleTab(captureTab.windowId, { format: 'png' });
+    const dataUrl = await chrome.tabs.captureVisibleTab(captureTab.windowId, { format: 'jpeg', quality: 90 });
 
     if (dataUrl && dataUrl.startsWith('data:image')) {
       const storageData = await chrome.storage.local.get('pyq_question_statuses');
