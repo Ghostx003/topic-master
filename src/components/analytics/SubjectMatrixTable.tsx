@@ -39,6 +39,7 @@ interface ActiveCellPopoverData {
   otherTopicsCount: number;
   rect: { top: number; left: number; right: number; bottom: number };
   isPinned: boolean;
+  isLastFourRows?: boolean;
 }
 
 interface SubjectMatrixTableProps {
@@ -205,6 +206,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
       isMvp: boolean;
       topTopics: SubjectYearTopicStat[];
       otherTopicsCount: number;
+      isLastFourRows?: boolean;
     }
   ) => {
     if (leaveTimeoutRef.current) {
@@ -238,6 +240,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
           bottom: rect.bottom,
         },
         isPinned: false,
+        isLastFourRows: Boolean(data.isLastFourRows),
       });
     }, 1700);
   };
@@ -254,6 +257,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
       isMvp: boolean;
       topTopics: SubjectYearTopicStat[];
       otherTopicsCount: number;
+      isLastFourRows?: boolean;
     }
   ) => {
     e.stopPropagation();
@@ -283,6 +287,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
           bottom: rect.bottom,
         },
         isPinned: true,
+        isLastFourRows: Boolean(data.isLastFourRows),
       };
     });
   };
@@ -659,6 +664,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                                 isMvp,
                                 topTopics: item.topTopics,
                                 otherTopicsCount: item.otherTopicsCount,
+                                isLastFourRows: rankIndex >= includedCount - 4,
                               })
                             }
                             onMouseEnter={(e) =>
@@ -672,6 +678,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                                 isMvp,
                                 topTopics: item.topTopics,
                                 otherTopicsCount: item.otherTopicsCount,
+                                isLastFourRows: rankIndex >= includedCount - 4,
                               })
                             }
                             onMouseLeave={handleCellMouseLeave}
@@ -872,8 +879,9 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
               </thead>
 
               <tbody className="divide-y divide-slate-850">
-                {sortedRows.map((row) => {
+                {sortedRows.map((row, rowIndex) => {
                   const isIncluded = row.included;
+                  const isLastFour = rowIndex >= sortedRows.length - 4;
 
                   return (
                     <tr
@@ -982,6 +990,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                                 isMvp,
                                 topTopics: cell?.topTopics || [],
                                 otherTopicsCount: cell?.otherTopicsCount || 0,
+                                isLastFourRows: isLastFour,
                               })
                             }
                             onMouseEnter={(e) =>
@@ -995,6 +1004,7 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
                                 isMvp,
                                 topTopics: cell?.topTopics || [],
                                 otherTopicsCount: cell?.otherTopicsCount || 0,
+                                isLastFourRows: isLastFour,
                               })
                             }
                             onMouseLeave={handleCellMouseLeave}
@@ -1118,33 +1128,45 @@ export const SubjectMatrixTable: React.FC<SubjectMatrixTableProps> = ({
 
       {/* ================= RICH INTERACTIVE & PINNABLE POPOVER ================= */}
       {activeCellData && (() => {
-        // ALWAYS place directly downwards underneath the subject cell so the subject is 100% visible
-        const topPosition = activeCellData.rect.bottom + 6;
+        // Last 4 rows: place hover box ABOVE the subject cell
+        // All other rows: place hover box BELOW the subject cell
+        const showOnTop = Boolean(activeCellData.isLastFourRows);
         const leftPosition = Math.max(
           12,
           Math.min(window.innerWidth - 340, activeCellData.rect.left - 12)
         );
-        const maxAvailableHeight = Math.max(220, window.innerHeight - topPosition - 20);
+
+        const positionStyles: React.CSSProperties = showOnTop
+          ? {
+              bottom: `${Math.max(10, window.innerHeight - activeCellData.rect.top + 6)}px`,
+              left: `${leftPosition}px`,
+              maxHeight: `${Math.max(220, activeCellData.rect.top - 20)}px`,
+            }
+          : {
+              top: `${activeCellData.rect.bottom + 6}px`,
+              left: `${leftPosition}px`,
+              maxHeight: `${Math.max(220, window.innerHeight - activeCellData.rect.bottom - 26)}px`,
+            };
 
         return (
           <div
             ref={popoverRef}
             className={clsx(
-              'fixed z-50 p-4 rounded-2xl bg-slate-950/98 shadow-[0_16px_50px_rgba(0,0,0,0.95)] backdrop-blur-2xl text-xs space-y-3 w-80 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150',
+              'fixed z-50 p-4 rounded-2xl bg-slate-950/98 shadow-[0_16px_50px_rgba(0,0,0,0.95)] backdrop-blur-2xl text-xs space-y-3 w-80 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150 overflow-y-auto custom-scrollbar',
               activeCellData.isPinned
                 ? 'border-2 border-brand-500 ring-4 ring-brand-500/20'
                 : 'border border-brand-500/40 ring-1 ring-white/10'
             )}
-            style={{
-              top: `${topPosition}px`,
-              left: `${leftPosition}px`,
-              maxHeight: `${maxAvailableHeight}px`,
-            }}
+            style={positionStyles}
             onMouseEnter={handlePopoverMouseEnter}
             onMouseLeave={handlePopoverMouseLeave}
           >
-            {/* Pointer arrow always pointing up directly to the subject cell above */}
-            <div className="absolute -top-1.5 left-6 w-3 h-3 bg-slate-950 rotate-45 border-l border-t border-brand-500/50 pointer-events-none" />
+            {/* Pointer arrow: pointing DOWN if placed above cell, or pointing UP if placed below cell */}
+            {showOnTop ? (
+              <div className="absolute -bottom-1.5 left-6 w-3 h-3 bg-slate-950 rotate-45 border-r border-b border-brand-500/50 pointer-events-none" />
+            ) : (
+              <div className="absolute -top-1.5 left-6 w-3 h-3 bg-slate-950 rotate-45 border-l border-t border-brand-500/50 pointer-events-none" />
+            )}
           {/* Header */}
           <div className="space-y-1">
             <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-800">
