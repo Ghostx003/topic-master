@@ -5,8 +5,10 @@
 let allQuestions = [];
 let subjectCounts = {};
 let selectedSubjects = new Set();
+let resetSelectedSubjects = new Set();
 let capturedStatusMap = {};
 let allSelected = false;
+let resetAllSelected = false;
 
 // DOM Elements
 const statusBadge = document.getElementById('statusBadge');
@@ -20,6 +22,15 @@ const toggleSelectAllBtn = document.getElementById('toggleSelectAllBtn');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const resumeBtn = document.getElementById('resumeBtn');
+
+// Reset Modal Elements
+const openResetBtn = document.getElementById('openResetBtn');
+const resetModal = document.getElementById('resetModal');
+const closeResetModalBtn = document.getElementById('closeResetModalBtn');
+const cancelResetBtn = document.getElementById('cancelResetBtn');
+const confirmResetBtn = document.getElementById('confirmResetBtn');
+const resetSubjectList = document.getElementById('resetSubjectList');
+const resetToggleAllBtn = document.getElementById('resetToggleAllBtn');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -52,6 +63,7 @@ async function loadData() {
     });
 
     renderSubjectList();
+    renderResetSubjectList();
   } catch (err) {
     console.error('Failed to load questions:', err);
   }
@@ -114,6 +126,65 @@ function renderSubjectList() {
   });
 }
 
+function renderResetSubjectList() {
+  resetSubjectList.innerHTML = '';
+  const subjects = Object.keys(subjectCounts).sort();
+
+  subjects.forEach((subj) => {
+    const data = subjectCounts[subj];
+    const isSelected = resetSelectedSubjects.has(subj);
+
+    const row = document.createElement('div');
+    row.className = `reset-subject-item ${isSelected ? 'selected' : ''}`;
+
+    const left = document.createElement('div');
+    left.className = 'subject-item-left';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'subject-checkbox';
+    checkbox.checked = isSelected;
+    checkbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        resetSelectedSubjects.add(subj);
+      } else {
+        resetSelectedSubjects.delete(subj);
+      }
+      updateResetModalState();
+    });
+
+    const name = document.createElement('span');
+    name.className = 'subject-name';
+    name.textContent = subj;
+
+    left.appendChild(checkbox);
+    left.appendChild(name);
+
+    const count = document.createElement('span');
+    count.className = 'subject-count';
+    count.textContent = `${data.captured} captured`;
+
+    row.appendChild(left);
+    row.appendChild(count);
+
+    row.addEventListener('click', (e) => {
+      if (e.target !== checkbox) {
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event('change'));
+      }
+    });
+
+    resetSubjectList.appendChild(row);
+  });
+
+  updateResetModalState();
+}
+
+function updateResetModalState() {
+  confirmResetBtn.disabled = resetSelectedSubjects.size === 0;
+  confirmResetBtn.textContent = `Reset Selected (${resetSelectedSubjects.size})`;
+}
+
 function setupListeners() {
   // Toggle Select All
   toggleSelectAllBtn.addEventListener('click', () => {
@@ -156,6 +227,52 @@ function setupListeners() {
     resumeBtn.disabled = true;
     await chrome.runtime.sendMessage({ type: 'RESUME_IMPORT' });
     await syncStateWithBackground();
+  });
+
+  // Open Reset Modal
+  openResetBtn.addEventListener('click', () => {
+    resetSelectedSubjects.clear();
+    renderResetSubjectList();
+    resetModal.style.display = 'flex';
+  });
+
+  // Close Reset Modal
+  closeResetModalBtn.addEventListener('click', () => {
+    resetModal.style.display = 'none';
+  });
+
+  cancelResetBtn.addEventListener('click', () => {
+    resetModal.style.display = 'none';
+  });
+
+  // Toggle All for Reset
+  resetToggleAllBtn.addEventListener('click', () => {
+    resetAllSelected = !resetAllSelected;
+    const subjects = Object.keys(subjectCounts);
+    if (resetAllSelected) {
+      subjects.forEach((s) => resetSelectedSubjects.add(s));
+      resetToggleAllBtn.textContent = 'Deselect All';
+    } else {
+      resetSelectedSubjects.clear();
+      resetToggleAllBtn.textContent = 'Select All';
+    }
+    renderResetSubjectList();
+  });
+
+  // Confirm Reset
+  confirmResetBtn.addEventListener('click', async () => {
+    if (resetSelectedSubjects.size === 0) return;
+    confirmResetBtn.disabled = true;
+    confirmResetBtn.textContent = 'Resetting...';
+
+    await chrome.runtime.sendMessage({
+      type: 'RESET_SUBJECTS_SCREENSHOTS',
+      subjects: Array.from(resetSelectedSubjects),
+    });
+
+    await loadData();
+    await syncStateWithBackground();
+    resetModal.style.display = 'none';
   });
 
   // Listen for real-time background messages

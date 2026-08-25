@@ -152,6 +152,42 @@ export async function deleteQuestionScreenshot(questionId: string): Promise<void
 }
 
 /**
+ * Delete screenshots for a list of subjects from IndexedDB
+ */
+export async function deleteScreenshotsBySubjects(subjectNames: string[]): Promise<number> {
+  const targetSubjects = new Set(subjectNames);
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const transaction = db.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        const records = (request.result as QuestionScreenshotRecord[]) || [];
+        let deletedCount = 0;
+        records.forEach((rec) => {
+          if (targetSubjects.has(rec.subject)) {
+            store.delete(rec.questionId);
+            screenshotMemoryCache.delete(rec.questionId);
+            deletedCount++;
+          }
+        });
+
+        // Dispatch window event so UI can re-render
+        window.dispatchEvent(new CustomEvent('pyq_screenshots_cleared', { detail: { subjects: subjectNames } }));
+        resolve(deletedCount);
+      };
+
+      request.onerror = () => resolve(0);
+    });
+  } catch (err) {
+    console.error('Failed to delete screenshots by subjects:', err);
+    return 0;
+  }
+}
+
+/**
  * Get screenshot capture statistics across all questions
  */
 export async function getScreenshotCaptureStats(): Promise<{

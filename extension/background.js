@@ -78,6 +78,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case 'GET_STORAGE_STATS':
       getStorageStats().then(sendResponse);
       return true;
+
+    case 'RESET_SUBJECTS_SCREENSHOTS':
+      handleResetSubjectsScreenshots(message.subjects).then(sendResponse);
+      return true;
   }
 });
 
@@ -737,4 +741,49 @@ async function getStorageStats() {
   });
 
   return { totalCaptured, totalKeys: Object.keys(storageData).length };
+}
+
+/**
+ * Reset screenshots for specific subjects from chrome.storage.local
+ */
+async function handleResetSubjectsScreenshots(subjectsToReset) {
+  if (!subjectsToReset || subjectsToReset.length === 0) {
+    return { success: false, error: 'No subjects specified' };
+  }
+
+  const targetSubjects = new Set(subjectsToReset);
+  const response = await fetch(chrome.runtime.getURL('questions.json'));
+  const allQuestions = await response.json();
+
+  const storageData = await chrome.storage.local.get(null);
+  const statuses = storageData.pyq_question_statuses || {};
+  const keysToRemove = [];
+
+  allQuestions.forEach((q) => {
+    if (targetSubjects.has(q.subject)) {
+      delete statuses[q.id];
+      keysToRemove.push(`pyq_img_${q.id}`);
+    }
+  });
+
+  if (keysToRemove.length > 0) {
+    await chrome.storage.local.remove(keysToRemove);
+  }
+  await chrome.storage.local.set({ pyq_question_statuses: statuses });
+
+  // If currently active queue has reset items, stop queue
+  if (importState.status === 'IMPORTING') {
+    importState.status = 'STOPPED';
+  }
+
+  saveState();
+  broadcastState();
+
+  // Notify web tabs to clear their local IndexedDB for these subjects as well
+  notifyWebTabs({
+    type: 'PYQ_SCREENSHOTS_RESET_NOTIFY',
+    subjects: subjectsToReset,
+  });
+
+  return { success: true, count: keysToRemove.length };
 }

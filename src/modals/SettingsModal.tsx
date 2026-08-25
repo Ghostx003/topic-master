@@ -5,6 +5,7 @@ import { BackupService } from '../services/backupService';
 import { Modal } from '../components/common/Modal';
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { ThemePalette } from '../types/store';
+import { ResetScreenshotsModal } from './ResetScreenshotsModal';
 import {
   Settings,
   Download,
@@ -16,6 +17,7 @@ import {
   Database,
   Palette,
   Sparkles,
+  Camera,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -50,6 +52,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [isResetScreenshotsOpen, setIsResetScreenshotsOpen] = useState(false);
   const [importFileContent, setImportFileContent] = useState<string | null>(null);
   const [importPreview, setImportPreview] = useState<{
     subjectsCount: number;
@@ -312,6 +315,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <h4 className="text-sm font-bold text-white">Database Reset & Maintenance</h4>
             <div className="flex flex-wrap items-center gap-3">
               <button
+                onClick={() => setIsResetScreenshotsOpen(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+              >
+                <Camera className="w-3.5 h-3.5 text-rose-400" />
+                <span>Reset PYQ Screenshots</span>
+              </button>
+
+              <button
                 onClick={() => setConfirmResetOpen(true)}
                 className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
               >
@@ -376,6 +387,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             : 'Merge mode will add missing subjects and topics while updating existing matches.'
         }
         confirmText={`Proceed to ${confirmImportMode === 'overwrite' ? 'Overwrite' : 'Merge'}`}
+      />
+
+      {/* Reset PYQ Screenshots by Subject Modal */}
+      <ResetScreenshotsModal
+        isOpen={isResetScreenshotsOpen}
+        onClose={() => setIsResetScreenshotsOpen(false)}
       />
     </>
   );
