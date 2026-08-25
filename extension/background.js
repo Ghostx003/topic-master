@@ -1,7 +1,7 @@
 /**
  * Topic Master — PYQ Screenshot Importer Background Service Worker (Manifest V3)
  * Sequential single-tab webpage capture with Cloudflare detection, persistent resume,
- * and automated element cleaner for distractions/sidebars.
+ * tall screenshot capture (longer questions + all options), and automated distraction cleaner.
  */
 
 let importState = {
@@ -157,14 +157,14 @@ async function handleStopImport() {
 }
 
 /**
- * Clean up page distractions (headers, search bar, sidebars, chat, notices) before taking screenshot
+ * Clean up page distractions (headers, search bar, sidebars, chat, notices) and optimize layout for tall screenshot
  */
 async function cleanPageForScreenshot(tabId) {
   try {
     await chrome.scripting.executeScript({
       target: { tabId },
       func: () => {
-        // Inject clean styles
+        // Inject clean styles with zoom for longer question capture
         const styleId = 'tm-clean-pyq-screenshot-style';
         let style = document.getElementById(styleId);
         if (!style) {
@@ -195,7 +195,15 @@ async function cleanPageForScreenshot(tabId) {
             .qa-feed,
             .qa-suggest-next,
             #q2a-chat-widget,
-            .qam-main-nav-wrapper {
+            .qam-main-nav-wrapper,
+            .qa-a-list,
+            .qa-c-list,
+            .qa-q-view-buttons,
+            .qa-a-form,
+            #anew,
+            .qa-a-list-title,
+            .qa-comment-button,
+            .qa-q-view-follows {
               display: none !important;
               visibility: hidden !important;
               height: 0 !important;
@@ -209,29 +217,40 @@ async function cleanPageForScreenshot(tabId) {
               margin: 0 !important;
               padding: 0 !important;
               overflow-x: hidden !important;
+              zoom: 0.86 !important;
             }
 
             .qa-body-wrapper {
               width: 100% !important;
               max-width: 100% !important;
               margin: 0 !important;
-              padding: 10px 24px !important;
+              padding: 8px 16px !important;
             }
 
             .qa-main {
               width: 100% !important;
-              max-width: 100% !important;
-              margin: 0 !important;
+              max-width: 1100px !important;
+              margin: 0 auto !important;
               float: none !important;
-              padding: 10px 0 !important;
+              padding: 0 !important;
             }
 
             .qa-q-view {
               width: 100% !important;
               max-width: 100% !important;
               margin: 0 !important;
-              padding: 10px 0 !important;
+              padding: 6px 0 20px 0 !important;
               border-bottom: none !important;
+            }
+
+            .entry-content {
+              font-size: 15px !important;
+              line-height: 1.6 !important;
+            }
+
+            .entry-content img {
+              max-width: 100% !important;
+              height: auto !important;
             }
           `;
           document.head.appendChild(style);
@@ -259,7 +278,11 @@ async function cleanPageForScreenshot(tabId) {
           '.qa-nav-user',
           '.qa-footer',
           '.qa-nav-footer',
-          '#q2a-chat-widget'
+          '#q2a-chat-widget',
+          '.qa-a-list',
+          '.qa-c-list',
+          '.qa-q-view-buttons',
+          '.qa-a-form'
         ];
 
         selectorsToHide.forEach((sel) => {
@@ -268,7 +291,7 @@ async function cleanPageForScreenshot(tabId) {
           });
         });
 
-        // Scroll question view to top
+        // Scroll question view to the very top
         const qElem =
           document.querySelector('.qa-q-view') ||
           document.querySelector('.entry-content') ||
@@ -335,10 +358,17 @@ async function processNextInQueue() {
       await chrome.tabs.update(tab.id, { url: q.link, active: true });
     }
 
-    // Step 2: Wait for tab navigation and DOM load
+    // Step 2: Ensure window is maximized for maximum capture height
+    if (tab.windowId) {
+      try {
+        await chrome.windows.update(tab.windowId, { state: 'maximized' });
+      } catch (_) {}
+    }
+
+    // Step 3: Wait for tab navigation and DOM load
     await waitForTabComplete(tab.id, 25000);
 
-    // Step 3: Check for Cloudflare / Security challenge
+    // Step 4: Check for Cloudflare / Security challenge
     const isSecurityChallenge = await checkForSecurityChallenge(tab.id);
     if (isSecurityChallenge) {
       importState.status = 'PAUSED_CLOUDFLARE';
@@ -348,15 +378,15 @@ async function processNextInQueue() {
       return;
     }
 
-    // Step 4: Clean page distractions (hide header, sidebars, chat) and position question
+    // Step 5: Clean page distractions, zoom out slightly to capture longer questions & all options
     await cleanPageForScreenshot(tab.id);
-    await new Promise((r) => setTimeout(r, 1400));
+    await new Promise((r) => setTimeout(r, 1500));
 
-    // Step 5: Capture visible tab
+    // Step 6: Capture visible tab
     const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'jpeg', quality: 90 });
 
     if (dataUrl && dataUrl.startsWith('data:image')) {
-      // Step 6: Store screenshot in local storage
+      // Step 7: Store screenshot in local storage
       statuses[q.id] = 'CAPTURED';
       await chrome.storage.local.set({
         pyq_question_statuses: statuses,
@@ -371,7 +401,7 @@ async function processNextInQueue() {
 
       importState.stats.captured++;
 
-      // Step 7: Broadcast captured image to all Topic Master web tabs
+      // Step 8: Broadcast captured image to all Topic Master web tabs
       notifyWebTabs({
         type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
         questionId: q.id,
@@ -470,6 +500,11 @@ async function handleCaptureSpecific(questionId, url, subject) {
   try {
     // 1. Create tab active so Chrome renders and paints it properly
     captureTab = await chrome.tabs.create({ url, active: true });
+    if (captureTab.windowId) {
+      try {
+        await chrome.windows.update(captureTab.windowId, { state: 'maximized' });
+      } catch (_) {}
+    }
     await waitForTabComplete(captureTab.id, 25000);
 
     const isChallenge = await checkForSecurityChallenge(captureTab.id);
@@ -477,9 +512,9 @@ async function handleCaptureSpecific(questionId, url, subject) {
       return { success: false, error: 'SECURITY_CHALLENGE' };
     }
 
-    // 2. Clean page distractions and scroll question into view
+    // 2. Clean page distractions and zoom out for tall screenshot
     await cleanPageForScreenshot(captureTab.id);
-    await new Promise((r) => setTimeout(r, 1400));
+    await new Promise((r) => setTimeout(r, 1500));
 
     // 3. Capture visible tab
     const dataUrl = await chrome.tabs.captureVisibleTab(captureTab.windowId, { format: 'jpeg', quality: 90 });

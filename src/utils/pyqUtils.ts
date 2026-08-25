@@ -1,5 +1,5 @@
 import { Topic, TopicTreeNodeType } from '../types/topic';
-import { PYQYearFilter } from '../types/pyq';
+import { PYQYearFilter, PYQQuestion } from '../types/pyq';
 import { getQuestionsForTopic, filterQuestionsByYear } from '../services/pyqService';
 import { INITIAL_SUBJECTS } from './sampleData';
 
@@ -13,7 +13,7 @@ export function clearAuthoritativePYQCache(): void {
 
 /**
  * Universal authoritative resolver for Topic & Subtopic PYQ counts.
- * Strictly counts questions actually present in the 3,683 GATE CSE database.
+ * Collects distinct questions (deduplicated by ID) present in the database.
  */
 export function getAuthoritativeTopicPYQ(
   topicOrNode: Topic | TopicTreeNodeType,
@@ -27,42 +27,40 @@ export function getAuthoritativeTopicPYQ(
   const cached = AUTHORITATIVE_PYQ_CACHE.get(cacheKey);
   if (cached !== undefined) return cached;
 
-  let result = 0;
-
-  // 1. Calculate sum from any child topics
-  let childrenSum = 0;
-  const children = allTopics.length > 0
-    ? allTopics.filter((t) => t.Parent_Id === topicOrNode.id)
-    : ('children' in topicOrNode && Array.isArray((topicOrNode as any).children))
-    ? (topicOrNode as any).children
-    : [];
-
-  if (children.length > 0) {
-    childrenSum = children.reduce(
-      (acc: number, c: any) => acc + getAuthoritativeTopicPYQ(c, allTopics, yearFilter, subjectName),
-      0
-    );
-  }
-
-  // 2. Look up direct questions attached to this topic
-  let directSum = 0;
   const effSubjectName =
     subjectName ||
     INITIAL_SUBJECTS.find((s) => s.id === topicOrNode.Subject_Id)?.Subject_Name ||
     '';
 
-  if (effSubjectName) {
-    const matchedQs = getQuestionsForTopic(effSubjectName, topicOrNode.Topic_Name, []);
-    if (matchedQs.length > 0) {
-      directSum = yearFilter === 'all'
-        ? matchedQs.length
-        : filterQuestionsByYear(matchedQs, yearFilter).length;
+  const collectedQuestionsMap = new Map<string, PYQQuestion>();
+
+  function collect(node: any) {
+    const children = allTopics.length > 0
+      ? allTopics.filter((t) => t.Parent_Id === node.id)
+      : ('children' in node && Array.isArray(node.children))
+      ? node.children
+      : [];
+
+    if (children.length > 0) {
+      children.forEach(collect);
+    } else if (effSubjectName) {
+      const name = node.Topic_Name || node.name || '';
+      const matched = getQuestionsForTopic(effSubjectName, name, []);
+      const filtered = yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
+      filtered.forEach((q) => collectedQuestionsMap.set(q.id, q));
     }
   }
 
-  // If children have question counts (e.g. Chapter level with subtopics), use childrenSum.
-  // Otherwise if node itself has attached questions, use directSum.
-  result = childrenSum > 0 ? childrenSum : directSum;
+  collect(topicOrNode);
+
+  // If node itself had direct questions (e.g. leaf node or direct match)
+  if (collectedQuestionsMap.size === 0 && effSubjectName) {
+    const matched = getQuestionsForTopic(effSubjectName, topicOrNode.Topic_Name, []);
+    const filtered = yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
+    filtered.forEach((q) => collectedQuestionsMap.set(q.id, q));
+  }
+
+  const result = collectedQuestionsMap.size;
   AUTHORITATIVE_PYQ_CACHE.set(cacheKey, result);
   return result;
 }
@@ -82,43 +80,45 @@ export function getAuthoritativeTopicMarks(
   const cached = AUTHORITATIVE_MARKS_CACHE.get(cacheKey);
   if (cached !== undefined) return cached;
 
-  let result = 0;
-
-  // 1. Calculate sum from any child topics
-  let childrenSum = 0;
-  const children = allTopics.length > 0
-    ? allTopics.filter((t) => t.Parent_Id === topicOrNode.id)
-    : ('children' in topicOrNode && Array.isArray((topicOrNode as any).children))
-    ? (topicOrNode as any).children
-    : [];
-
-  if (children.length > 0) {
-    childrenSum = children.reduce(
-      (acc: number, c: any) => acc + getAuthoritativeTopicMarks(c, allTopics, yearFilter, subjectName),
-      0
-    );
-  }
-
-  // 2. Look up direct questions attached to this topic
-  let directSum = 0;
   const effSubjectName =
     subjectName ||
     INITIAL_SUBJECTS.find((s) => s.id === topicOrNode.Subject_Id)?.Subject_Name ||
     '';
 
-  if (effSubjectName) {
-    const matchedQs = getQuestionsForTopic(effSubjectName, topicOrNode.Topic_Name, []);
-    if (matchedQs.length > 0) {
-      const filtered = yearFilter === 'all'
-        ? matchedQs
-        : filterQuestionsByYear(matchedQs, yearFilter);
-      directSum = filtered.reduce((acc, q) => acc + (q.marks || 1), 0);
+  const collectedQuestionsMap = new Map<string, PYQQuestion>();
+
+  function collect(node: any) {
+    const children = allTopics.length > 0
+      ? allTopics.filter((t) => t.Parent_Id === node.id)
+      : ('children' in node && Array.isArray(node.children))
+      ? node.children
+      : [];
+
+    if (children.length > 0) {
+      children.forEach(collect);
+    } else if (effSubjectName) {
+      const name = node.Topic_Name || node.name || '';
+      const matched = getQuestionsForTopic(effSubjectName, name, []);
+      const filtered = yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
+      filtered.forEach((q) => collectedQuestionsMap.set(q.id, q));
     }
   }
 
-  result = childrenSum > 0 ? childrenSum : directSum;
-  AUTHORITATIVE_MARKS_CACHE.set(cacheKey, result);
-  return result;
+  collect(topicOrNode);
+
+  if (collectedQuestionsMap.size === 0 && effSubjectName) {
+    const matched = getQuestionsForTopic(effSubjectName, topicOrNode.Topic_Name, []);
+    const filtered = yearFilter === 'all' ? matched : filterQuestionsByYear(matched, yearFilter);
+    filtered.forEach((q) => collectedQuestionsMap.set(q.id, q));
+  }
+
+  let marksSum = 0;
+  collectedQuestionsMap.forEach((q) => {
+    marksSum += q.marks || 1;
+  });
+
+  AUTHORITATIVE_MARKS_CACHE.set(cacheKey, marksSum);
+  return marksSum;
 }
 
 /**
