@@ -1,6 +1,7 @@
 /**
  * Topic Master — PYQ Screenshot Importer Background Service Worker (Manifest V3)
- * Sequential single-tab webpage capture with Cloudflare detection and persistent resume.
+ * Sequential single-tab webpage capture with Cloudflare detection, persistent resume,
+ * and automated element cleaner for distractions/sidebars.
  */
 
 let importState = {
@@ -93,7 +94,7 @@ async function handleStartImport(subjects) {
   const targetQuestions = allQuestions.filter((q) => subjectSet.has(q.subject));
 
   // Get already captured statuses from local storage
-  const storageData = await chrome.storage.local.get('pyq_question_statuses');
+  const storageData = await chrome.storage.local.get(null);
   const statuses = storageData.pyq_question_statuses || {};
 
   importState.queue = targetQuestions;
@@ -101,10 +102,10 @@ async function handleStartImport(subjects) {
   importState.currentIndex = 0;
   importState.status = 'IMPORTING';
 
-  // Calculate already captured
+  // Calculate already captured (including manual single-page captures)
   let alreadyCaptured = 0;
   targetQuestions.forEach((q) => {
-    if (statuses[q.id] === 'CAPTURED') {
+    if (statuses[q.id] === 'CAPTURED' || storageData[`pyq_img_${q.id}`]) {
       alreadyCaptured++;
     }
   });
@@ -156,6 +157,132 @@ async function handleStopImport() {
 }
 
 /**
+ * Clean up page distractions (headers, search bar, sidebars, chat, notices) before taking screenshot
+ */
+async function cleanPageForScreenshot(tabId) {
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        // Inject clean styles
+        const styleId = 'tm-clean-pyq-screenshot-style';
+        let style = document.getElementById(styleId);
+        if (!style) {
+          style = document.createElement('style');
+          style.id = styleId;
+          style.textContent = `
+            .sc-header-wrapper,
+            .qa-header,
+            .topbar-search-container,
+            .sc-logo-container,
+            .topbar-user-container,
+            .sc-logReg,
+            .qa-nav-user,
+            aside.qa-sidepanel,
+            .qa-sidepanel,
+            .qa-widgets-side,
+            .qa-notice-widget,
+            .q2a-chat-widget-wrap,
+            .q2a-chat-widget-container,
+            .qa-sidebar,
+            .as-widget,
+            .tagsearch-widget-container,
+            .qa-related-qs,
+            .qa-nav-cat-list,
+            .qa-activity-widget,
+            .qa-footer,
+            .qa-nav-footer,
+            .qa-feed,
+            .qa-suggest-next,
+            #q2a-chat-widget,
+            .qam-main-nav-wrapper {
+              display: none !important;
+              visibility: hidden !important;
+              height: 0 !important;
+              width: 0 !important;
+              opacity: 0 !important;
+              pointer-events: none !important;
+            }
+
+            body, html {
+              background: #ffffff !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              overflow-x: hidden !important;
+            }
+
+            .qa-body-wrapper {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 !important;
+              padding: 10px 24px !important;
+            }
+
+            .qa-main {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 !important;
+              float: none !important;
+              padding: 10px 0 !important;
+            }
+
+            .qa-q-view {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 !important;
+              padding: 10px 0 !important;
+              border-bottom: none !important;
+            }
+          `;
+          document.head.appendChild(style);
+        }
+
+        // Direct DOM Element hiding
+        const selectorsToHide = [
+          '.sc-header-wrapper',
+          'aside.qa-sidepanel',
+          '.qa-sidepanel',
+          '.qa-widgets-side',
+          '.qa-notice-widget',
+          '.q2a-chat-widget-wrap',
+          '.q2a-chat-widget-container',
+          '.qa-sidebar',
+          '.as-widget',
+          '.tagsearch-widget-container',
+          '.qa-related-qs',
+          '.qa-nav-cat-list',
+          '.qa-activity-widget',
+          '.topbar-search-container',
+          '.sc-logo-container',
+          '.topbar-user-container',
+          '.sc-logReg',
+          '.qa-nav-user',
+          '.qa-footer',
+          '.qa-nav-footer',
+          '#q2a-chat-widget'
+        ];
+
+        selectorsToHide.forEach((sel) => {
+          document.querySelectorAll(sel).forEach((el) => {
+            el.style.setProperty('display', 'none', 'important');
+          });
+        });
+
+        // Scroll question view to top
+        const qElem =
+          document.querySelector('.qa-q-view') ||
+          document.querySelector('.entry-content') ||
+          document.querySelector('.qa-main') ||
+          document.body;
+        if (qElem) {
+          qElem.scrollIntoView({ behavior: 'instant', block: 'start' });
+        }
+      },
+    });
+  } catch (_) {}
+}
+
+/**
  * Process the next question in the sequential queue
  */
 async function processNextInQueue() {
@@ -177,15 +304,16 @@ async function processNextInQueue() {
   const q = importState.queue[importState.currentIndex];
   importState.currentQuestion = q;
 
-  // Check if already captured in storage
+  // Check if already captured in storage OR manually added/captured
   const storageData = await chrome.storage.local.get(['pyq_question_statuses', `pyq_img_${q.id}`]);
   const statuses = storageData.pyq_question_statuses || {};
 
-  if (statuses[q.id] === 'CAPTURED' && storageData[`pyq_img_${q.id}`]) {
-    // Already captured, skip smoothly
+  if ((statuses[q.id] === 'CAPTURED' && storageData[`pyq_img_${q.id}`]) || storageData[`pyq_img_${q.id}`]) {
+    // Already captured or manually added, skip smoothly
     importState.currentIndex++;
+    importState.stats.skipped = (importState.stats.skipped || 0) + 1;
     broadcastState();
-    setTimeout(processNextInQueue, 40);
+    setTimeout(processNextInQueue, 30);
     return;
   }
 
@@ -220,24 +348,8 @@ async function processNextInQueue() {
       return;
     }
 
-    // Step 4: Scroll question view into position and wait for MathJax render
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: () => {
-          const qElem =
-            document.querySelector('.qa-q-view') ||
-            document.querySelector('.entry-content') ||
-            document.querySelector('.qa-main') ||
-            document.querySelector('article') ||
-            document.body;
-          if (qElem) {
-            qElem.scrollIntoView({ behavior: 'instant', block: 'start' });
-          }
-        },
-      });
-    } catch (_) {}
-
+    // Step 4: Clean page distractions (hide header, sidebars, chat) and position question
+    await cleanPageForScreenshot(tab.id);
     await new Promise((r) => setTimeout(r, 1400));
 
     // Step 5: Capture visible tab
@@ -284,7 +396,7 @@ async function processNextInQueue() {
   broadcastState();
 
   // Controlled delay between questions
-  setTimeout(processNextInQueue, 600);
+  setTimeout(processNextInQueue, 500);
 }
 
 /**
@@ -365,28 +477,11 @@ async function handleCaptureSpecific(questionId, url, subject) {
       return { success: false, error: 'SECURITY_CHALLENGE' };
     }
 
-    // 2. Scroll into view
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId: captureTab.id },
-        func: () => {
-          const qElem =
-            document.querySelector('.qa-q-view') ||
-            document.querySelector('.entry-content') ||
-            document.querySelector('.qa-main') ||
-            document.querySelector('article') ||
-            document.body;
-          if (qElem) {
-            qElem.scrollIntoView({ behavior: 'instant', block: 'start' });
-          }
-        },
-      });
-    } catch (_) {}
+    // 2. Clean page distractions and scroll question into view
+    await cleanPageForScreenshot(captureTab.id);
+    await new Promise((r) => setTimeout(r, 1400));
 
-    // 3. Wait for MathJax formulas and images
-    await new Promise((r) => setTimeout(r, 1500));
-
-    // 4. Capture visible tab
+    // 3. Capture visible tab
     const dataUrl = await chrome.tabs.captureVisibleTab(captureTab.windowId, { format: 'jpeg', quality: 90 });
 
     if (dataUrl && dataUrl.startsWith('data:image')) {
@@ -405,12 +500,12 @@ async function handleCaptureSpecific(questionId, url, subject) {
         },
       });
 
-      // 5. Close the temporary capture tab
+      // 4. Close the temporary capture tab
       try {
         await chrome.tabs.remove(captureTab.id);
       } catch (_) {}
 
-      // 6. Notify web tabs
+      // 5. Notify web tabs
       notifyWebTabs({
         type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
         questionId,

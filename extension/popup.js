@@ -35,7 +35,7 @@ async function loadData() {
     allQuestions = await response.json();
 
     // 2. Fetch already captured statuses from chrome.storage.local
-    const storage = await chrome.storage.local.get('pyq_question_statuses');
+    const storage = await chrome.storage.local.get(null);
     capturedStatusMap = storage.pyq_question_statuses || {};
 
     // 3. Count BY SUBJECT ONLY
@@ -46,7 +46,7 @@ async function loadData() {
         subjectCounts[subj] = { total: 0, captured: 0 };
       }
       subjectCounts[subj].total++;
-      if (capturedStatusMap[q.id] === 'CAPTURED') {
+      if (capturedStatusMap[q.id] === 'CAPTURED' || storage[`pyq_img_${q.id}`]) {
         subjectCounts[subj].captured++;
       }
     });
