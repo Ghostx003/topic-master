@@ -185,12 +185,12 @@ async function processNextInQueue() {
     // Already captured, skip smoothly
     importState.currentIndex++;
     broadcastState();
-    setTimeout(processNextInQueue, 50);
+    setTimeout(processNextInQueue, 40);
     return;
   }
 
   try {
-    // Step 1: Ensure single worker tab exists
+    // Step 1: Ensure worker tab exists and is active for capturing
     let tab = null;
     if (importState.workerTabId) {
       try {
@@ -201,10 +201,10 @@ async function processNextInQueue() {
     }
 
     if (!tab) {
-      tab = await chrome.tabs.create({ url: q.link, active: false });
+      tab = await chrome.tabs.create({ url: q.link, active: true });
       importState.workerTabId = tab.id;
     } else {
-      await chrome.tabs.update(tab.id, { url: q.link });
+      await chrome.tabs.update(tab.id, { url: q.link, active: true });
     }
 
     // Step 2: Wait for tab navigation and DOM load
@@ -215,14 +215,30 @@ async function processNextInQueue() {
     if (isSecurityChallenge) {
       importState.status = 'PAUSED_CLOUDFLARE';
       saveState();
-      // Bring tab to focus so user can solve CAPTCHA
       await chrome.tabs.update(tab.id, { active: true });
       broadcastState();
       return;
     }
 
-    // Step 4: Wait for MathJax and images to render properly
-    await new Promise((r) => setTimeout(r, 1500));
+    // Step 4: Scroll question view into position and wait for MathJax render
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: () => {
+          const qElem =
+            document.querySelector('.qa-q-view') ||
+            document.querySelector('.entry-content') ||
+            document.querySelector('.qa-main') ||
+            document.querySelector('article') ||
+            document.body;
+          if (qElem) {
+            qElem.scrollIntoView({ behavior: 'instant', block: 'start' });
+          }
+        },
+      });
+    } catch (_) {}
+
+    await new Promise((r) => setTimeout(r, 1400));
 
     // Step 5: Capture visible tab
     const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
@@ -267,8 +283,8 @@ async function processNextInQueue() {
   saveState();
   broadcastState();
 
-  // Controlled delay between questions (700ms)
-  setTimeout(processNextInQueue, 700);
+  // Controlled delay between questions
+  setTimeout(processNextInQueue, 600);
 }
 
 /**
@@ -285,7 +301,8 @@ async function checkForSecurityChallenge(tabId) {
           document.querySelector('#challenge-running') ||
           document.querySelector('.cf-browser-verification') ||
           document.querySelector('#cf-wrapper') ||
-          document.querySelector('.cf-turnstile-wrapper');
+          document.querySelector('.cf-turnstile-wrapper') ||
+          document.querySelector('#turnstile-wrapper');
 
         return (
           title.includes('just a moment') ||
@@ -339,16 +356,37 @@ function waitForTabComplete(tabId, timeoutMs = 20000) {
 async function handleCaptureSpecific(questionId, url, subject) {
   let captureTab = null;
   try {
-    captureTab = await chrome.tabs.create({ url, active: false });
+    // 1. Create tab active so Chrome renders and paints it properly
+    captureTab = await chrome.tabs.create({ url, active: true });
     await waitForTabComplete(captureTab.id, 25000);
 
     const isChallenge = await checkForSecurityChallenge(captureTab.id);
     if (isChallenge) {
-      await chrome.tabs.update(captureTab.id, { active: true });
       return { success: false, error: 'SECURITY_CHALLENGE' };
     }
 
+    // 2. Scroll into view
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: captureTab.id },
+        func: () => {
+          const qElem =
+            document.querySelector('.qa-q-view') ||
+            document.querySelector('.entry-content') ||
+            document.querySelector('.qa-main') ||
+            document.querySelector('article') ||
+            document.body;
+          if (qElem) {
+            qElem.scrollIntoView({ behavior: 'instant', block: 'start' });
+          }
+        },
+      });
+    } catch (_) {}
+
+    // 3. Wait for MathJax formulas and images
     await new Promise((r) => setTimeout(r, 1500));
+
+    // 4. Capture visible tab
     const dataUrl = await chrome.tabs.captureVisibleTab(captureTab.windowId, { format: 'png' });
 
     if (dataUrl && dataUrl.startsWith('data:image')) {
@@ -367,11 +405,28 @@ async function handleCaptureSpecific(questionId, url, subject) {
         },
       });
 
-      await chrome.tabs.remove(captureTab.id);
+      // 5. Close the temporary capture tab
+      try {
+        await chrome.tabs.remove(captureTab.id);
+      } catch (_) {}
+
+      // 6. Notify web tabs
+      notifyWebTabs({
+        type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
+        questionId,
+        url,
+        subject,
+        dataUrl,
+      });
+
       return { success: true, dataUrl };
     }
 
-    if (captureTab) await chrome.tabs.remove(captureTab.id);
+    if (captureTab) {
+      try {
+        await chrome.tabs.remove(captureTab.id);
+      } catch (_) {}
+    }
     return { success: false, error: 'Capture empty' };
   } catch (err) {
     if (captureTab) {
@@ -398,7 +453,7 @@ async function notifyWebTabs(payload) {
   for (const t of tabs) {
     if (
       t.url &&
-      (t.url.includes('localhost') || t.url.includes('127.0.0.1') || t.url.includes('topic-master'))
+      (t.url.includes('localhost') || t.url.includes('127.0.0.1') || t.url.includes('topic-master') || t.url.includes('vercel.app'))
     ) {
       chrome.tabs.sendMessage(t.id, payload).catch(() => {});
     }
