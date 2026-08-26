@@ -606,12 +606,8 @@ export const PYQTestReportView: React.FC<PYQTestReportViewProps> = ({
                         href={item.question.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          window.open(item.question.link, '_blank', 'noopener,noreferrer');
-                        }}
-                        className="flex items-center gap-1 text-[11px] text-brand-400 hover:text-brand-300 hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1 text-[11px] text-brand-400 hover:text-brand-300 hover:underline cursor-pointer"
                       >
                         <span>Discussion Forum Solution</span>
                         <ExternalLink className="w-3 h-3" />

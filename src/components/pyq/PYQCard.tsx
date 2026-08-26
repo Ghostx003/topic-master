@@ -230,11 +230,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
             href={question.link}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              window.open(question.link, '_blank', 'noopener,noreferrer');
-            }}
+            onClick={(e) => e.stopPropagation()}
             className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-850 text-slate-400 hover:text-white border border-slate-800 transition-all text-xs shadow-sm active:scale-95 cursor-pointer shrink-0"
             title="Open discussion on GateOverflow (new tab)"
           >
