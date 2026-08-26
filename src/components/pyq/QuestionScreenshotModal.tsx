@@ -210,6 +210,20 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
     }
   };
 
+  const openInNewTab = (url: string, e?: React.MouseEvent | React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
     if (!document.fullscreenElement) {
@@ -240,108 +254,94 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
   return (
     <div
       ref={containerRef}
-      className={clsx(
-        'fixed inset-0 z-[130] flex items-center justify-center bg-black/90 backdrop-blur-xl animate-fade-in font-sans',
-        isFullscreen ? 'p-0' : 'p-2 sm:p-4 md:p-6'
-      )}
+      className="fixed inset-0 z-[130] w-screen h-screen flex flex-col bg-[#030712] text-slate-100 overflow-hidden select-none animate-fade-in font-sans"
     >
-      {/* Modal Card */}
-      <div
-        className={clsx(
-          'relative w-full flex flex-col bg-[#080d1a] shadow-2xl overflow-hidden select-none transition-all',
-          isFullscreen
-            ? 'h-full w-full max-w-none max-h-none rounded-none border-none'
-            : 'max-w-5xl h-[92vh] max-h-[95vh] rounded-3xl border border-slate-800'
-        )}
-      >
-        {/* Header Bar */}
-        <header className="h-14 px-4 sm:px-6 bg-[#0a1020] border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
-          {/* Question Metadata Info & Left/Right Quick Switcher */}
-          <div className="flex items-center gap-2.5 truncate min-w-0">
-            {/* Prev / Next Header Navigator */}
-            {(hasPrevious || hasNext) && (
-              <div className="flex items-center gap-0.5 bg-slate-900/90 border border-slate-800 rounded-xl p-0.5 shrink-0 shadow-inner">
-                <button
-                  onClick={onNavigatePrevious}
-                  disabled={!hasPrevious}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
-                  title="Previous Question (← Arrow Left)"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                {typeof currentIndex === 'number' && typeof totalCount === 'number' && (
-                  <span className="text-[11px] font-mono font-black text-brand-300 px-1.5 select-none">
-                    {currentIndex + 1} / {totalCount}
-                  </span>
-                )}
-                <button
-                  onClick={onNavigateNext}
-                  disabled={!hasNext}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
-                  title="Next Question (→ Arrow Right)"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
+      {/* Header Bar */}
+      <header className="h-14 px-4 sm:px-6 bg-[#0a1020] border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
+        {/* Question Metadata Info & Left/Right Quick Switcher */}
+        <div className="flex items-center gap-2.5 truncate min-w-0">
+          {/* Prev / Next Header Navigator */}
+          {(hasPrevious || hasNext) && (
+            <div className="flex items-center gap-0.5 bg-slate-900/90 border border-slate-800 rounded-xl p-0.5 shrink-0 shadow-inner">
+              <button
+                onClick={onNavigatePrevious}
+                disabled={!hasPrevious}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                title="Previous Question (← Arrow Left)"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              {typeof currentIndex === 'number' && typeof totalCount === 'number' && (
+                <span className="text-[11px] font-mono font-black text-brand-300 px-1.5 select-none">
+                  {currentIndex + 1} / {totalCount}
+                </span>
+              )}
+              <button
+                onClick={onNavigateNext}
+                disabled={!hasNext}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                title="Next Question (→ Arrow Right)"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 hidden sm:inline shrink-0">
+            {question.subject}
+          </span>
+          <span className="text-slate-600 hidden sm:inline">•</span>
+          <span className="text-sm font-black text-white truncate">
+            {question.year} • Question {question.questionNumber}
+          </span>
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 shrink-0">
+            {question.marks || 1} {question.marks === 1 ? 'Mark' : 'Marks'}
+          </span>
+          <span
+            className={clsx(
+              'text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border shrink-0',
+              rawType === 'MSQ'
+                ? 'bg-purple-950/70 text-purple-300 border-purple-500/30'
+                : rawType === 'NAT'
+                ? 'bg-amber-950/70 text-amber-300 border-amber-500/30'
+                : rawType === 'Descriptive'
+                ? 'bg-indigo-950/70 text-indigo-300 border-indigo-500/30'
+                : 'bg-blue-950/70 text-blue-300 border-blue-500/30'
             )}
+          >
+            {rawType}
+          </span>
+        </div>
 
-            <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 hidden sm:inline shrink-0">
-              {question.subject}
+        {/* Header Actions */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Top Re-capture Button */}
+          <button
+            onClick={handleCapture}
+            disabled={isCapturing}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+            title="Re-capture screenshot"
+          >
+            {isCapturing ? (
+              <Loader2 className="w-3.5 h-3.5 text-brand-400 animate-spin" />
+            ) : (
+              <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+            )}
+            <span className="hidden sm:inline">
+              {isCapturing ? 'Capturing...' : 'Re-capture'}
             </span>
-            <span className="text-slate-600 hidden sm:inline">•</span>
-            <span className="text-sm font-black text-white truncate">
-              {question.year} • Question {question.questionNumber}
-            </span>
-            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 shrink-0">
-              {question.marks || 1} {question.marks === 1 ? 'Mark' : 'Marks'}
-            </span>
-            <span
-              className={clsx(
-                'text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border shrink-0',
-                rawType === 'MSQ'
-                  ? 'bg-purple-950/70 text-purple-300 border-purple-500/30'
-                  : rawType === 'NAT'
-                  ? 'bg-amber-950/70 text-amber-300 border-amber-500/30'
-                  : rawType === 'Descriptive'
-                  ? 'bg-indigo-950/70 text-indigo-300 border-indigo-500/30'
-                  : 'bg-blue-950/70 text-blue-300 border-blue-500/30'
-              )}
-            >
-              {rawType}
-            </span>
-          </div>
+          </button>
 
-          {/* Header Actions */}
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Top Re-capture Button */}
-            <button
-              onClick={handleCapture}
-              disabled={isCapturing}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
-              title="Re-capture screenshot"
-            >
-              {isCapturing ? (
-                <Loader2 className="w-3.5 h-3.5 text-brand-400 animate-spin" />
-              ) : (
-                <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
-              )}
-              <span className="hidden sm:inline">
-                {isCapturing ? 'Capturing...' : 'Re-capture'}
-              </span>
-            </button>
-
-            {/* Go to Discussion Link */}
-            <a
-              href={question.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition-all active:scale-95 cursor-pointer"
-              title="Open official discussion on GateOverflow (O)"
-            >
-              <span>Discussion</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+          {/* Go to Discussion Link */}
+          <button
+            type="button"
+            onClick={(e) => openInNewTab(question.link, e)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition-all active:scale-95 cursor-pointer"
+            title="Open official question discussion on GateOverflow in a new tab (O)"
+          >
+            <span>Discussion</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
 
             {/* Mark Done */}
             {onToggleCompleted && (
@@ -553,16 +553,14 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
                   )}
                 </button>
 
-                <a
-                  href={question.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                <button
+                  type="button"
+                  onClick={(e) => openInNewTab(question.link, e)}
                   className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all active:scale-95 cursor-pointer"
                 >
                   <span>Discussion</span>
                   <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                </a>
+                </button>
               </div>
 
               <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-800 flex items-center justify-center gap-1.5">
@@ -753,16 +751,14 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
                     {checkResult.correctAnswerFormatted}
                   </strong>
                 </span>
-                <a
-                  href={question.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                <button
+                  type="button"
+                  onClick={(e) => openInNewTab(question.link, e)}
                   className="text-[11px] text-brand-400 hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <span>View GateOverflow Discussion</span>
                   <ExternalLink className="w-3 h-3" />
-                </a>
+                </button>
               </div>
               <p className="text-slate-300 leading-relaxed text-[11px] font-sans">
                 {checkResult.explanation}
@@ -770,7 +766,6 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
             </div>
           )}
         </div>
-      </div>
 
       {/* Edit Answer Key / Having Issue Modal */}
       {isEditModalOpen && question && (

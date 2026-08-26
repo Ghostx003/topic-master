@@ -12,8 +12,7 @@ import {
   CheckCircle2,
   XCircle,
   ExternalLink,
-  PanelLeftClose,
-  PanelLeft,
+  Layers,
   Search,
   Timer,
   Play,
@@ -283,7 +282,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
           if (activeQuestion) handleSetDifficulty('skip');
           break;
         case 'o':
-          if (activeQuestion) window.open(activeQuestion.link, '_blank', 'noopener,noreferrer');
+          if (activeQuestion) openInNewTab(activeQuestion.link);
           break;
         case 't':
         case ' ':
@@ -365,9 +364,23 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
       if (result) {
         setScreenshotData(result);
       }
-    } finally {
+} finally {
       setIsCapturingSpecific(false);
     }
+  };
+
+  const openInNewTab = (url: string, e?: React.MouseEvent | React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const toggleFullscreen = () => {
@@ -420,27 +433,33 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
                 ? 'bg-brand-500/20 text-brand-300 border-brand-500/40 shadow-sm'
                 : 'bg-slate-900 text-slate-400 hover:text-white border-slate-800 hover:border-slate-700'
             )}
-            title={isPlaylistOpen ? 'Collapse Playlist (\\)' : 'Expand Playlist (\\)'}
+            title="Toggle Question Playlist (Shortcut: \)"
           >
-            {isPlaylistOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
+            <Layers className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-2 truncate">
-            <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 shrink-0 hidden md:inline">
+          {/* Quick Navigator Counter */}
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 shrink-0 hidden sm:inline">
               {subjectName}
             </span>
-            <span className="text-slate-600 hidden md:inline">•</span>
-            <span className="text-sm font-bold text-white truncate">
-              {topicName}
+            <span className="text-slate-600 hidden sm:inline">•</span>
+            <span className="text-xs font-mono font-black text-brand-300 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded-lg">
+              {currentIndex + 1} / {questions.length}
             </span>
-            <span className="text-xs font-mono font-bold text-brand-300 bg-brand-500/15 border border-brand-500/30 px-2 py-0.5 rounded-lg shrink-0">
-              Q {currentIndex + 1} of {questions.length}
+            <span className="text-slate-600 hidden sm:inline">•</span>
+            <span className="text-xs font-bold text-slate-200 truncate hidden sm:inline">
+              {activeQuestion.year}
+            </span>
+            <span className="text-slate-600 hidden md:inline">•</span>
+            <span className="text-xs font-medium text-slate-400 truncate hidden md:inline">
+              {topicName || activeQuestion.chapter}
             </span>
           </div>
         </div>
 
-        {/* Center: [ < Prev ] ........ [ TIMER WIDGET (CENTERED) ] ........ [ Next > ] */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Center: Previous / Next Navigator */}
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={handlePrevQuestion}
             disabled={currentIndex === 0}
@@ -497,17 +516,15 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
         {/* Right Side: [Go to Discussion ↗] ........ [Status Actions] ........ [Close] */}
         <div className="flex items-center justify-end gap-2.5 min-w-0 flex-1">
           {/* Go to Discussion Button */}
-          <a
-            href={activeQuestion.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
+          <button
+            type="button"
+            onClick={(e) => openInNewTab(activeQuestion.link, e)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white border border-brand-400/40 text-xs font-bold shadow-md shadow-brand-500/20 transition-all active:scale-95 shrink-0 cursor-pointer"
             title="Open official question discussion on GateOverflow in a new tab (O)"
           >
             <span>Go to Discussion</span>
             <ExternalLink className="w-3.5 h-3.5" />
-          </a>
+          </button>
 
           {/* Mark as Done Toggle */}
           <button
@@ -937,16 +954,14 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
                     )}
                   </button>
 
-                  <a
-                    href={activeQuestion.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
+                  <button
+                    type="button"
+                    onClick={(e) => openInNewTab(activeQuestion.link, e)}
                     className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all active:scale-95 cursor-pointer"
                   >
                     <span>Go to Discussion</span>
                     <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                  </a>
+                  </button>
                 </div>
 
                 <div className="text-[11px] text-slate-500 pt-2 border-t border-slate-800 flex items-center justify-center gap-1.5">
@@ -1137,16 +1152,14 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
                       {checkResult.correctAnswerFormatted}
                     </strong>
                   </span>
-                  <a
-                    href={activeQuestion.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
+                  <button
+                    type="button"
+                    onClick={(e) => openInNewTab(activeQuestion.link, e)}
                     className="text-[11px] text-brand-400 hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <span>View GateOverflow Discussion</span>
                     <ExternalLink className="w-3 h-3" />
-                  </a>
+                  </button>
                 </div>
                 <p className="text-slate-300 leading-relaxed text-[11px] font-sans">
                   {checkResult.explanation}

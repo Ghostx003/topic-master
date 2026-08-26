@@ -226,16 +226,23 @@ export const PYQCard: React.FC<PYQCardProps> = ({
           )}
 
           {/* Discussion External Link */}
-          <a
-            href={question.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              const link = document.createElement('a');
+              link.href = question.link;
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
             className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-850 text-slate-400 hover:text-white border border-slate-800 transition-all text-xs shadow-sm active:scale-95 cursor-pointer shrink-0"
             title="Open discussion on GateOverflow (new tab)"
           >
             <ExternalLink className="w-3 h-3" />
-          </a>
+          </button>
         </div>
       </div>
 

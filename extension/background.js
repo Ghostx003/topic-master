@@ -1073,15 +1073,17 @@ async function handleCaptureSpecific(questionId, url, subject, callerTabId) {
         },
       });
 
-      // Safely close ONLY the GateOverflow worker tab
-      await safelyCloseGateoverflowTab(captureTab.id, originTabId);
-
-      // Refocus user's Topic Master app tab
+      // Refocus user's Topic Master app tab FIRST
       if (originTabId) {
         try {
           await chrome.tabs.update(originTabId, { active: true });
         } catch (_) {}
       }
+
+      await new Promise((r) => setTimeout(r, 150));
+
+      // Safely close ONLY the GateOverflow worker tab
+      await safelyCloseGateoverflowTab(captureTab.id, originTabId);
 
       notifyWebTabs({
         type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
@@ -1094,21 +1096,23 @@ async function handleCaptureSpecific(questionId, url, subject, callerTabId) {
       return { success: true, dataUrl };
     }
 
-    await safelyCloseGateoverflowTab(captureTab?.id, originTabId);
     if (originTabId) {
       try {
         await chrome.tabs.update(originTabId, { active: true });
       } catch (_) {}
     }
+    await new Promise((r) => setTimeout(r, 150));
+    await safelyCloseGateoverflowTab(captureTab?.id, originTabId);
     return { success: false, error: 'Capture empty' };
   } catch (err) {
     console.error('handleCaptureSpecific error:', err);
-    await safelyCloseGateoverflowTab(captureTab?.id, originTabId);
     if (originTabId) {
       try {
         await chrome.tabs.update(originTabId, { active: true });
       } catch (_) {}
     }
+    await new Promise((r) => setTimeout(r, 150));
+    await safelyCloseGateoverflowTab(captureTab?.id, originTabId);
     return { success: false, error: err.message };
   }
 }
