@@ -177,12 +177,17 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
         if (hasNext && onNavigateNext) {
           onNavigateNext();
         }
+      } else if (e.key === 'o' || e.key === 'O') {
+        e.preventDefault();
+        if (question) {
+          window.open(question.link, '_blank', 'noopener,noreferrer');
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, hasPrevious, hasNext, onNavigatePrevious, onNavigateNext]);
+  }, [isOpen, onClose, hasPrevious, hasNext, onNavigatePrevious, onNavigateNext, question]);
 
   const handleCapture = async () => {
     if (!question || isCapturing) return;
@@ -307,6 +312,11 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
               href={question.link}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(question.link, '_blank', 'noopener,noreferrer');
+              }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition-all active:scale-95"
               title="Open official discussion on GateOverflow (O)"
             >
@@ -515,6 +525,11 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
                   href={question.link}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(question.link, '_blank', 'noopener,noreferrer');
+                  }}
                   className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all active:scale-95"
                 >
                   <span>Discussion</span>
@@ -714,6 +729,11 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
                   href={question.link}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(question.link, '_blank', 'noopener,noreferrer');
+                  }}
                   className="text-[11px] text-brand-400 hover:underline flex items-center gap-1"
                 >
                   <span>View GateOverflow Discussion</span>

@@ -910,6 +910,44 @@ function navigateAndEnsureReady(tabId, targetUrl, timeoutMs = 5000) {
 }
 
 /**
+ * Wait for a created tab to reach complete state
+ */
+function waitForTabComplete(tabId, timeoutMs = 25000) {
+  return new Promise((resolve) => {
+    let resolved = false;
+
+    const cleanup = () => {
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        chrome.tabs.onUpdated.removeListener(onUpdated);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      cleanup();
+      resolve(true);
+    }, timeoutMs);
+
+    const onUpdated = (updatedTabId, changeInfo) => {
+      if (updatedTabId === tabId && changeInfo.status === 'complete') {
+        cleanup();
+        resolve(true);
+      }
+    };
+
+    chrome.tabs.onUpdated.addListener(onUpdated);
+
+    chrome.tabs.get(tabId).then((tab) => {
+      if (tab && tab.status === 'complete') {
+        cleanup();
+        resolve(true);
+      }
+    }).catch(() => {});
+  });
+}
+
+/**
  * Check if the loaded page is a Cloudflare / DDoS / Turnstile challenge
  */
 async function checkForSecurityChallenge(tabId) {

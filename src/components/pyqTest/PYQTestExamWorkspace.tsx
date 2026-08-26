@@ -478,6 +478,13 @@ export const PYQTestExamWorkspace: React.FC<PYQTestExamWorkspaceProps> = ({
                       href={currentQuestionItem?.question.link}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (currentQuestionItem?.question.link) {
+                          window.open(currentQuestionItem.question.link, '_blank', 'noopener,noreferrer');
+                        }
+                      }}
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-500/20 text-brand-300 border border-brand-500/30 text-xs font-bold hover:bg-brand-500/30 transition-all"
                     >
                       <span>Open Question in GateOverflow</span>
