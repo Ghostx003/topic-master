@@ -14,6 +14,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { getQuestionAnswerMetadata } from '../../services/pyqTestService';
 
 export interface PYQCardProps {
   question: PYQQuestion;
@@ -40,6 +41,23 @@ export const PYQCard: React.FC<PYQCardProps> = ({
 
   const [hasScreenshot, setHasScreenshot] = useState<boolean>(false);
   const [isCapturing, setIsCapturing] = useState<boolean>(false);
+  const [activeMeta, setActiveMeta] = useState(() =>
+    getQuestionAnswerMetadata(String(question.id))
+  );
+
+  useEffect(() => {
+    setActiveMeta(getQuestionAnswerMetadata(String(question.id)));
+  }, [question.id]);
+
+  useEffect(() => {
+    const handleUpdated = (e: any) => {
+      if (e.detail && e.detail.questionId === String(question.id)) {
+        setActiveMeta(getQuestionAnswerMetadata(String(question.id)));
+      }
+    };
+    window.addEventListener('pyq_answer_key_updated', handleUpdated);
+    return () => window.removeEventListener('pyq_answer_key_updated', handleUpdated);
+  }, [question.id]);
 
   useEffect(() => {
     let isMounted = true;
@@ -235,16 +253,16 @@ export const PYQCard: React.FC<PYQCardProps> = ({
           <span
             className={clsx(
               'font-mono font-bold px-1.5 py-0.5 rounded border text-[10px]',
-              question.type_of_question === 'MSQ'
+              (activeMeta.question_type || question.type_of_question) === 'MSQ'
                 ? 'bg-purple-950/70 text-purple-300 border-purple-500/30'
-                : question.type_of_question === 'NAT'
+                : (activeMeta.question_type || question.type_of_question) === 'NAT'
                 ? 'bg-amber-950/70 text-amber-300 border-amber-500/30'
-                : question.type_of_question === 'Descriptive'
+                : (activeMeta.question_type || question.type_of_question) === 'Descriptive'
                 ? 'bg-indigo-950/70 text-indigo-300 border-indigo-500/30'
                 : 'bg-blue-950/70 text-blue-300 border-blue-500/30'
             )}
           >
-            {question.type_of_question || 'MCQ'}
+            {activeMeta.question_type || question.type_of_question || 'MCQ'}
           </span>
         </div>
       </div>

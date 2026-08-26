@@ -8,6 +8,7 @@ import {
   X,
   Star,
   CheckCircle2,
+  XCircle,
   ExternalLink,
   Camera,
   ZoomIn,
@@ -19,8 +20,15 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  AlertCircle,
+  Eye,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import {
+  getQuestionAnswerMetadata,
+  evaluateSingleAnswer,
+} from '../../services/pyqTestService';
+import { EditAnswerKeyModal } from './EditAnswerKeyModal';
 
 export interface QuestionScreenshotModalProps {
   question: PYQQuestion | null;
@@ -58,6 +66,16 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
   const [isCapturing, setIsCapturing] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
+  // Interactive Answer Check & Issue States
+  const [userAnswer, setUserAnswer] = useState<string | string[] | number | null>(null);
+  const [isAnswerChecked, setIsAnswerChecked] = useState<boolean>(false);
+  const [checkResult, setCheckResult] = useState<ReturnType<typeof evaluateSingleAnswer> | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [showExplanation, setShowExplanation] = useState<boolean>(false);
+  const [activeMeta, setActiveMeta] = useState(() =>
+    getQuestionAnswerMetadata(question?.id ? String(question.id) : '')
+  );
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Load screenshot whenever modal opens or question changes
@@ -93,6 +111,45 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
     window.addEventListener('pyq_screenshot_updated', handleUpdated);
     return () => window.removeEventListener('pyq_screenshot_updated', handleUpdated);
   }, [question?.id]);
+
+  // Reset inputs when active question changes
+  useEffect(() => {
+    if (question) {
+      setActiveMeta(getQuestionAnswerMetadata(String(question.id)));
+      setUserAnswer(null);
+      setIsAnswerChecked(false);
+      setCheckResult(null);
+      setShowExplanation(false);
+    }
+  }, [question?.id]);
+
+  // Listen for global answer key updates
+  useEffect(() => {
+    const handleAnswerUpdated = (e: any) => {
+      if (question && e.detail && e.detail.questionId === String(question.id)) {
+        const freshMeta = getQuestionAnswerMetadata(String(question.id));
+        setActiveMeta(freshMeta);
+        if (isAnswerChecked) {
+          const reEval = evaluateSingleAnswer(String(question.id), userAnswer, freshMeta.question_type);
+          setCheckResult(reEval);
+        }
+      }
+    };
+    window.addEventListener('pyq_answer_key_updated', handleAnswerUpdated);
+    return () => window.removeEventListener('pyq_answer_key_updated', handleAnswerUpdated);
+  }, [question?.id, isAnswerChecked, userAnswer]);
+
+  const handleCheckAnswer = () => {
+    if (!question) return;
+    const res = evaluateSingleAnswer(
+      String(question.id),
+      userAnswer,
+      activeMeta.question_type || (question.type_of_question as any) || 'MCQ'
+    );
+    setCheckResult(res);
+    setIsAnswerChecked(true);
+    setShowExplanation(true);
+  };
 
   // Keyboard shortcuts: ArrowLeft (Prev), ArrowRight (Next), Esc (Close)
   useEffect(() => {
@@ -472,7 +529,220 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
             </div>
           )}
         </div>
+
+        {/* ================= BOTTOM PRACTICE ANSWER & VERIFICATION DOCK ================= */}
+        <div className="border-t border-slate-800 bg-[#070c18]/95 backdrop-blur-xl p-3 sm:p-4 shrink-0 shadow-2xl z-20 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Your Answer ({activeMeta.question_type || question.type_of_question || 'MCQ'}):
+              </span>
+              {isAnswerChecked && checkResult && (
+                <span
+                  className={clsx(
+                    'flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-bold border animate-fade-in',
+                    checkResult.isCorrect
+                      ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50 shadow-glow-emerald'
+                      : 'bg-rose-950/80 text-rose-300 border-rose-500/50'
+                  )}
+                >
+                  {checkResult.isCorrect ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Correct Answer! (+{question.marks || 1}M)</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                      <span>Incorrect! Official: {checkResult.correctAnswerFormatted}</span>
+                    </>
+                  )}
+                </span>
+              )}
+            </div>
+
+            {/* Right Controls: Having Issue Button & View Explanation Toggle */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all active:scale-95 shadow-sm"
+                title="Having Issue? Report wrong answer key or wrong question type"
+              >
+                <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+                <span>Having Issue?</span>
+              </button>
+
+              {isAnswerChecked && (
+                <button
+                  onClick={() => setShowExplanation(!showExplanation)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold border border-slate-750 transition-all"
+                >
+                  <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>{showExplanation ? 'Hide Solution' : 'View Solution'}</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Interactive Answer Inputs & Check Answer Button */}
+          <div className="flex items-center flex-wrap gap-2.5">
+            {/* MCQ Options (A, B, C, D) */}
+            {(activeMeta.question_type || question.type_of_question || 'MCQ') === 'MCQ' && (
+              <div className="flex items-center gap-2 flex-wrap flex-1">
+                {['A', 'B', 'C', 'D'].map((opt) => {
+                  const isSelected = userAnswer === opt;
+                  const isOfficialKey = isAnswerChecked && checkResult?.meta.correct_answer === opt;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        setUserAnswer(opt);
+                        setIsAnswerChecked(false);
+                      }}
+                      className={clsx(
+                        'px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all border flex items-center gap-1.5 active:scale-95',
+                        isSelected
+                          ? 'bg-brand-500 text-white border-brand-400 shadow-glow ring-1 ring-brand-300'
+                          : 'bg-slate-900 text-slate-300 border-slate-750 hover:bg-slate-800 hover:text-white',
+                        isOfficialKey && 'ring-2 ring-emerald-400 border-emerald-400'
+                      )}
+                    >
+                      <span className="w-4 h-4 rounded-full bg-black/30 flex items-center justify-center text-[10px]">
+                        {opt}
+                      </span>
+                      <span>Option {opt}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* MSQ Multi-Select Options (A, B, C, D) */}
+            {(activeMeta.question_type || question.type_of_question) === 'MSQ' && (
+              <div className="flex items-center gap-2 flex-wrap flex-1">
+                {['A', 'B', 'C', 'D'].map((opt) => {
+                  const currentArr = Array.isArray(userAnswer) ? userAnswer : [];
+                  const isSelected = currentArr.includes(opt);
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        setIsAnswerChecked(false);
+                        if (isSelected) {
+                          setUserAnswer(currentArr.filter((x) => x !== opt));
+                        } else {
+                          setUserAnswer([...currentArr, opt].sort());
+                        }
+                      }}
+                      className={clsx(
+                        'px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all border flex items-center gap-1.5 active:scale-95',
+                        isSelected
+                          ? 'bg-purple-600 text-white border-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.4)]'
+                          : 'bg-slate-900 text-slate-300 border-slate-750 hover:bg-slate-850'
+                      )}
+                    >
+                      <span className="w-4 h-4 rounded bg-black/30 flex items-center justify-center text-[10px]">
+                        {opt}
+                      </span>
+                      <span>Option {opt}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* NAT Numerical Answer Input */}
+            {(activeMeta.question_type || question.type_of_question) === 'NAT' && (
+              <div className="flex items-center gap-2 flex-1 max-w-sm">
+                <input
+                  type="text"
+                  value={typeof userAnswer === 'number' || typeof userAnswer === 'string' ? String(userAnswer) : ''}
+                  onChange={(e) => {
+                    setUserAnswer(e.target.value);
+                    setIsAnswerChecked(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCheckAnswer();
+                  }}
+                  placeholder="Enter numerical answer..."
+                  className="flex-1 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-750 text-xs font-mono font-bold text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+                />
+              </div>
+            )}
+
+            {/* Descriptive Answer Input */}
+            {(activeMeta.question_type || question.type_of_question) === 'Descriptive' && (
+              <div className="flex items-center gap-2 flex-1 max-w-md">
+                <input
+                  type="text"
+                  value={typeof userAnswer === 'string' ? userAnswer : ''}
+                  onChange={(e) => {
+                    setUserAnswer(e.target.value);
+                    setIsAnswerChecked(false);
+                  }}
+                  placeholder="Type your answer / summary..."
+                  className="flex-1 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-750 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
+                />
+              </div>
+            )}
+
+            {/* Check Answer Button */}
+            <button
+              type="button"
+              onClick={handleCheckAnswer}
+              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-glow-emerald active:scale-95 transition-all shrink-0"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Check Answer</span>
+            </button>
+          </div>
+
+          {/* Solution & Explanation Box */}
+          {isAnswerChecked && showExplanation && checkResult && (
+            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2 animate-scale-in text-xs">
+              <div className="flex items-center justify-between flex-wrap gap-2 text-slate-300">
+                <span className="font-bold text-emerald-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Official Verified Answer:</span>
+                  <strong className="font-mono text-white text-sm bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
+                    {checkResult.correctAnswerFormatted}
+                  </strong>
+                </span>
+                <a
+                  href={question.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-brand-400 hover:underline flex items-center gap-1"
+                >
+                  <span>View GateOverflow Discussion</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+              <p className="text-slate-300 leading-relaxed text-[11px] font-sans">
+                {checkResult.explanation}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Edit Answer Key / Having Issue Modal */}
+      {isEditModalOpen && question && (
+        <EditAnswerKeyModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          question={question}
+          onSaved={(updatedMeta) => {
+            setActiveMeta(updatedMeta);
+            if (isAnswerChecked) {
+              const reEval = evaluateSingleAnswer(String(question.id), userAnswer, updatedMeta.question_type);
+              setCheckResult(reEval);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

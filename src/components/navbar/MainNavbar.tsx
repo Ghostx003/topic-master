@@ -12,10 +12,12 @@ import {
   BarChart3,
   Layers,
   Sparkles,
+  Award,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTopicMaster } from '../../context/TopicMasterContext';
 import { ALL_PYQ_QUESTIONS } from '../../services/pyqService';
+import { loadTestHistory } from '../../services/pyqTestService';
 
 export interface MainNavbarProps {
   onOpenSettings: () => void;
@@ -28,6 +30,7 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
   const navigate = useNavigate();
 
   const totalPYQs = ALL_PYQ_QUESTIONS.length;
+  const completedTestsCount = loadTestHistory().filter((t) => t.status === 'completed').length;
 
   const navItems = [
     {
@@ -47,6 +50,12 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ onOpenSettings, onOpenGl
       label: 'PYQ Practice',
       icon: BarChart3,
       count: `${(totalPYQs / 1000).toFixed(1)}k`,
+    },
+    {
+      to: '/pyq-tests',
+      label: 'PYQ Tests',
+      icon: Award,
+      count: completedTestsCount > 0 ? completedTestsCount : 'New',
     },
     {
       to: '/analytics',
