@@ -377,6 +377,14 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
     }
   };
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   if (!isOpen || !activeQuestion) return null;
 
   const currentProgress = progress[activeQuestion.id] || { completed: false };

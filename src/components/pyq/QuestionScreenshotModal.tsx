@@ -217,6 +217,15 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
     }
   };
 
+  // Sync fullscreen state with native browser events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   if (!isOpen || !question) return null;
 
   const isDone = Boolean(progress?.completed);
@@ -227,10 +236,20 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[130] flex items-center justify-center p-2 sm:p-6 bg-black/80 backdrop-blur-xl animate-fade-in font-sans"
+      className={clsx(
+        'fixed inset-0 z-[130] flex items-center justify-center bg-black/90 backdrop-blur-xl animate-fade-in font-sans',
+        isFullscreen ? 'p-0' : 'p-2 sm:p-4 md:p-6'
+      )}
     >
       {/* Modal Card */}
-      <div className="relative w-full max-w-5xl h-[92vh] max-h-[95vh] flex flex-col rounded-3xl bg-[#080d1a] border border-slate-800 shadow-2xl overflow-hidden select-none">
+      <div
+        className={clsx(
+          'relative w-full flex flex-col bg-[#080d1a] shadow-2xl overflow-hidden select-none transition-all',
+          isFullscreen
+            ? 'h-full w-full max-w-none max-h-none rounded-none border-none'
+            : 'max-w-5xl h-[92vh] max-h-[95vh] rounded-3xl border border-slate-800'
+        )}
+      >
         {/* Header Bar */}
         <header className="h-14 px-4 sm:px-6 bg-[#0a1020] border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
           {/* Question Metadata Info & Left/Right Quick Switcher */}
@@ -435,30 +454,35 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
           </div>
         </div>
 
-        {/* Screenshot Viewport — Centered with Floating Side Navigation Buttons */}
-        <div className="flex-1 w-full h-full relative overflow-y-auto overflow-x-auto p-4 sm:p-6 flex items-center justify-center custom-scrollbar bg-[#02040a]">
-          {/* Floating Left Prev Button */}
+        {/* Screenshot Viewport — Centered with Generously Spaced Side Navigation Buttons */}
+        <div
+          className={clsx(
+            'flex-1 w-full h-full relative overflow-y-auto overflow-x-auto flex items-center justify-center custom-scrollbar bg-[#02040a]',
+            isFullscreen ? 'p-4 sm:p-8 px-16 sm:px-28 lg:px-36' : 'p-3 sm:p-6 px-14 sm:px-24'
+          )}
+        >
+          {/* Floating Left Prev Button (Spaced far from central question) */}
           {hasPrevious && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 if (onNavigatePrevious) onNavigatePrevious();
               }}
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-3 rounded-2xl bg-slate-950/85 hover:bg-brand-600 border border-slate-700/70 hover:border-brand-400 text-slate-300 hover:text-white shadow-2xl backdrop-blur-xl transition-all active:scale-90 group"
+              className="absolute left-3 sm:left-6 lg:left-10 top-1/2 -translate-y-1/2 z-20 p-3.5 rounded-2xl bg-slate-950/90 hover:bg-brand-600 border border-slate-700/80 hover:border-brand-400 text-slate-300 hover:text-white shadow-2xl backdrop-blur-xl transition-all active:scale-90 group cursor-pointer"
               title="Previous Question (← Arrow Left)"
             >
               <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
             </button>
           )}
 
-          {/* Floating Right Next Button */}
+          {/* Floating Right Next Button (Spaced far from central question) */}
           {hasNext && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 if (onNavigateNext) onNavigateNext();
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-3 rounded-2xl bg-slate-950/85 hover:bg-brand-600 border border-slate-700/70 hover:border-brand-400 text-slate-300 hover:text-white shadow-2xl backdrop-blur-xl transition-all active:scale-90 group"
+              className="absolute right-3 sm:right-6 lg:right-10 top-1/2 -translate-y-1/2 z-20 p-3.5 rounded-2xl bg-slate-950/90 hover:bg-brand-600 border border-slate-700/80 hover:border-brand-400 text-slate-300 hover:text-white shadow-2xl backdrop-blur-xl transition-all active:scale-90 group cursor-pointer"
               title="Next Question (→ Arrow Right)"
             >
               <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
@@ -478,11 +502,19 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
               className="transition-transform duration-200 flex flex-col items-center justify-center max-w-full my-auto"
               style={{ transform: `scale(${zoomLevel / 100})` }}
             >
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-800/90 bg-[#0d121f]">
+              <div
+                className={clsx(
+                  'relative rounded-2xl overflow-hidden shadow-2xl border border-slate-800/90 bg-[#0d121f]',
+                  isFullscreen ? 'max-w-5xl lg:max-w-6xl w-full' : 'max-w-4xl'
+                )}
+              >
                 <img
                   src={screenshotData}
                   alt={`Question ${question.questionNumber}`}
-                  className="max-w-full max-h-[75vh] object-contain select-text"
+                  className={clsx(
+                    'w-auto object-contain select-text mx-auto',
+                    isFullscreen ? 'max-h-[calc(100vh-210px)] max-w-full' : 'max-h-[72vh] max-w-full'
+                  )}
                 />
               </div>
             </div>
