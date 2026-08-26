@@ -81,7 +81,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
 
     case 'CAPTURE_SPECIFIC_PAGE':
-      handleCaptureSpecific(message.questionId, message.url, message.subject).then(sendResponse);
+      handleCaptureSpecific(message.questionId, message.url, message.subject, sender?.tab?.id).then(sendResponse);
       return true;
 
     case 'GET_STORAGE_STATS':
@@ -1017,15 +1017,30 @@ async function safeCaptureVisibleTab(windowId, options = { format: 'jpeg', quali
 }
 
 /**
+ * Helper to safely close ONLY a temporary GateOverflow worker tab, never closing the user's Topic Master app
+ */
+async function safelyCloseGateoverflowTab(tabId, originTabId) {
+  if (!tabId || tabId === originTabId) return;
+  try {
+    const tabInfo = await chrome.tabs.get(tabId);
+    if (tabInfo && tabInfo.url && (tabInfo.url.includes('gateoverflow.in') || tabInfo.url.includes('gateoverflow'))) {
+      await chrome.tabs.remove(tabId);
+    }
+  } catch (_) {}
+}
+
+/**
  * Handle capturing an individual specific question URL
  */
-async function handleCaptureSpecific(questionId, url, subject) {
+async function handleCaptureSpecific(questionId, url, subject, callerTabId) {
   let captureTab = null;
+  const originTabId = callerTabId;
+
   try {
     captureTab = await chrome.tabs.create({ url, active: true });
     if (captureTab.windowId) {
       try {
-        await chrome.windows.update(captureTab.windowId, { state: 'maximized' });
+        await chrome.windows.update(captureTab.windowId, { focused: true, state: 'maximized' });
       } catch (_) {}
     }
     await waitForTabComplete(captureTab.id, 25000);
@@ -1036,21 +1051,21 @@ async function handleCaptureSpecific(questionId, url, subject) {
     }
 
     const rect = await cleanPageForScreenshot(captureTab.id);
-    await new Promise((r) => setTimeout(r, 1400));
+    await new Promise((r) => setTimeout(r, 1200));
 
-    const rawDataUrl = await safeCaptureVisibleTab(captureTab.windowId, { format: 'jpeg', quality: 95 });
+    const rawDataUrl = await safeCaptureVisibleTab(captureTab.windowId || null, { format: 'jpeg', quality: 95 });
 
     if (rawDataUrl && rawDataUrl.startsWith('data:image')) {
       const dataUrl = await cropImageInExtension(rawDataUrl, rect);
 
       const storageData = await chrome.storage.local.get('pyq_question_statuses');
       const statuses = storageData.pyq_question_statuses || {};
-      statuses[questionId] = 'CAPTURED';
+      statuses[String(questionId)] = 'CAPTURED';
 
       await chrome.storage.local.set({
         pyq_question_statuses: statuses,
         [`pyq_img_${questionId}`]: {
-          questionId,
+          questionId: String(questionId),
           url,
           subject,
           dataUrl,
@@ -1058,13 +1073,19 @@ async function handleCaptureSpecific(questionId, url, subject) {
         },
       });
 
-      try {
-        await chrome.tabs.remove(captureTab.id);
-      } catch (_) {}
+      // Safely close ONLY the GateOverflow worker tab
+      await safelyCloseGateoverflowTab(captureTab.id, originTabId);
+
+      // Refocus user's Topic Master app tab
+      if (originTabId) {
+        try {
+          await chrome.tabs.update(originTabId, { active: true });
+        } catch (_) {}
+      }
 
       notifyWebTabs({
         type: 'PYQ_SCREENSHOT_BATCH_CAPTURE',
-        questionId,
+        questionId: String(questionId),
         url,
         subject,
         dataUrl,
@@ -1073,17 +1094,19 @@ async function handleCaptureSpecific(questionId, url, subject) {
       return { success: true, dataUrl };
     }
 
-    if (captureTab) {
+    await safelyCloseGateoverflowTab(captureTab?.id, originTabId);
+    if (originTabId) {
       try {
-        await chrome.tabs.remove(captureTab.id);
+        await chrome.tabs.update(originTabId, { active: true });
       } catch (_) {}
     }
     return { success: false, error: 'Capture empty' };
   } catch (err) {
     console.error('handleCaptureSpecific error:', err);
-    if (captureTab) {
+    await safelyCloseGateoverflowTab(captureTab?.id, originTabId);
+    if (originTabId) {
       try {
-        await chrome.tabs.remove(captureTab.id);
+        await chrome.tabs.update(originTabId, { active: true });
       } catch (_) {}
     }
     return { success: false, error: err.message };

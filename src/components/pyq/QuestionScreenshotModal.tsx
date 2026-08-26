@@ -102,14 +102,18 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
   // Listen for real-time capture updates from Chrome Extension
   useEffect(() => {
     const handleUpdated = (e: any) => {
-      if (e.detail && question && e.detail.questionId === question.id) {
+      if (e.detail && question && String(e.detail.questionId) === String(question.id)) {
         setScreenshotData(e.detail.dataUrl);
         setIsLoading(false);
         setIsCapturing(false);
       }
     };
     window.addEventListener('pyq_screenshot_updated', handleUpdated);
-    return () => window.removeEventListener('pyq_screenshot_updated', handleUpdated);
+    window.addEventListener('pyq-screenshot-updated', handleUpdated);
+    return () => {
+      window.removeEventListener('pyq_screenshot_updated', handleUpdated);
+      window.removeEventListener('pyq-screenshot-updated', handleUpdated);
+    };
   }, [question?.id]);
 
   // Reset inputs when active question changes

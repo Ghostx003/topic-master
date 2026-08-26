@@ -126,7 +126,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
   // Listen for real-time screenshot updates from Chrome extension
   useEffect(() => {
     const handleScreenshotUpdated = (e: any) => {
-      if (e.detail && activeQuestion && e.detail.questionId === activeQuestion.id) {
+      if (e.detail && activeQuestion && String(e.detail.questionId) === String(activeQuestion.id)) {
         setScreenshotData(e.detail.dataUrl);
         setIsScreenshotLoading(false);
         setIsCapturingSpecific(false);
@@ -134,7 +134,11 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
     };
 
     window.addEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
-    return () => window.removeEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
+    window.addEventListener('pyq-screenshot-updated', handleScreenshotUpdated);
+    return () => {
+      window.removeEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
+      window.removeEventListener('pyq-screenshot-updated', handleScreenshotUpdated);
+    };
   }, [activeQuestion?.id]);
 
   // Active Question Answer Metadata (reactive to updates)

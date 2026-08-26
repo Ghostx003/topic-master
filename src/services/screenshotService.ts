@@ -241,15 +241,21 @@ export function requestCaptureSpecificPage(
       if (
         event.data &&
         event.data.type === 'CAPTURE_SPECIFIC_PAGE_RESPONSE' &&
-        event.data.questionId === questionId
+        String(event.data.questionId) === String(questionId)
       ) {
         window.removeEventListener('message', handleResponse);
         if (!resolved) {
           resolved = true;
           if (event.data.success && event.data.dataUrl) {
-            saveQuestionScreenshot(questionId, event.data.dataUrl, subject, url);
+            saveQuestionScreenshot(String(questionId), event.data.dataUrl, subject, url);
+            window.dispatchEvent(
+              new CustomEvent('pyq-screenshot-updated', {
+                detail: { questionId: String(questionId), dataUrl: event.data.dataUrl },
+              })
+            );
             resolve(event.data.dataUrl);
           } else {
+            console.warn('[ScreenshotService] Capture failed or empty:', event.data.error);
             resolve(null);
           }
         }
