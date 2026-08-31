@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useSearchParams } from 'react-router-dom';
 import { MainNavbar } from '../components/navbar/MainNavbar';
 import { ActiveTimerWidget } from '../components/common/ActiveTimerWidget';
 import { TopicDetailModal } from '../components/topicDetail/TopicDetailModal';
@@ -9,9 +9,47 @@ import { SettingsModal } from '../modals/SettingsModal';
 import { GlobalSearchModal } from '../modals/GlobalSearchModal';
 
 export const MainLayout: React.FC = () => {
-  const { activePYQTopic, closePYQModal } = useTopicMaster();
+  const { subjects, topics, activePYQTopic, openPYQModal, closePYQModal } = useTopicMaster();
+  const [searchParams] = useSearchParams();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // Synchronize topicId from URL search params on initial load and route changes
+  useEffect(() => {
+    const topicIdParam = searchParams.get('topicId');
+    if (!topicIdParam) {
+      if (activePYQTopic) {
+        closePYQModal();
+      }
+      return;
+    }
+
+    if (activePYQTopic && activePYQTopic.topicId === topicIdParam) {
+      return; // Already open for this topic
+    }
+
+    // Match topic by id, or case-insensitive name or slug
+    const targetTopic = topics.find(
+      (t) =>
+        t.id === topicIdParam ||
+        t.Topic_Name.toLowerCase() === topicIdParam.toLowerCase() ||
+        t.Topic_Name.toLowerCase().replace(/\s+/g, '-') === topicIdParam.toLowerCase()
+    );
+
+    if (targetTopic) {
+      const targetSubject = subjects.find((s) => s.id === targetTopic.Subject_Id);
+      const subtopicNames = topics
+        .filter((c) => c.Parent_Id === targetTopic.id)
+        .map((c) => c.Topic_Name);
+
+      openPYQModal(
+        targetTopic.id,
+        targetTopic.Topic_Name,
+        targetSubject?.Subject_Name || '',
+        subtopicNames
+      );
+    }
+  }, [searchParams, topics, subjects, activePYQTopic, openPYQModal, closePYQModal]);
 
   // Global ⌘K / Ctrl+K and Ctrl+Space keyboard shortcuts
   useEffect(() => {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PYQQuestion, PYQProgressMap, PYQDifficultyStatus, PYQItemProgress } from '../../types/pyq';
 import {
   getQuestionScreenshot,
@@ -63,6 +64,21 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
   const [playlistSearch, setPlaylistSearch] = useState<string>('');
   const [playlistTab, setPlaylistTab] = useState<'all' | 'pending' | 'completed' | 'doubts'>('all');
 
+  // Sync ?q=N (1-indexed) to URL whenever current question changes
+  const [, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (!isOpen) return;
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      const targetQ = String(currentIndex + 1);
+      if (next.get('q') !== targetQ) {
+        next.set('q', targetQ);
+        return next;
+      }
+      return prev;
+    }, { replace: true });
+  }, [isOpen, currentIndex, setSearchParams]);
+
   // Screenshot State
   const [screenshotData, setScreenshotData] = useState<string | null>(null);
   const [isScreenshotLoading, setIsScreenshotLoading] = useState<boolean>(true);
@@ -122,21 +138,43 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
     };
   }, [activeQuestion?.id]);
 
-  // Listen for real-time screenshot updates from Chrome extension
+  // Listen for real-time screenshot updates from Chrome extension (single & bulk)
   useEffect(() => {
     const handleScreenshotUpdated = (e: any) => {
-      if (e.detail && activeQuestion && String(e.detail.questionId) === String(activeQuestion.id)) {
-        setScreenshotData(e.detail.dataUrl);
-        setIsScreenshotLoading(false);
-        setIsCapturingSpecific(false);
+      if (e.detail && activeQuestion) {
+        if (String(e.detail.questionId) === String(activeQuestion.id) && e.detail.dataUrl) {
+          setScreenshotData(e.detail.dataUrl);
+          setIsScreenshotLoading(false);
+          setIsCapturingSpecific(false);
+        } else if (e.detail.bulk) {
+          getQuestionScreenshot(activeQuestion.id).then((imgData) => {
+            if (imgData) {
+              setScreenshotData(imgData);
+              setIsScreenshotLoading(false);
+            }
+          });
+        }
+      }
+    };
+
+    const handleBulkUpdated = () => {
+      if (activeQuestion) {
+        getQuestionScreenshot(activeQuestion.id).then((imgData) => {
+          if (imgData) {
+            setScreenshotData(imgData);
+            setIsScreenshotLoading(false);
+          }
+        });
       }
     };
 
     window.addEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
     window.addEventListener('pyq-screenshot-updated', handleScreenshotUpdated);
+    window.addEventListener('pyq_screenshots_bulk_updated', handleBulkUpdated);
     return () => {
       window.removeEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
       window.removeEventListener('pyq-screenshot-updated', handleScreenshotUpdated);
+      window.removeEventListener('pyq_screenshots_bulk_updated', handleBulkUpdated);
     };
   }, [activeQuestion?.id]);
 
@@ -374,13 +412,7 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
       e.preventDefault();
       e.stopPropagation();
     }
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const toggleFullscreen = () => {
@@ -518,7 +550,8 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
           {/* Go to Discussion Button */}
           <button
             type="button"
-            onClick={(e) => openInNewTab(activeQuestion.link, e)}
+            onClick={(e) => { if (e.button !== 0) return; openInNewTab(activeQuestion.link, e); }}
+            onAuxClick={(e) => { e.preventDefault(); e.stopPropagation(); if (e.button === 1) openInNewTab(activeQuestion.link); }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white border border-brand-400/40 text-xs font-bold shadow-md shadow-brand-500/20 transition-all active:scale-95 shrink-0 cursor-pointer"
             title="Open official question discussion on GateOverflow in a new tab (O)"
           >
@@ -956,7 +989,8 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
 
                   <button
                     type="button"
-                    onClick={(e) => openInNewTab(activeQuestion.link, e)}
+                    onClick={(e) => { if (e.button !== 0) return; openInNewTab(activeQuestion.link, e); }}
+                    onAuxClick={(e) => { e.preventDefault(); e.stopPropagation(); if (e.button === 1) openInNewTab(activeQuestion.link); }}
                     className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all active:scale-95 cursor-pointer"
                   >
                     <span>Go to Discussion</span>
@@ -1154,7 +1188,8 @@ export const PYQPracticeWorkspace: React.FC<PYQPracticeWorkspaceProps> = ({
                   </span>
                   <button
                     type="button"
-                    onClick={(e) => openInNewTab(activeQuestion.link, e)}
+                    onClick={(e) => { if (e.button !== 0) return; openInNewTab(activeQuestion.link, e); }}
+                    onAuxClick={(e) => { e.preventDefault(); e.stopPropagation(); if (e.button === 1) openInNewTab(activeQuestion.link); }}
                     className="text-[11px] text-brand-400 hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <span>View GateOverflow Discussion</span>

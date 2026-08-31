@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTopicMaster } from '../context/TopicMasterContext';
 import { TopicTagBadge } from '../components/common/TopicTagBadge';
 import {
@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const YEAR_FILTER_OPTIONS: { id: PYQYearFilter; label: string; desc: string }[] = [
   { id: 'all', label: 'All Years', desc: 'All historical GATE CSE questions' },
@@ -45,6 +45,7 @@ const YEAR_FILTER_OPTIONS: { id: PYQYearFilter; label: string; desc: string }[] 
 
 export const PYQAnalyzerPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     subjects,
     topics,
@@ -56,13 +57,36 @@ export const PYQAnalyzerPage: React.FC = () => {
     updateTopicTags,
   } = useTopicMaster();
 
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | 'all'>('all');
+  // subjectId synced to URL query param
+  const paramSubjectId = searchParams.get('subjectId');
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | 'all'>(
+    paramSubjectId || 'all'
+  );
+
+  // Keep local state in sync if URL changes externally (e.g. browser back/forward)
+  useEffect(() => {
+    const id = searchParams.get('subjectId') || 'all';
+    setSelectedSubjectId(id);
+  }, [searchParams]);
+
+  const handleSetSubjectId = (id: string | 'all') => {
+    setSelectedSubjectId(id);
+    const next = new URLSearchParams(searchParams);
+    if (id === 'all') {
+      next.delete('subjectId');
+    } else {
+      next.set('subjectId', id);
+    }
+    setSearchParams(next, { replace: true });
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [frequencyFilter, setFrequencyFilter] = useState<'all' | 'ultra' | 'high' | 'core' | 'done' | 'pending'>('all');
   const [questionTypeFilter, setQuestionTypeFilter] = useState<'all' | 'MCQ' | 'MSQ' | 'NAT' | 'Descriptive'>('all');
   const [sortBy, setSortBy] = useState<'questions_desc' | 'questions_asc' | 'marks_desc' | 'marks_asc' | 'name_asc'>('questions_desc');
 
   const subjectsMap = useMemo(() => new Map(subjects.map((s) => [s.id, s])), [subjects]);
+
 
   // Overall Question Type counts for active year filter and selected subject
   const typeCounts = useMemo(() => {
@@ -443,7 +467,7 @@ export const PYQAnalyzerPage: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {/* All Subjects Pill Button */}
           <button
-            onClick={() => setSelectedSubjectId('all')}
+            onClick={() => handleSetSubjectId('all')}
             className={clsx(
               'p-3.5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between select-none active:scale-95',
               selectedSubjectId === 'all'
@@ -467,7 +491,7 @@ export const PYQAnalyzerPage: React.FC = () => {
             return (
               <button
                 key={subj.id}
-                onClick={() => setSelectedSubjectId(subj.id)}
+                onClick={() => handleSetSubjectId(subj.id)}
                 className={clsx(
                   'p-3.5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between select-none active:scale-95',
                   isSelected

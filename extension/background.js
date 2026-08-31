@@ -88,6 +88,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       getStorageStats().then(sendResponse);
       return true;
 
+    case 'GET_ALL_STORED_SCREENSHOTS':
+      getAllStoredScreenshotsFromExtension().then((screenshots) => {
+        sendResponse({ success: true, screenshots });
+      });
+      return true;
+
     case 'RESET_SUBJECTS_SCREENSHOTS':
       handleResetSubjectsScreenshots(message.subjects).then(sendResponse);
       return true;
@@ -1194,4 +1200,30 @@ async function getStorageStats() {
   });
 
   return { totalCaptured, totalKeys: Object.keys(storageData).length };
+}
+
+/**
+ * Retrieve all captured screenshots stored in extension local storage
+ */
+async function getAllStoredScreenshotsFromExtension() {
+  try {
+    const storageData = await chrome.storage.local.get(null);
+    const screenshots = [];
+    for (const [key, value] of Object.entries(storageData)) {
+      if (key.startsWith('pyq_img_') && value && value.dataUrl) {
+        screenshots.push({
+          questionId: value.questionId || key.replace('pyq_img_', ''),
+          url: value.url || '',
+          subject: value.subject || 'General',
+          dataUrl: value.dataUrl,
+          timestamp: value.timestamp || Date.now(),
+          status: 'CAPTURED',
+        });
+      }
+    }
+    return screenshots;
+  } catch (err) {
+    console.error('Failed to get all stored screenshots from extension:', err);
+    return [];
+  }
 }

@@ -51,10 +51,12 @@ const YEAR_FILTER_OPTIONS: { id: PYQYearFilter; label: string; desc: string }[] 
 ];
 
 import { useTopicMaster } from '../../context/TopicMasterContext';
+import { useSearchParams } from 'react-router-dom';
 
 export const PYQModal: React.FC<PYQModalProps> = ({
   isOpen,
   onClose,
+  topicId,
   topicName,
   subjectName,
   subtopicNames = [],
@@ -62,6 +64,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   customYearRange,
 }) => {
   const { yearFilter, setYearFilter } = useTopicMaster();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [customRange, setCustomRange] = useState<[number, number] | null>(customYearRange || null);
   const [progress, setProgress] = useState<PYQProgressMap>(() => loadPYQProgress());
   const [yearSort, setYearSort] = useState<'newest' | 'oldest'>('newest');
@@ -71,9 +74,74 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const [isCompletedSectionOpen, setIsCompletedSectionOpen] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [isPracticeOpen, setIsPracticeOpen] = useState<boolean>(false);
-  const [practiceQuestionIndex, setPracticeQuestionIndex] = useState<number>(0);
+
+  // Parse initial q search param (e.g. q=2 -> question index 1)
+  const qParam = searchParams.get('q');
+  const initialQIndex = useMemo(() => {
+    if (qParam) {
+      const parsed = parseInt(qParam, 10);
+      if (!isNaN(parsed) && parsed >= 1) return parsed - 1;
+    }
+    return 0;
+  }, [qParam]);
+
+  const [isPracticeOpen, setIsPracticeOpen] = useState<boolean>(() => Boolean(qParam));
+  const [practiceQuestionIndex, setPracticeQuestionIndex] = useState<number>(initialQIndex);
   const [selectedScreenshotQuestion, setSelectedScreenshotQuestion] = useState<PYQQuestion | null>(null);
+
+  // Sync ?topicId= to URL when modal opens; do not wipe ?q= if already present
+  useEffect(() => {
+    if (!isOpen || !topicId) return;
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      let changed = false;
+      if (next.get('topicId') !== topicId) {
+        next.set('topicId', topicId);
+        changed = true;
+      }
+      return changed ? next : prev;
+    }, { replace: true });
+  }, [isOpen, topicId, setSearchParams]);
+
+  // Sync practice workspace opening if q param is added or updated externally
+  useEffect(() => {
+    if (isOpen && qParam) {
+      const parsed = parseInt(qParam, 10);
+      if (!isNaN(parsed) && parsed >= 1) {
+        setPracticeQuestionIndex(parsed - 1);
+        setIsPracticeOpen(true);
+      }
+    }
+  }, [isOpen, qParam]);
+
+  const handleModalClose = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('topicId');
+      next.delete('q');
+      return next;
+    }, { replace: true });
+    onClose();
+  };
+
+  const handleOpenPracticeWorkspace = (startIdx: number = 0) => {
+    setPracticeQuestionIndex(startIdx);
+    setIsPracticeOpen(true);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('q', String(startIdx + 1));
+      return next;
+    }, { replace: true });
+  };
+
+  const handleClosePracticeWorkspace = () => {
+    setIsPracticeOpen(false);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('q');
+      return next;
+    }, { replace: true });
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -86,13 +154,13 @@ export const PYQModal: React.FC<PYQModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
+      if (e.key === 'Escape' && !isPracticeOpen && !selectedScreenshotQuestion) {
+        handleModalClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, isPracticeOpen, selectedScreenshotQuestion]);
 
   // Handle year filter change with site-wide persistence
   const handleYearFilterChange = (filter: PYQYearFilter) => {
@@ -387,11 +455,9 @@ export const PYQModal: React.FC<PYQModalProps> = ({
         <div className="flex items-center gap-3">
           {/* Practice Workspace Button (Minimal & Icon-Only, No Tooltip, No Label) */}
           <button
-            onClick={() => {
-              setPracticeQuestionIndex(0);
-              setIsPracticeOpen(true);
-            }}
-            className="p-2.5 rounded-2xl bg-brand-500/20 hover:bg-brand-500/35 text-brand-300 hover:text-white border border-brand-500/40 shadow-sm transition-all active:scale-95 flex items-center justify-center"
+            onClick={() => handleOpenPracticeWorkspace(0)}
+            className="p-2.5 rounded-2xl bg-brand-500/20 hover:bg-brand-500/35 text-brand-300 hover:text-white border border-brand-500/40 shadow-sm transition-all active:scale-95 flex items-center justify-center cursor-pointer"
+            title="Open Interactive Practice Workspace (P)"
           >
             <Play className="w-4 h-4 fill-current text-brand-400" />
           </button>
@@ -417,8 +483,8 @@ export const PYQModal: React.FC<PYQModalProps> = ({
 
           {/* Close Fullscreen Button */}
           <button
-            onClick={onClose}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 shadow-md transition-all active:scale-95 text-xs font-bold"
+            onClick={handleModalClose}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 shadow-md transition-all active:scale-95 text-xs font-bold cursor-pointer"
             title="Close Fullscreen (Esc)"
           >
             <span>Close</span>
@@ -781,8 +847,8 @@ export const PYQModal: React.FC<PYQModalProps> = ({
         </div>
 
         <button
-          onClick={onClose}
-          className="px-5 py-2 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold transition-all shadow-glow-sm active:scale-95"
+          onClick={handleModalClose}
+          className="px-5 py-2 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold transition-all shadow-glow-sm active:scale-95 cursor-pointer"
         >
           Done Practicing
         </button>
@@ -811,7 +877,7 @@ export const PYQModal: React.FC<PYQModalProps> = ({
       {isPracticeOpen && (
         <PYQPracticeWorkspace
           isOpen={isPracticeOpen}
-          onClose={() => setIsPracticeOpen(false)}
+          onClose={handleClosePracticeWorkspace}
           topicName={topicName}
           subjectName={subjectName}
           questions={filteredQuestions.length > 0 ? filteredQuestions : sortedQuestions}

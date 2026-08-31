@@ -128,7 +128,11 @@ export async function saveQuestionScreenshot(
  * Check whether a question has a captured screenshot
  */
 export async function hasQuestionScreenshot(questionId: string): Promise<boolean> {
-  const dataUrl = await getQuestionScreenshot(questionId);
+  const qId = String(questionId);
+  if (screenshotMemoryCache.has(qId)) {
+    return true;
+  }
+  const dataUrl = await getQuestionScreenshot(qId);
   return Boolean(dataUrl);
 }
 
@@ -397,6 +401,63 @@ export async function getAllStoredQuestionIds(): Promise<string[]> {
   }
 }
 
+/**
+ * Bulk save multiple screenshot records into IndexedDB and populate memory cache
+ */
+export async function bulkSaveScreenshots(
+  screenshots: Array<{
+    questionId: string | number;
+    dataUrl: string;
+    subject?: string;
+    url?: string;
+    status?: 'CAPTURED' | 'FAILED' | 'BLOCKED';
+    timestamp?: number;
+  }>
+): Promise<number> {
+  if (!screenshots || !Array.isArray(screenshots) || screenshots.length === 0) return 0;
+
+  try {
+    const db = await openDB();
+    let savedCount = 0;
+
+    await new Promise<void>((resolve, reject) => {
+      const transaction = db.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+
+      screenshots.forEach((item) => {
+        if (item && item.questionId && item.dataUrl) {
+          const qId = String(item.questionId);
+          screenshotMemoryCache.set(qId, item.dataUrl);
+
+          const record: QuestionScreenshotRecord = {
+            questionId: qId,
+            url: item.url || '',
+            subject: item.subject || 'General',
+            dataUrl: item.dataUrl,
+            timestamp: item.timestamp || Date.now(),
+            status: item.status || 'CAPTURED',
+          };
+
+          store.put(record);
+          savedCount++;
+        }
+      });
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+
+    // Notify all UI cards and views that screenshots were bulk loaded
+    window.dispatchEvent(new CustomEvent('pyq_screenshots_bulk_updated'));
+    window.dispatchEvent(new CustomEvent('pyq_screenshot_updated', { detail: { bulk: true } }));
+
+    return savedCount;
+  } catch (err) {
+    console.error('Failed to bulk save screenshots:', err);
+    return 0;
+  }
+}
+
 // Global window message listener from Chrome extension to sync incoming batch captures & queries
 if (typeof window !== 'undefined') {
   window.addEventListener('message', async (event: MessageEvent) => {
@@ -405,7 +466,12 @@ if (typeof window !== 'undefined') {
     if (event.data.type === 'PYQ_SCREENSHOT_BATCH_CAPTURE') {
       const { questionId, dataUrl, subject, url } = event.data;
       if (questionId && dataUrl) {
-        saveQuestionScreenshot(questionId, dataUrl, subject || 'General', url || '');
+        saveQuestionScreenshot(String(questionId), dataUrl, subject || 'General', url || '');
+      }
+    } else if (event.data.type === 'PYQ_SCREENSHOT_BULK_SYNC') {
+      const { screenshots } = event.data;
+      if (Array.isArray(screenshots) && screenshots.length > 0) {
+        bulkSaveScreenshots(screenshots);
       }
     } else if (event.data.type === 'GET_STORED_SCREENSHOT_IDS_REQUEST') {
       const ids = await getAllStoredQuestionIds();
@@ -419,5 +485,15 @@ if (typeof window !== 'undefined') {
       );
     }
   });
+
+  // Automatically request screenshot sync from Chrome extension on startup
+  const triggerAutoSync = () => {
+    window.postMessage({ type: 'REQUEST_AUTO_SYNC_SCREENSHOTS' }, '*');
+  };
+
+  triggerAutoSync();
+  setTimeout(triggerAutoSync, 200);
+  setTimeout(triggerAutoSync, 800);
+  setTimeout(triggerAutoSync, 2500);
 }
 

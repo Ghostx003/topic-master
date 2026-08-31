@@ -99,20 +99,43 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
     };
   }, [isOpen, question?.id]);
 
-  // Listen for real-time capture updates from Chrome Extension
+  // Listen for real-time capture updates from Chrome Extension (single & bulk)
   useEffect(() => {
     const handleUpdated = (e: any) => {
-      if (e.detail && question && String(e.detail.questionId) === String(question.id)) {
-        setScreenshotData(e.detail.dataUrl);
-        setIsLoading(false);
-        setIsCapturing(false);
+      if (e.detail && question) {
+        if (String(e.detail.questionId) === String(question.id) && e.detail.dataUrl) {
+          setScreenshotData(e.detail.dataUrl);
+          setIsLoading(false);
+          setIsCapturing(false);
+        } else if (e.detail.bulk) {
+          getQuestionScreenshot(question.id).then((data) => {
+            if (data) {
+              setScreenshotData(data);
+              setIsLoading(false);
+            }
+          });
+        }
       }
     };
+
+    const handleBulkUpdated = () => {
+      if (question) {
+        getQuestionScreenshot(question.id).then((data) => {
+          if (data) {
+            setScreenshotData(data);
+            setIsLoading(false);
+          }
+        });
+      }
+    };
+
     window.addEventListener('pyq_screenshot_updated', handleUpdated);
     window.addEventListener('pyq-screenshot-updated', handleUpdated);
+    window.addEventListener('pyq_screenshots_bulk_updated', handleBulkUpdated);
     return () => {
       window.removeEventListener('pyq_screenshot_updated', handleUpdated);
       window.removeEventListener('pyq-screenshot-updated', handleUpdated);
+      window.removeEventListener('pyq_screenshots_bulk_updated', handleBulkUpdated);
     };
   }, [question?.id]);
 
@@ -215,13 +238,7 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
       e.preventDefault();
       e.stopPropagation();
     }
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const toggleFullscreen = () => {
@@ -335,7 +352,8 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
           {/* Go to Discussion Link */}
           <button
             type="button"
-            onClick={(e) => openInNewTab(question.link, e)}
+            onClick={(e) => { if (e.button !== 0) return; openInNewTab(question.link, e); }}
+            onAuxClick={(e) => { e.preventDefault(); e.stopPropagation(); if (e.button === 1) openInNewTab(question.link); }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition-all active:scale-95 cursor-pointer"
             title="Open official question discussion on GateOverflow in a new tab (O)"
           >
@@ -555,7 +573,8 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
 
                 <button
                   type="button"
-                  onClick={(e) => openInNewTab(question.link, e)}
+                  onClick={(e) => { if (e.button !== 0) return; openInNewTab(question.link, e); }}
+                  onAuxClick={(e) => { e.preventDefault(); e.stopPropagation(); if (e.button === 1) openInNewTab(question.link); }}
                   className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all active:scale-95 cursor-pointer"
                 >
                   <span>Discussion</span>
@@ -753,7 +772,8 @@ export const QuestionScreenshotModal: React.FC<QuestionScreenshotModalProps> = (
                 </span>
                 <button
                   type="button"
-                  onClick={(e) => openInNewTab(question.link, e)}
+                  onClick={(e) => { if (e.button !== 0) return; openInNewTab(question.link, e); }}
+                  onAuxClick={(e) => { e.preventDefault(); e.stopPropagation(); if (e.button === 1) openInNewTab(question.link); }}
                   className="text-[11px] text-brand-400 hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <span>View GateOverflow Discussion</span>

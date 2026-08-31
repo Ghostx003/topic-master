@@ -3,10 +3,42 @@
  * Bridges messages between the Topic Master React Web App and Chrome Extension background worker.
  */
 
+// Automatically request all stored screenshots from extension and bridge to the webpage
+async function autoSyncScreenshotsToPage() {
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'GET_ALL_STORED_SCREENSHOTS' });
+    if (
+      response &&
+      response.success &&
+      Array.isArray(response.screenshots) &&
+      response.screenshots.length > 0
+    ) {
+      window.postMessage(
+        {
+          type: 'PYQ_SCREENSHOT_BULK_SYNC',
+          screenshots: response.screenshots,
+        },
+        '*'
+      );
+    }
+  } catch (_) {}
+}
+
+// Auto-sync immediately and on DOM readiness
+autoSyncScreenshotsToPage();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', autoSyncScreenshotsToPage);
+}
+
 // Listen for messages from the web page (window.postMessage)
 window.addEventListener('message', async (event) => {
   // Only accept messages from same window
   if (event.source !== window || !event.data) return;
+
+  if (event.data.type === 'REQUEST_AUTO_SYNC_SCREENSHOTS') {
+    autoSyncScreenshotsToPage();
+    return;
+  }
 
   if (event.data.type === 'CAPTURE_SPECIFIC_PAGE_REQUEST') {
     const { questionId, url, subject } = event.data;

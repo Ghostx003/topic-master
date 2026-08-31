@@ -66,9 +66,20 @@ export const PYQCard: React.FC<PYQCardProps> = ({
     });
 
     const handleScreenshotUpdated = (event: any) => {
-      if (event.detail && event.detail.questionId === question.id) {
-        setHasScreenshot(true);
+      if (
+        event.detail &&
+        (event.detail.questionId === question.id || event.detail.bulk)
+      ) {
+        hasQuestionScreenshot(question.id).then((present) => {
+          if (isMounted) setHasScreenshot(present);
+        });
       }
+    };
+
+    const handleBulkUpdated = () => {
+      hasQuestionScreenshot(question.id).then((present) => {
+        if (isMounted) setHasScreenshot(present);
+      });
     };
 
     const handleScreenshotsCleared = (event: any) => {
@@ -81,11 +92,13 @@ export const PYQCard: React.FC<PYQCardProps> = ({
     };
 
     window.addEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
+    window.addEventListener('pyq_screenshots_bulk_updated', handleBulkUpdated);
     window.addEventListener('pyq_screenshots_cleared', handleScreenshotsCleared);
 
     return () => {
       isMounted = false;
       window.removeEventListener('pyq_screenshot_updated', handleScreenshotUpdated);
+      window.removeEventListener('pyq_screenshots_bulk_updated', handleBulkUpdated);
       window.removeEventListener('pyq_screenshots_cleared', handleScreenshotsCleared);
     };
   }, [question.id, question.subject]);
@@ -230,18 +243,19 @@ export const PYQCard: React.FC<PYQCardProps> = ({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              const link = document.createElement('a');
-              link.href = question.link;
-              link.target = '_blank';
-              link.rel = 'noopener noreferrer';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
+              if (e.button !== 0) return;
+              window.open(question.link, '_blank', 'noopener,noreferrer');
             }}
-            className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-850 text-slate-400 hover:text-white border border-slate-800 transition-all text-xs shadow-sm active:scale-95 cursor-pointer shrink-0"
+            onAuxClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              if (e.button === 1) window.open(question.link, '_blank', 'noopener,noreferrer');
+            }}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-950 hover:bg-brand-950/60 text-slate-400 hover:text-brand-300 border border-slate-800 hover:border-brand-500/50 transition-all text-xs font-semibold shadow-sm active:scale-95 cursor-pointer shrink-0"
             title="Open discussion on GateOverflow (new tab)"
           >
             <ExternalLink className="w-3 h-3" />
+            <span className="hidden sm:inline">Discussion</span>
           </button>
         </div>
       </div>
